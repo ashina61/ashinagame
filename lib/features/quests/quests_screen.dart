@@ -5,6 +5,7 @@ import '../../app/theme/app_text_styles.dart';
 import '../../core/widgets/ashina_button.dart';
 import '../../core/widgets/ashina_card.dart';
 import '../../core/widgets/ashina_scaffold.dart';
+import '../../game/models/quest.dart';
 import '../../game/state/game_scope.dart';
 
 class QuestsScreen extends StatelessWidget {
@@ -26,8 +27,7 @@ class QuestsScreen extends StatelessWidget {
               padding: const EdgeInsets.only(top: 8, bottom: 4),
               child: Text('$category Görevleri', style: AppTextStyles.section),
             ),
-            for (final quest in
-                quests.where((item) => item.category == category))
+            for (final quest in _questsByCategory(quests, category))
               AshinaCard(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -74,4 +74,8 @@ class QuestsScreen extends StatelessWidget {
       ),
     );
   }
+}
+
+Iterable<Quest> _questsByCategory(List<Quest> quests, String category) {
+  return quests.where((item) => item.category == category);
 }

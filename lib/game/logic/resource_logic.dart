@@ -9,9 +9,9 @@ class ResourceLogic {
   ) {
     final next = Map<ResourceType, int>.from(current);
     for (final entry in delta.entries) {
-      next[entry.key] = ((next[entry.key] ?? 0) + entry.value)
-          .clamp(0, 9999)
-          .toInt();
+      final currentValue = next[entry.key] ?? 0;
+      final updatedValue = currentValue + entry.value;
+      next[entry.key] = updatedValue.clamp(0, 9999).toInt();
     }
     return next;
   }

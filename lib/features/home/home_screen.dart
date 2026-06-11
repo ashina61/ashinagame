@@ -60,10 +60,10 @@ class HomeScreen extends StatelessWidget {
                         child: Align(
                           alignment: Alignment.centerLeft,
                           child: Text(
-                            [
+                            _choiceSummary(
                               choice.label,
-                              Formatters.resourceDelta(choice.resourceEffects),
-                            ].join(' • '),
+                              choice.resourceEffects,
+                            ),
                           ),
                         ),
                       ),
@@ -147,6 +147,13 @@ class HomeScreen extends StatelessWidget {
       ),
     );
   }
+}
+
+String _choiceSummary(
+  String label,
+  Map<ResourceType, int> effects,
+) {
+  return '$label • ${Formatters.resourceDelta(effects)}';
 }
 
 class _ResourceWrap extends StatelessWidget {
