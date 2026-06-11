@@ -60,10 +60,7 @@ class HomeScreen extends StatelessWidget {
                         child: Align(
                           alignment: Alignment.centerLeft,
                           child: Text(
-                            _choiceSummary(
-                              choice.label,
-                              choice.resourceEffects,
-                            ),
+                            _choiceText(choice.label, choice.resourceEffects),
                           ),
                         ),
                       ),
@@ -98,7 +95,10 @@ class HomeScreen extends StatelessWidget {
                       icon: Icons.forest_rounded,
                       onPressed: () => controller.performCampAction(
                         'Odun toplama',
-                        const {ResourceType.wood: 10, ResourceType.morale: -1},
+                        const {
+                          ResourceType.wood: 10,
+                          ResourceType.morale: -1,
+                        },
                       ),
                     ),
                     AshinaButton(
@@ -149,10 +149,7 @@ class HomeScreen extends StatelessWidget {
   }
 }
 
-String _choiceSummary(
-  String label,
-  Map<ResourceType, int> effects,
-) {
+String _choiceText(String label, Map<ResourceType, int> effects) {
   return '$label • ${Formatters.resourceDelta(effects)}';
 }
 
