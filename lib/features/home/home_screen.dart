@@ -19,7 +19,10 @@ class HomeScreen extends StatelessWidget {
     final controller = GameScope.of(context);
     final state = controller.state;
     final event = state.currentEvent;
-    final openQuests = state.quests.where((quest) => !quest.completed).take(2).toList();
+    final openQuests = state.quests
+        .where((quest) => !quest.completed)
+        .take(2)
+        .toList();
 
     return AshinaScaffold(
       child: ListView(
@@ -33,7 +36,10 @@ class HomeScreen extends StatelessWidget {
           const SizedBox(height: 12),
           Text('Ashina: Bozkırda Bir Ömür', style: AppTextStyles.title),
           const SizedBox(height: 4),
-          Text('${state.profile.name} • ${state.profile.title}', style: AppTextStyles.body),
+          Text(
+            '${state.profile.name} • ${state.profile.title}',
+            style: AppTextStyles.body,
+          ),
           Text(state.day.season.atmosphere, style: AppTextStyles.meta),
           const SizedBox(height: 12),
           AshinaCard(child: _ResourceWrap(resources: state.resources)),
@@ -53,7 +59,9 @@ class HomeScreen extends StatelessWidget {
                         onPressed: () => controller.chooseEvent(choice),
                         child: Align(
                           alignment: Alignment.centerLeft,
-                          child: Text('${choice.label} • ${Formatters.resourceDelta(choice.resourceEffects)}'),
+                          child: Text(
+                            '${choice.label} • ${Formatters.resourceDelta(choice.resourceEffects)}',
+                          ),
                         ),
                       ),
                     ),
@@ -75,7 +83,11 @@ class HomeScreen extends StatelessWidget {
                       icon: Icons.architecture_rounded,
                       onPressed: () => controller.performCampAction(
                         'Avcılar',
-                        const {ResourceType.food: 8, ResourceType.leather: 1, ResourceType.morale: -1},
+                        const {
+                          ResourceType.food: 8,
+                          ResourceType.leather: 1,
+                          ResourceType.morale: -1,
+                        },
                       ),
                     ),
                     AshinaButton(
@@ -105,9 +117,15 @@ class HomeScreen extends StatelessWidget {
                 for (final quest in openQuests)
                   ListTile(
                     contentPadding: EdgeInsets.zero,
-                    title: Text(quest.title, style: const TextStyle(color: AppColors.parchment)),
+                    title: Text(
+                      quest.title,
+                      style: const TextStyle(color: AppColors.parchment),
+                    ),
                     subtitle: Text(quest.rewardText, style: AppTextStyles.meta),
-                    trailing: AshinaButton(label: 'Tamamla', onPressed: () => controller.completeQuest(quest.id)),
+                    trailing: AshinaButton(
+                      label: 'Tamamla',
+                      onPressed: () => controller.completeQuest(quest.id),
+                    ),
                   ),
               ],
             ),
@@ -117,7 +135,8 @@ class HomeScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text('Oba Günlüğü', style: AppTextStyles.section),
-                for (final log in state.log) Text('• $log', style: AppTextStyles.body),
+                for (final log in state.log)
+                  Text('• $log', style: AppTextStyles.body),
               ],
             ),
           ),
@@ -142,7 +161,10 @@ class _ResourceWrap extends StatelessWidget {
           label: Text('${type.label}: ${resources[type] ?? 0}'),
           avatar: const Icon(Icons.circle, size: 10, color: AppColors.amber),
           backgroundColor: AppColors.deepNight,
-          labelStyle: const TextStyle(color: AppColors.parchment, fontWeight: FontWeight.w700),
+          labelStyle: const TextStyle(
+            color: AppColors.parchment,
+            fontWeight: FontWeight.w700,
+          ),
         );
       }).toList(),
     );

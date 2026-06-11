@@ -50,7 +50,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text('Hakkında', style: AppTextStyles.section),
-                  Text('Ashina: Bozkırda Bir Ömür playable foundation. Binary asset içermez.', style: AppTextStyles.body),
+                  Text(
+                    'Ashina: Bozkırda Bir Ömür playable foundation. Binary asset içermez.',
+                    style: AppTextStyles.body,
+                  ),
                   const SizedBox(height: 12),
                   AshinaButton(
                     label: 'Oyunu sıfırla',

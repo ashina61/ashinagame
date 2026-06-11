@@ -12,11 +12,31 @@ class AshinaBottomNav extends StatelessWidget {
       selectedIndex: index,
       onDestinationSelected: onChanged,
       destinations: const [
-        NavigationDestination(icon: Icon(Icons.home_work_outlined), selectedIcon: Icon(Icons.home_work), label: 'Oba'),
-        NavigationDestination(icon: Icon(Icons.tent_outlined), selectedIcon: Icon(Icons.festival), label: 'Kamp'),
-        NavigationDestination(icon: Icon(Icons.map_outlined), selectedIcon: Icon(Icons.map), label: 'Harita'),
-        NavigationDestination(icon: Icon(Icons.flag_outlined), selectedIcon: Icon(Icons.flag), label: 'Görevler'),
-        NavigationDestination(icon: Icon(Icons.person_outline), selectedIcon: Icon(Icons.person), label: 'Karakter'),
+        NavigationDestination(
+          icon: Icon(Icons.home_work_outlined),
+          selectedIcon: Icon(Icons.home_work),
+          label: 'Oba',
+        ),
+        NavigationDestination(
+          icon: Icon(Icons.tent_outlined),
+          selectedIcon: Icon(Icons.festival),
+          label: 'Kamp',
+        ),
+        NavigationDestination(
+          icon: Icon(Icons.map_outlined),
+          selectedIcon: Icon(Icons.map),
+          label: 'Harita',
+        ),
+        NavigationDestination(
+          icon: Icon(Icons.flag_outlined),
+          selectedIcon: Icon(Icons.flag),
+          label: 'Görevler',
+        ),
+        NavigationDestination(
+          icon: Icon(Icons.person_outline),
+          selectedIcon: Icon(Icons.person),
+          label: 'Karakter',
+        ),
       ],
     );
   }

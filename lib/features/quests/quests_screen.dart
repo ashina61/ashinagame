@@ -34,11 +34,17 @@ class QuestsScreen extends StatelessWidget {
                     Row(
                       children: [
                         Icon(
-                          quest.completed ? Icons.check_circle : Icons.radio_button_unchecked,
-                          color: quest.completed ? Colors.lightGreenAccent : AppColors.amber,
+                          quest.completed
+                              ? Icons.check_circle
+                              : Icons.radio_button_unchecked,
+                          color: quest.completed
+                              ? Colors.lightGreenAccent
+                              : AppColors.amber,
                         ),
                         const SizedBox(width: 8),
-                        Expanded(child: Text(quest.title, style: AppTextStyles.section)),
+                        Expanded(
+                          child: Text(quest.title, style: AppTextStyles.section),
+                        ),
                       ],
                     ),
                     const SizedBox(height: 6),
@@ -48,7 +54,9 @@ class QuestsScreen extends StatelessWidget {
                       alignment: Alignment.centerRight,
                       child: AshinaButton(
                         label: quest.completed ? 'Tamamlandı' : 'Tamamla',
-                        onPressed: quest.completed ? null : () => controller.completeQuest(quest.id),
+                        onPressed: quest.completed
+                            ? null
+                            : () => controller.completeQuest(quest.id),
                       ),
                     ),
                   ],

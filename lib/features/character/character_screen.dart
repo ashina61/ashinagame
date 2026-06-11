@@ -24,10 +24,17 @@ class CharacterScreen extends StatelessWidget {
       child: ListView(
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
         children: [
-          const AssetPlaceholder(assetPath: GameAssets.characterLeader, label: 'Karakter Görsel Slotu', icon: Icons.person_rounded),
+          const AssetPlaceholder(
+            assetPath: GameAssets.characterLeader,
+            label: 'Karakter Görsel Slotu',
+            icon: Icons.person_rounded,
+          ),
           const SizedBox(height: 12),
           Text(profile.name, style: AppTextStyles.title),
-          Text('${profile.title} • ${profile.age} yaş • ${state.clan.name}', style: AppTextStyles.body),
+          Text(
+            '${profile.title} • ${profile.age} yaş • ${state.clan.name}',
+            style: AppTextStyles.body,
+          ),
           const SizedBox(height: 12),
           AshinaCard(
             child: Column(
@@ -56,12 +63,18 @@ class CharacterScreen extends StatelessWidget {
               AshinaButton(
                 label: 'Envanter',
                 icon: Icons.inventory_2_rounded,
-                onPressed: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const InventoryScreen())),
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => const InventoryScreen(),
+                  ),
+                ),
               ),
               AshinaButton(
                 label: 'Ayarlar',
                 icon: Icons.settings_rounded,
-                onPressed: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const SettingsScreen())),
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(builder: (_) => const SettingsScreen()),
+                ),
               ),
             ],
           ),
@@ -82,8 +95,22 @@ class _StatRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 7),
       child: Row(
         children: [
-          Expanded(child: Text(label, style: const TextStyle(color: AppColors.parchment, fontWeight: FontWeight.w700))),
-          Text('$value', style: const TextStyle(color: AppColors.amber, fontWeight: FontWeight.w900)),
+          Expanded(
+            child: Text(
+              label,
+              style: const TextStyle(
+                color: AppColors.parchment,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+          Text(
+            '$value',
+            style: const TextStyle(
+              color: AppColors.amber,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
         ],
       ),
     );

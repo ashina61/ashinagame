@@ -15,13 +15,19 @@ class AshinaTopBar extends StatelessWidget {
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
         child: Row(
           children: [
-            const Icon(Icons.local_fire_department_rounded, color: AppColors.amber),
+            const Icon(
+              Icons.local_fire_department_rounded,
+              color: AppColors.amber,
+            ),
             const SizedBox(width: 8),
             Expanded(
               child: Text(
                 '${state.clan.name} • Gün ${state.day.day} • ${state.day.season.label}',
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(color: AppColors.parchment, fontWeight: FontWeight.w800),
+                style: const TextStyle(
+                  color: AppColors.parchment,
+                  fontWeight: FontWeight.w800,
+                ),
               ),
             ),
           ],

@@ -7,7 +7,14 @@ import '../../core/widgets/ashina_scaffold.dart';
 class InventoryScreen extends StatelessWidget {
   const InventoryScreen({super.key});
 
-  static const items = ['Yay', 'Kılıç', 'Deri zırh', 'Kurutulmuş et', 'At koşumu', 'Eski yazıt parçası'];
+  static const items = [
+    'Yay',
+    'Kılıç',
+    'Deri zırh',
+    'Kurutulmuş et',
+    'At koşumu',
+    'Eski yazıt parçası',
+  ];
 
   @override
   Widget build(BuildContext context) {

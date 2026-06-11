@@ -3,7 +3,12 @@ import 'package:flutter/material.dart';
 import '../../app/theme/app_colors.dart';
 
 class AshinaButton extends StatelessWidget {
-  const AshinaButton({required this.label, required this.onPressed, this.icon, super.key});
+  const AshinaButton({
+    required this.label,
+    required this.onPressed,
+    this.icon,
+    super.key,
+  });
 
   final String label;
   final VoidCallback? onPressed;

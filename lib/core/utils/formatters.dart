@@ -9,6 +9,8 @@ class Formatters {
     if (effects.isEmpty) {
       return 'Kaynak etkisi yok';
     }
-    return effects.entries.map((entry) => '${entry.key.label} ${signed(entry.value)}').join(', ');
+    return effects.entries
+        .map((entry) => '${entry.key.label} ${signed(entry.value)}')
+        .join(', ');
   }
 }

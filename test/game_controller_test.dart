@@ -1,6 +1,6 @@
-import 'package:flutter_test/flutter_test.dart';
 import 'package:ashinagame/game/models/resource.dart';
 import 'package:ashinagame/game/state/game_controller.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   test('quest completion updates resources and prevents negatives', () {
@@ -14,7 +14,10 @@ void main() {
       controller.endDay();
     }
 
-    expect(controller.state.resources.values.every((value) => value >= 0), isTrue);
+    expect(
+      controller.state.resources.values.every((value) => value >= 0),
+      isTrue,
+    );
   });
 
   test('day and season progress every ten days', () {

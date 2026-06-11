@@ -17,20 +17,59 @@ class CampScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final controller = GameScope.of(context);
     const cards = [
-      _CampItem('Çadırlar', 'Ailelerin barındığı keçe çadırlar.', 'Düzenli', {ResourceType.morale: 2, ResourceType.wood: -2}),
-      _CampItem('Sürü', 'Atlar ve küçükbaş hayvanlar kontrol edilir.', 'Sağlıklı', {ResourceType.food: 4, ResourceType.horse: 1}),
-      _CampItem('Avcılar', 'İz süren avcılar sefere hazırlanır.', 'Hazır', {ResourceType.food: 10, ResourceType.leather: 2}),
-      _CampItem('Zanaatkârlar', 'Deri, ahşap ve koşum işleri yapılır.', 'Seviye 1', {ResourceType.leather: -2, ResourceType.reputation: 1}),
-      _CampItem('Savaşçılar', 'Nöbet ve talim düzeni kurulur.', 'Nöbette', {ResourceType.morale: 2, ResourceType.food: -3}),
-      _CampItem('Yaşlılar Meclisi', 'Kararlara kadim hafıza rehberlik eder.', 'Toplandı', {ResourceType.reputation: 1, ResourceType.morale: 1}),
-      _CampItem('Depo', 'Erzak ve odun stokları gözden geçirilir.', 'Kuru', {ResourceType.food: 6, ResourceType.wood: 4}),
+      _CampItem(
+        'Çadırlar',
+        'Ailelerin barındığı keçe çadırlar.',
+        'Düzenli',
+        {ResourceType.morale: 2, ResourceType.wood: -2},
+      ),
+      _CampItem(
+        'Sürü',
+        'Atlar ve küçükbaş hayvanlar kontrol edilir.',
+        'Sağlıklı',
+        {ResourceType.food: 4, ResourceType.horse: 1},
+      ),
+      _CampItem(
+        'Avcılar',
+        'İz süren avcılar sefere hazırlanır.',
+        'Hazır',
+        {ResourceType.food: 10, ResourceType.leather: 2},
+      ),
+      _CampItem(
+        'Zanaatkârlar',
+        'Deri, ahşap ve koşum işleri yapılır.',
+        'Seviye 1',
+        {ResourceType.leather: -2, ResourceType.reputation: 1},
+      ),
+      _CampItem(
+        'Savaşçılar',
+        'Nöbet ve talim düzeni kurulur.',
+        'Nöbette',
+        {ResourceType.morale: 2, ResourceType.food: -3},
+      ),
+      _CampItem(
+        'Yaşlılar Meclisi',
+        'Kararlara kadim hafıza rehberlik eder.',
+        'Toplandı',
+        {ResourceType.reputation: 1, ResourceType.morale: 1},
+      ),
+      _CampItem(
+        'Depo',
+        'Erzak ve odun stokları gözden geçirilir.',
+        'Kuru',
+        {ResourceType.food: 6, ResourceType.wood: 4},
+      ),
     ];
 
     return AshinaScaffold(
       child: ListView(
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
         children: [
-          const AssetPlaceholder(assetPath: GameAssets.bgCamp, label: 'Kamp / Oba Yönetimi', icon: Icons.festival_rounded),
+          const AssetPlaceholder(
+            assetPath: GameAssets.bgCamp,
+            label: 'Kamp / Oba Yönetimi',
+            icon: Icons.festival_rounded,
+          ),
           const SizedBox(height: 12),
           Text('Kamp / Oba Yönetimi', style: AppTextStyles.title),
           const SizedBox(height: 8),
@@ -42,12 +81,18 @@ class CampScreen extends StatelessWidget {
                   Text(item.title, style: AppTextStyles.section),
                   Text(item.description, style: AppTextStyles.body),
                   const SizedBox(height: 6),
-                  Text('Durum: ${item.status} • ${Formatters.resourceDelta(item.effects)}', style: AppTextStyles.meta),
+                  Text(
+                    'Durum: ${item.status} • ${Formatters.resourceDelta(item.effects)}',
+                    style: AppTextStyles.meta,
+                  ),
                   Align(
                     alignment: Alignment.centerRight,
                     child: AshinaButton(
                       label: 'Aksiyon',
-                      onPressed: () => controller.performCampAction(item.title, item.effects),
+                      onPressed: () => controller.performCampAction(
+                        item.title,
+                        item.effects,
+                      ),
                     ),
                   ),
                 ],

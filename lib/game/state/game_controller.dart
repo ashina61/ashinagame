@@ -29,7 +29,9 @@ class GameController extends ChangeNotifier {
     if (quest == null || quest.completed) {
       return;
     }
-    final quests = _state.quests.map((item) => item.id == id ? item.complete() : item).toList();
+    final quests = _state.quests
+        .map((item) => item.id == id ? item.complete() : item)
+        .toList();
     _state = _state.copyWith(
       quests: quests,
       resources: ResourceLogic.apply(_state.resources, quest.resourceRewards),
@@ -57,14 +59,19 @@ class GameController extends ChangeNotifier {
 
   void endDay() {
     final nextDay = _state.day.nextDay();
-    final dailyCost = SeasonLogic.dailyCost(nextDay.season, _state.resource(ResourceType.population));
+    final dailyCost = SeasonLogic.dailyCost(
+      nextDay.season,
+      _state.resource(ResourceType.population),
+    );
     final eventIndex = _state.eventIndex + 1;
     _state = _state.copyWith(
       day: nextDay,
       resources: ResourceLogic.apply(_state.resources, dailyCost),
       currentEvent: EventLogic.nextEvent(eventIndex),
       eventIndex: eventIndex,
-      log: _prependLog('Gün ${nextDay.day} başladı. ${nextDay.season.label} etkileri uygulandı.'),
+      log: _prependLog(
+        'Gün ${nextDay.day} başladı. ${nextDay.season.label} etkileri uygulandı.',
+      ),
     );
     notifyListeners();
   }
@@ -84,5 +91,6 @@ class GameController extends ChangeNotifier {
     notifyListeners();
   }
 
-  List<String> _prependLog(String message) => [message, ..._state.log].take(5).toList();
+  List<String> _prependLog(String message) =>
+      [message, ..._state.log].take(5).toList();
 }

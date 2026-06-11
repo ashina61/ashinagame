@@ -20,7 +20,10 @@ class StarterGameData {
           leadership: 6,
           endurance: 5,
         ),
-        clan: const Clan(name: 'Ashina Obası', motto: 'Gök altında birlik, bozkırda dirlik.'),
+        clan: const Clan(
+          name: 'Ashina Obası',
+          motto: 'Gök altında birlik, bozkırda dirlik.',
+        ),
         day: const GameDay(day: 1, season: Season.spring),
         resources: const {
           ResourceType.food: 100,
@@ -44,7 +47,11 @@ class StarterGameData {
       category: 'Günlük',
       description: 'Avcılar bozkırdaki izleri takip ederek erzak getirebilir.',
       rewardText: 'Erzak +14, Deri +3, Moral +1',
-      resourceRewards: {ResourceType.food: 14, ResourceType.leather: 3, ResourceType.morale: 1},
+      resourceRewards: {
+        ResourceType.food: 14,
+        ResourceType.leather: 3,
+        ResourceType.morale: 1,
+      },
     ),
     Quest(
       id: 'winter_food',
@@ -87,13 +94,18 @@ class StarterGameData {
     GameEvent(
       id: 'cold_wind',
       title: 'Kuzeyden Soğuk Rüzgâr',
-      description: 'Gece vakti kuzeyden soğuk rüzgâr indi. Sürünün bir kısmı huzursuz.',
+      description:
+          'Gece vakti kuzeyden soğuk rüzgâr indi. Sürünün bir kısmı huzursuz.',
       choices: [
         EventChoice(
           id: 'guards',
           label: 'Nöbetçileri artır',
           description: 'Ateşleri besleyip sürüyü sakinleştir.',
-          resourceEffects: {ResourceType.wood: -5, ResourceType.morale: 3, ResourceType.reputation: 1},
+          resourceEffects: {
+            ResourceType.wood: -5,
+            ResourceType.morale: 3,
+            ResourceType.reputation: 1,
+          },
         ),
         EventChoice(
           id: 'leave',
