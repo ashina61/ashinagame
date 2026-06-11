@@ -40,7 +40,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     value: notifications,
                     onChanged: (value) => setState(() => notifications = value),
                     title: const Text('Bildirimler'),
-                    subtitle: const Text('İleride yerel bildirimlere bağlanacak.'),
+                    subtitle: const Text(
+                      'İleride yerel bildirimlere bağlanacak.',
+                    ),
                   ),
                 ],
               ),
@@ -51,7 +53,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 children: [
                   Text('Hakkında', style: AppTextStyles.section),
                   Text(
-                    'Ashina: Bozkırda Bir Ömür playable foundation. Binary asset içermez.',
+                    'Ashina: Bozkırda Bir Ömür playable foundation. '
+                    'Binary asset içermez.',
                     style: AppTextStyles.body,
                   ),
                   const SizedBox(height: 12),

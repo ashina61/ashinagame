@@ -114,7 +114,13 @@ class MapScreen extends StatelessWidget {
 }
 
 class _Region {
-  const _Region(this.name, this.risk, this.reward, this.description, this.effects);
+  const _Region(
+    this.name,
+    this.risk,
+    this.reward,
+    this.description,
+    this.effects,
+  );
   final String name;
   final String risk;
   final String reward;

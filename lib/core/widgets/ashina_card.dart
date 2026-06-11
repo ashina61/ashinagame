@@ -25,7 +25,11 @@ class AshinaCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppRadius.lg),
         border: Border.all(color: AppColors.amber.withValues(alpha: 0.18)),
         boxShadow: const [
-          BoxShadow(color: Colors.black26, blurRadius: 14, offset: Offset(0, 8)),
+          BoxShadow(
+            color: Colors.black26,
+            blurRadius: 14,
+            offset: Offset(0, 8),
+          ),
         ],
       ),
       child: child,

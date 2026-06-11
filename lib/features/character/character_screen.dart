@@ -73,7 +73,9 @@ class CharacterScreen extends StatelessWidget {
                 label: 'Ayarlar',
                 icon: Icons.settings_rounded,
                 onPressed: () => Navigator.of(context).push(
-                  MaterialPageRoute<void>(builder: (_) => const SettingsScreen()),
+                  MaterialPageRoute<void>(
+                    builder: (_) => const SettingsScreen(),
+                  ),
                 ),
               ),
             ],

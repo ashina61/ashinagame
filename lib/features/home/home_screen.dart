@@ -60,7 +60,10 @@ class HomeScreen extends StatelessWidget {
                         child: Align(
                           alignment: Alignment.centerLeft,
                           child: Text(
-                            '${choice.label} • ${Formatters.resourceDelta(choice.resourceEffects)}',
+                            [
+                              choice.label,
+                              Formatters.resourceDelta(choice.resourceEffects),
+                            ].join(' • '),
                           ),
                         ),
                       ),

@@ -26,7 +26,8 @@ class QuestsScreen extends StatelessWidget {
               padding: const EdgeInsets.only(top: 8, bottom: 4),
               child: Text('$category Görevleri', style: AppTextStyles.section),
             ),
-            for (final quest in quests.where((item) => item.category == category))
+            for (final quest in
+                quests.where((item) => item.category == category))
               AshinaCard(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -43,13 +44,19 @@ class QuestsScreen extends StatelessWidget {
                         ),
                         const SizedBox(width: 8),
                         Expanded(
-                          child: Text(quest.title, style: AppTextStyles.section),
+                          child: Text(
+                            quest.title,
+                            style: AppTextStyles.section,
+                          ),
                         ),
                       ],
                     ),
                     const SizedBox(height: 6),
                     Text(quest.description, style: AppTextStyles.body),
-                    Text('Ödül: ${quest.rewardText}', style: AppTextStyles.meta),
+                    Text(
+                      'Ödül: ${quest.rewardText}',
+                      style: AppTextStyles.meta,
+                    ),
                     Align(
                       alignment: Alignment.centerRight,
                       child: AshinaButton(

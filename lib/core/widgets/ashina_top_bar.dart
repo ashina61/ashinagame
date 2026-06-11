@@ -22,7 +22,8 @@ class AshinaTopBar extends StatelessWidget {
             const SizedBox(width: 8),
             Expanded(
               child: Text(
-                '${state.clan.name} • Gün ${state.day.day} • ${state.day.season.label}',
+                '${state.clan.name} • Gün ${state.day.day} • '
+                '${state.day.season.label}',
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
                   color: AppColors.parchment,

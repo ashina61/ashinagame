@@ -82,7 +82,8 @@ class CampScreen extends StatelessWidget {
                   Text(item.description, style: AppTextStyles.body),
                   const SizedBox(height: 6),
                   Text(
-                    'Durum: ${item.status} • ${Formatters.resourceDelta(item.effects)}',
+                    'Durum: ${item.status} • '
+                    '${Formatters.resourceDelta(item.effects)}',
                     style: AppTextStyles.meta,
                   ),
                   Align(

@@ -70,7 +70,8 @@ class GameController extends ChangeNotifier {
       currentEvent: EventLogic.nextEvent(eventIndex),
       eventIndex: eventIndex,
       log: _prependLog(
-        'Gün ${nextDay.day} başladı. ${nextDay.season.label} etkileri uygulandı.',
+        'Gün ${nextDay.day} başladı. ${nextDay.season.label} '
+        'etkileri uygulandı.',
       ),
     );
     notifyListeners();

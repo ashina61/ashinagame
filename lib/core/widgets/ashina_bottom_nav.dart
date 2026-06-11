@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 
 class AshinaBottomNav extends StatelessWidget {
-  const AshinaBottomNav({required this.index, required this.onChanged, super.key});
+  const AshinaBottomNav({
+    required this.index,
+    required this.onChanged,
+    super.key,
+  });
 
   final int index;
   final ValueChanged<int> onChanged;
