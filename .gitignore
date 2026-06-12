@@ -16,3 +16,4 @@ android/app/release
 .vscode/
 .DS_Store
 android/gradle/wrapper/gradle-wrapper.jar
+android/app/src/main/java/io/flutter/plugins/GeneratedPluginRegistrant.java
