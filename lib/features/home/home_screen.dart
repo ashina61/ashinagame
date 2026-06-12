@@ -307,7 +307,7 @@ class _DailyJobsRow extends StatelessWidget {
 
   static const _jobs = [
     (GameAssets.sceneWoodcut2, 'Odun Kes'),
-    (GameAssets.sceneFarm2, 'Tarlada Çalış'),
+    (GameAssets.sceneFarm3, 'Tarlada Çalış'),
     (GameAssets.sceneHunt2, 'Avlan'),
     (GameAssets.sceneMercenary, 'Paralı Asker Topla'),
   ];
@@ -371,10 +371,10 @@ class _HouseholdPanel extends StatelessWidget {
           Expanded(
             child: Column(
               children: [
-                _KeyValue('Nüfus', '47'),
-                _KeyValue('Çiftlik', '3'),
-                _KeyValue('Ordu', '128'),
-                _KeyValue('Moral', '82/100'),
+                _KeyValue(GameAssets.iconPopulationEmblem, 'Nüfus', '47'),
+                _KeyValue(GameAssets.iconFarmEmblem, 'Çiftlik', '3'),
+                _KeyValue(GameAssets.iconArmyEmblem, 'Ordu', '128'),
+                _KeyValue(GameAssets.iconMoraleEmblem, 'Moral', '82/100'),
               ],
             ),
           ),
@@ -382,10 +382,10 @@ class _HouseholdPanel extends StatelessWidget {
           Expanded(
             child: Column(
               children: [
-                _KeyValue('Savaş', '4'),
-                _KeyValue('Güç', '1'),
-                _KeyValue('Ticaret', '1'),
-                _KeyValue('Zanaat', '2'),
+                _KeyValue(GameAssets.iconSwordsCrossedGold, 'Savaş', '4'),
+                _KeyValue(GameAssets.iconShieldSwords, 'Güç', '1'),
+                _KeyValue(GameAssets.iconTokenGold, 'Ticaret', '1'),
+                _KeyValue(GameAssets.iconCraftEmblem, 'Zanaat', '2'),
               ],
             ),
           ),
@@ -396,8 +396,9 @@ class _HouseholdPanel extends StatelessWidget {
 }
 
 class _KeyValue extends StatelessWidget {
-  const _KeyValue(this.label, this.value);
+  const _KeyValue(this.icon, this.label, this.value);
 
+  final String icon;
   final String label;
   final String value;
 
@@ -407,6 +408,8 @@ class _KeyValue extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 2),
       child: Row(
         children: [
+          Image.asset(icon, width: 18, height: 18),
+          const SizedBox(width: 6),
           Expanded(child: Text(label, style: AppTextStyles.body)),
           Text(value, style: AppTextStyles.value),
         ],

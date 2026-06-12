@@ -12,7 +12,7 @@ class BoyScreen extends StatelessWidget {
     ('Togan', 'Lider', 92, GameAssets.portraitTogan),
     ('Bori', 'Avcı', 78, GameAssets.iconPopulationMedallion),
     ('Kaya', 'Asker', 65, GameAssets.iconPopulationMedallion),
-    ('Alis', 'Tüccar', 58, GameAssets.iconPopulationMedallion),
+    ('Alis', 'Tüccar', 58, GameAssets.portraitAlis),
   ];
 
   @override

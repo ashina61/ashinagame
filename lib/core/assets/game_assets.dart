@@ -144,4 +144,16 @@ class GameAssets {
   static const uiTabUyeler = 'assets/images/ui/tab_uyeler.png';
   static const uiTabSavaslar = 'assets/images/ui/tab_savaslar.png';
   static const uiBadgeBanner1 = 'assets/images/ui/badge_banner_1.png';
+  static const iconPopulationEmblem =
+      'assets/images/icons/population_emblem.png';
+  static const iconFarmEmblem = 'assets/images/icons/farm_emblem.png';
+  static const iconArmyEmblem = 'assets/images/icons/army_emblem.png';
+  static const iconMoraleEmblem = 'assets/images/icons/morale_emblem.png';
+  static const portraitAlis = 'assets/images/characters/portrait_alis.png';
+  static const sceneFarm3 = 'assets/images/characters/scene_farm3.png';
+  static const sceneWoodcut3 = 'assets/images/characters/scene_woodcut3.png';
+  static const sceneArchery2 = 'assets/images/characters/scene_archery2.png';
+  static const sceneGathering2 =
+      'assets/images/characters/scene_gathering2.png';
+  static const sceneCraft2 = 'assets/images/characters/scene_craft2.png';
 }
