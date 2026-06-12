@@ -23,7 +23,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
     (GameAssets.iconIronOre, 'Demir Cevheri', 210, ItemKind.resource),
     (GameAssets.iconItemThread, 'İplik', 140, ItemKind.resource),
     (GameAssets.iconItemWheat, 'Buğday', 85, ItemKind.resource),
-    (GameAssets.iconIronOre, 'Taş', 60, ItemKind.resource),
+    (GameAssets.iconItemStone, 'Taş', 60, ItemKind.resource),
     (GameAssets.iconItemFur, 'Kürk', 40, ItemKind.resource),
     (GameAssets.iconItemWool, 'Yün', 35, ItemKind.resource),
     (GameAssets.iconItemSalt, 'Tuz', 25, ItemKind.resource),

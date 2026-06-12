@@ -174,4 +174,9 @@ class GameAssets {
   static const sceneArchery3 = 'assets/images/characters/scene_archery3.png';
   static const iconPeopleGroupGold =
       'assets/images/icons/people_group_gold.png';
+  static const portraitKaya = 'assets/images/characters/portrait_kaya.png';
+  static const uiBadgeBanner3 = 'assets/images/ui/badge_banner_3.png';
+  static const iconItemStone = 'assets/images/icons/item_stone.png';
+  static const bgSceneFortressNight =
+      'assets/images/backgrounds/scene_fortress_night.png';
 }

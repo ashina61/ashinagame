@@ -34,8 +34,7 @@ class _ExpeditionsScreenState extends State<ExpeditionsScreen> {
       NodeState.available,
     ),
     (
-      // TODO: replace with a baked "3" banner when the asset arrives.
-      GameAssets.uiBadgeShieldBlue,
+      GameAssets.uiBadgeBanner3,
       GameAssets.iconFortRed,
       'Yeşit Kalesi',
       'Tehlikeli',
@@ -104,7 +103,6 @@ class _ExpeditionsScreenState extends State<ExpeditionsScreen> {
                           name: _nodes[i].$3,
                           status: _nodes[i].$4,
                           state: _nodes[i].$5,
-                          numberOverlay: i == 2 ? '3' : null,
                           showRoute: i < _nodes.length - 1,
                         ),
                     ],
@@ -149,9 +147,8 @@ class _MapNode extends StatelessWidget {
     required this.name,
     required this.status,
     required this.state,
-    this.numberOverlay,
     this.showRoute = false,
-  });
+  }) : numberOverlay = null;
 
   final String badge;
   final String fort;

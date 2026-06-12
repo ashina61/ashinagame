@@ -32,6 +32,7 @@ class _ClanScreenState extends State<ClanScreen> {
               children: [
                 const SectionPlaque('KLAN BİLGİLERİ'),
                 OrnatePanel(
+                  backgroundAsset: GameAssets.bgSceneFortressNight,
                   child: Row(
                     children: [
                       Image.asset(GameAssets.uiEmblemWolfRound, width: 96),
