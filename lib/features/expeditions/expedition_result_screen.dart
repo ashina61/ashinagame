@@ -2,28 +2,30 @@ import 'package:flutter/material.dart';
 
 import '../../app/theme/app_text_styles.dart';
 import '../../core/assets/game_assets.dart';
+import '../../core/utils/formatters.dart';
+import '../../core/utils/resource_visuals.dart';
 import '../../core/widgets/ornate.dart';
+import '../../game/models/resource.dart';
 
 class ExpeditionResultScreen extends StatelessWidget {
-  const ExpeditionResultScreen({super.key});
+  const ExpeditionResultScreen({
+    this.title = 'Sınır Karakolu',
+    this.effects = const {
+      ResourceType.gold: 30,
+      ResourceType.reputation: 3,
+      ResourceType.leather: 2,
+    },
+    super.key,
+  });
 
-  static const _gains = [
-    (GameAssets.iconCoinsGold, '3.000', 'Altın'),
-    (GameAssets.iconScrollMedallion, '700', 'İtibar'),
-    (GameAssets.iconSwordsCrossedGold, '2', 'Klan Puanı'),
-    (GameAssets.iconChestLarge, '1', 'Nadir Sandık'),
-  ];
-
-  static const _details = [
-    ('Süre', '02:15'),
-    ('Yaralılar', '8'),
-    ('Tecrübe', '+150 XP'),
-    ('Kayıplar', '0'),
-    ('Kalan Asker', '30'),
-  ];
+  final String title;
+  final Map<ResourceType, int> effects;
 
   @override
   Widget build(BuildContext context) {
+    final gains = effects.entries.where((e) => e.value > 0).toList();
+    final costs = effects.entries.where((e) => e.value < 0).toList();
+
     return Scaffold(
       body: OrnateScaffold(
         child: Column(
@@ -45,59 +47,62 @@ class ExpeditionResultScreen extends StatelessWidget {
                   ),
                   Center(
                     child: Text(
-                      'Sınır Karakolu',
+                      title,
                       style: AppTextStyles.body.copyWith(fontSize: 16),
                     ),
                   ),
                   const SizedBox(height: 6),
                   const SectionPlaque('KAZANÇLAR'),
                   OrnatePanel(
-                    child: Row(
-                      children: [
-                        for (final (asset, value, label) in _gains)
-                          Expanded(
-                            child: Column(
-                              children: [
-                                Image.asset(asset, height: 42),
-                                const SizedBox(height: 4),
-                                Text(
-                                  value,
-                                  style: AppTextStyles.value.copyWith(
-                                    fontSize: 16,
-                                  ),
-                                ),
-                                Text(
-                                  label,
-                                  textAlign: TextAlign.center,
-                                  style: AppTextStyles.meta.copyWith(
-                                    fontSize: 11,
-                                  ),
-                                ),
-                              ],
+                    child: gains.isEmpty
+                        ? Center(
+                            child: Text(
+                              'Bu seferden ganimet çıkmadı.',
+                              style: AppTextStyles.meta.copyWith(fontSize: 14),
                             ),
+                          )
+                        : Row(
+                            children: [
+                              for (final entry in gains)
+                                Expanded(
+                                  child: Column(
+                                    children: [
+                                      Image.asset(
+                                        ResourceVisuals.icon(entry.key),
+                                        height: 42,
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        Formatters.signed(entry.value),
+                                        style: AppTextStyles.value.copyWith(
+                                          fontSize: 16,
+                                        ),
+                                      ),
+                                      Text(
+                                        entry.key.label,
+                                        textAlign: TextAlign.center,
+                                        style: AppTextStyles.meta.copyWith(
+                                          fontSize: 11,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                            ],
                           ),
-                      ],
-                    ),
                   ),
                   const SectionPlaque('SEFER BİLGİSİ'),
                   OrnatePanel(
                     child: Column(
                       children: [
-                        for (final (label, value) in _details)
-                          Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 3),
-                            child: Row(
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    label,
-                                    style: AppTextStyles.body,
-                                  ),
-                                ),
-                                Text(value, style: AppTextStyles.value),
-                              ],
-                            ),
+                        _DetailRow('Hedef', title),
+                        for (final entry in costs)
+                          _DetailRow(
+                            '${entry.key.label} Harcandı',
+                            '${-entry.value}',
                           ),
+                        const _DetailRow('Kayıplar', '0'),
+                        const _DetailRow('Durum', 'Oba güvende'),
                       ],
                     ),
                   ),
@@ -115,6 +120,26 @@ class ExpeditionResultScreen extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _DetailRow extends StatelessWidget {
+  const _DetailRow(this.label, this.value);
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 3),
+      child: Row(
+        children: [
+          Expanded(child: Text(label, style: AppTextStyles.body)),
+          Text(value, style: AppTextStyles.value),
+        ],
       ),
     );
   }

@@ -1,4 +1,5 @@
 enum ResourceType {
+  gold('Altın'),
   food('Erzak'),
   wood('Odun'),
   leather('Deri'),

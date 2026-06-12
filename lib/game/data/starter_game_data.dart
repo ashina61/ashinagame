@@ -26,6 +26,7 @@ class StarterGameData {
         ),
         day: const GameDay(day: 1, season: Season.spring),
         resources: const {
+          ResourceType.gold: 250,
           ResourceType.food: 100,
           ResourceType.wood: 60,
           ResourceType.leather: 25,

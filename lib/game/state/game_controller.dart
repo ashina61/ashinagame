@@ -57,6 +57,21 @@ class GameController extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Applies a trade if no resource would drop below zero.
+  bool tryTrade(String title, Map<ResourceType, int> effects) {
+    for (final entry in effects.entries) {
+      if (entry.value < 0 && _state.resource(entry.key) + entry.value < 0) {
+        return false;
+      }
+    }
+    _state = _state.copyWith(
+      resources: ResourceLogic.apply(_state.resources, effects),
+      log: _prependLog('$title takası yapıldı.'),
+    );
+    notifyListeners();
+    return true;
+  }
+
   void endDay() {
     final nextDay = _state.day.nextDay();
     final dailyCost = SeasonLogic.dailyCost(
