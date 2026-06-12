@@ -42,4 +42,14 @@ class GameAssets {
   static const uiPanelAnnouncement = 'assets/images/ui/panel_announcement.png';
   static const uiPanelTitleWide = 'assets/images/ui/panel_title_wide.png';
   static const uiPanelField = 'assets/images/ui/panel_field.png';
+  static const navClan = 'assets/images/icons/nav_clan.png';
+  static const iconCoinsMedallion = 'assets/images/icons/coins_medallion.png';
+  static const iconMedallionHorse = 'assets/images/icons/medallion_horse.png';
+  static const iconChestMedallion = 'assets/images/icons/chest_medallion.png';
+  static const uiSlotSquare = 'assets/images/ui/slot_square.png';
+  static const uiPanelTitleStar = 'assets/images/ui/panel_title_star.png';
+  static const uiPanelCardHeader = 'assets/images/ui/panel_card_header.png';
+  static const uiPanelPillGold = 'assets/images/ui/panel_pill_gold.png';
+  static const uiButtonBronzeSlim = 'assets/images/ui/button_bronze_slim.png';
+  static const uiBarSlots = 'assets/images/ui/bar_slots.png';
 }
