@@ -60,10 +60,7 @@ class HomeScreen extends StatelessWidget {
                         child: Align(
                           alignment: Alignment.centerLeft,
                           child: Text(
-                            _choiceText(
-                              choice.label,
-                              choice.resourceEffects,
-                            ),
+                            _choiceText(choice.label, choice.resourceEffects),
                           ),
                         ),
                       ),
