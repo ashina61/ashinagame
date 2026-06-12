@@ -112,4 +112,14 @@ class GameAssets {
   static const sceneMercenary = 'assets/images/characters/scene_mercenary.png';
   static const sceneWoodcut = 'assets/images/characters/scene_woodcut.png';
   static const sceneArchery = 'assets/images/characters/scene_archery.png';
+  static const sceneWoodcut2 = 'assets/images/characters/scene_woodcut2.png';
+  static const sceneFarm2 = 'assets/images/characters/scene_farm2.png';
+  static const sceneHunt2 = 'assets/images/characters/scene_hunt2.png';
+  static const sceneCraftNight =
+      'assets/images/characters/scene_craft_night.png';
+  static const sceneGathering = 'assets/images/characters/scene_gathering.png';
+  static const iconItemSaddle = 'assets/images/icons/item_saddle.png';
+  static const iconWatchtower = 'assets/images/icons/watchtower.png';
+  static const iconItemShieldPlain =
+      'assets/images/icons/item_shield_plain.png';
 }

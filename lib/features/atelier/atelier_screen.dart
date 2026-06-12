@@ -19,7 +19,7 @@ class _AtelierScreenState extends State<AtelierScreen> {
     (GameAssets.iconItemSword, 'Demir Kılıç', '30 dk.'),
     (GameAssets.iconItemArmor, 'Deri Zırh', '45 dk.'),
     (GameAssets.iconItemBow, 'Kompozit Yay', '60 dk.'),
-    (GameAssets.iconItemHorse, 'Ata Koşum', '90 dk.'),
+    (GameAssets.iconItemSaddle, 'Ata Koşum', '90 dk.'),
     (GameAssets.iconItemFur, 'Kürk Pelerin', '45 dk.'),
     (GameAssets.iconItemShieldWood, 'Ahşap Kalkan', '20 dk.'),
   ];
