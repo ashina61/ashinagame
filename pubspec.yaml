@@ -29,6 +29,7 @@ flutter:
     - assets/images/characters/
     - assets/images/backgrounds/
     - assets/images/icons/
+    - assets/images/icons/deco/
     - assets/images/ui/
     - assets/audio/music/
     - assets/audio/sfx/
