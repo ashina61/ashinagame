@@ -172,4 +172,6 @@ class GameAssets {
   static const sceneWoodcut4 = 'assets/images/characters/scene_woodcut4.png';
   static const sceneCraft3 = 'assets/images/characters/scene_craft3.png';
   static const sceneArchery3 = 'assets/images/characters/scene_archery3.png';
+  static const iconPeopleGroupGold =
+      'assets/images/icons/people_group_gold.png';
 }
