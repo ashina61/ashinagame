@@ -73,4 +73,14 @@ class GameAssets {
   static const iconIronOre = 'assets/images/icons/iron_ore.png';
   static const iconItemWood = 'assets/images/icons/item_wood.png';
   static const iconItemLeather = 'assets/images/icons/item_leather.png';
+  static const iconItemShield = 'assets/images/icons/item_shield.png';
+  static const iconItemSalt = 'assets/images/icons/item_salt.png';
+  static const iconItemBow = 'assets/images/icons/item_bow.png';
+  static const iconItemPotion = 'assets/images/icons/item_potion.png';
+  static const iconItemWheat = 'assets/images/icons/item_wheat.png';
+  static const iconItemSword = 'assets/images/icons/item_sword.png';
+  static const iconItemWool = 'assets/images/icons/item_wool.png';
+  static const iconItemThread = 'assets/images/icons/item_thread.png';
+  static const iconItemHelmet = 'assets/images/icons/item_helmet.png';
+  static const iconItemArmor = 'assets/images/icons/item_armor.png';
 }
