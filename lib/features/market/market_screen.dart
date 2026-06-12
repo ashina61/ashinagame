@@ -60,14 +60,27 @@ class _MarketScreenState extends State<MarketScreen> {
         child: Column(
           children: [
             const OrnateHeader(title: 'Pazar', showBack: true),
-            const ResourceBar(
-              entries: [
-                (GameAssets.iconCoinGold, '7.101'),
-                (GameAssets.iconCoinsMedallion, '813'),
-                (GameAssets.iconFood, '5.740'),
-                (GameAssets.iconItemWood, '320'),
-                (GameAssets.iconItemLeather, '180'),
-              ],
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Container(
+                height: 34,
+                margin: const EdgeInsets.fromLTRB(12, 2, 0, 4),
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                decoration: const BoxDecoration(
+                  image: DecorationImage(
+                    image: AssetImage(GameAssets.uiPanelPill),
+                    fit: BoxFit.fill,
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Image.asset(GameAssets.iconCoinGold, width: 18, height: 18),
+                    const SizedBox(width: 6),
+                    const Text('7.101', style: AppTextStyles.value),
+                  ],
+                ),
+              ),
             ),
             OrnateTabs(
               tabs: const ['Satın Al', 'Sat', 'Teklifler'],

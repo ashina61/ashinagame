@@ -363,6 +363,7 @@ class ItemSlot extends StatelessWidget {
     required this.asset,
     this.count,
     this.label,
+    this.labelAbove = false,
     this.selected = false,
     this.onTap,
     super.key,
@@ -371,16 +372,32 @@ class ItemSlot extends StatelessWidget {
   final String asset;
   final String? count;
   final String? label;
+  final bool labelAbove;
   final bool selected;
   final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
+    final labelText = label == null
+        ? null
+        : Text(
+            label!,
+            style: AppTextStyles.meta.copyWith(
+              color: AppColors.sand,
+              fontSize: 11,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          );
     return GestureDetector(
       onTap: onTap,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
+          if (labelAbove && labelText != null) ...[
+            labelText,
+            const SizedBox(height: 4),
+          ],
           Container(
             decoration: _stretchedImage(GameAssets.uiSlotItem),
             foregroundDecoration: selected
@@ -415,17 +432,9 @@ class ItemSlot extends StatelessWidget {
               ],
             ),
           ),
-          if (label != null) ...[
+          if (!labelAbove && labelText != null) ...[
             const SizedBox(height: 4),
-            Text(
-              label!,
-              style: AppTextStyles.meta.copyWith(
-                color: AppColors.sand,
-                fontSize: 11,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
+            labelText,
           ],
         ],
       ),

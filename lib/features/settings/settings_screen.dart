@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../app/theme/app_colors.dart';
 import '../../app/theme/app_text_styles.dart';
 import '../../core/assets/game_assets.dart';
 import '../../core/widgets/ornate.dart';
@@ -29,26 +30,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
               children: [
                 const SectionPlaque('HESAP'),
                 OrnatePanel(
+                  padding: const EdgeInsets.all(10),
                   child: Column(
                     children: [
-                      Row(
-                        children: [
-                          const Expanded(
-                            child: Text(
-                              'Hesap Bağla',
-                              style: AppTextStyles.bodyStrong,
-                            ),
-                          ),
-                          DarkButton(
-                            label: 'GOOGLE PLAY',
-                            height: 32,
-                            onPressed: () => _soon(context),
-                          ),
-                        ],
+                      _FieldRow(
+                        label: 'Hesap Bağla',
+                        value: 'Google Play  ✓',
+                        valueColor: AppColors.success,
+                        onTap: () => _soon(context),
                       ),
-                      const SizedBox(height: 8),
-                      const _InfoRow('Kullanıcı ID', '#ASINA-4587'),
-                      const _InfoRow('Sunucu', 'TR-1'),
+                      const _FieldRow(
+                          label: 'Kullanıcı ID', value: 'ASHINA-4587'),
+                      const _FieldRow(label: 'Sunucu', value: 'TR-1'),
                     ],
                   ),
                 ),
@@ -96,21 +89,35 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
                 const SectionPlaque('DİĞER'),
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
                   child: Column(
                     children: [
-                      for (final asset in const [
-                        GameAssets.uiButtonDestek,
-                        GameAssets.uiButtonHediyeKodu,
-                        GameAssets.uiButtonGizlilik,
-                        GameAssets.uiButtonHizmetSartlari,
+                      for (final pair in const [
+                        [
+                          GameAssets.uiButtonDestek,
+                          GameAssets.uiButtonHediyeKodu
+                        ],
+                        [
+                          GameAssets.uiButtonGizlilik,
+                          GameAssets.uiButtonHizmetSartlari,
+                        ],
                       ])
                         Padding(
                           padding: const EdgeInsets.only(bottom: 8),
-                          child: ImageButton(
-                            asset: asset,
-                            height: 46,
-                            onPressed: () => _soon(context),
+                          child: Row(
+                            children: [
+                              for (final asset in pair) ...[
+                                if (asset != pair.first)
+                                  const SizedBox(width: 8),
+                                Expanded(
+                                  child: ImageButton(
+                                    asset: asset,
+                                    height: 42,
+                                    onPressed: () => _soon(context),
+                                  ),
+                                ),
+                              ],
+                            ],
                           ),
                         ),
                     ],
@@ -131,21 +138,45 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 }
 
-class _InfoRow extends StatelessWidget {
-  const _InfoRow(this.label, this.value);
+class _FieldRow extends StatelessWidget {
+  const _FieldRow({
+    required this.label,
+    required this.value,
+    this.valueColor,
+    this.onTap,
+  });
 
   final String label;
   final String value;
+  final Color? valueColor;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 3),
-      child: Row(
-        children: [
-          Expanded(child: Text(label, style: AppTextStyles.body)),
-          Text(value, style: AppTextStyles.meta),
-        ],
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        height: 38,
+        margin: const EdgeInsets.only(bottom: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        decoration: const BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage(GameAssets.uiPanelField),
+            fit: BoxFit.fill,
+          ),
+        ),
+        child: Row(
+          children: [
+            Expanded(child: Text(label, style: AppTextStyles.body)),
+            Text(
+              value,
+              style: AppTextStyles.bodyStrong.copyWith(
+                fontSize: 14,
+                color: valueColor,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -66,7 +66,12 @@ class _InventoryScreenState extends State<InventoryScreen> {
                 childAspectRatio: 0.74,
                 children: [
                   for (final (asset, label, count, _) in _filtered)
-                    ItemSlot(asset: asset, label: label, count: '$count'),
+                    ItemSlot(
+                      asset: asset,
+                      label: label,
+                      labelAbove: true,
+                      count: '$count',
+                    ),
                 ],
               ),
             ),
