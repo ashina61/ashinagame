@@ -23,7 +23,7 @@ class InventoryScreen extends StatelessWidget {
         child: ListView(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
           children: [
-            Text('Envanter', style: AppTextStyles.title),
+            const Text('Envanter', style: AppTextStyles.title),
             const SizedBox(height: 8),
             for (final item in items)
               AshinaCard(

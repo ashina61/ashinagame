@@ -78,7 +78,7 @@ class MapScreen extends StatelessWidget {
             icon: Icons.map_rounded,
           ),
           const SizedBox(height: 12),
-          Text('Harita', style: AppTextStyles.title),
+          const Text('Harita', style: AppTextStyles.title),
           const SizedBox(height: 8),
           for (final region in regions)
             AshinaCard(

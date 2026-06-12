@@ -19,22 +19,20 @@ class HomeScreen extends StatelessWidget {
     final controller = GameScope.of(context);
     final state = controller.state;
     final event = state.currentEvent;
-    final openQuests = state.quests
-        .where((quest) => !quest.completed)
-        .take(2)
-        .toList();
+    final openQuests =
+        state.quests.where((quest) => !quest.completed).take(2).toList();
 
     return AshinaScaffold(
       child: ListView(
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
         children: [
-          AssetPlaceholder(
+          const AssetPlaceholder(
             assetPath: GameAssets.bgSteppe,
             label: 'Bozkır Obası',
             icon: Icons.landscape_outlined,
           ),
           const SizedBox(height: 12),
-          Text('Ashina: Bozkırda Bir Ömür', style: AppTextStyles.title),
+          const Text('Ashina: Bozkırda Bir Ömür', style: AppTextStyles.title),
           const SizedBox(height: 4),
           Text(
             '${state.profile.name} • ${state.profile.title}',
@@ -72,7 +70,7 @@ class HomeScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Ana Aksiyonlar', style: AppTextStyles.section),
+                const Text('Ana Aksiyonlar', style: AppTextStyles.section),
                 const SizedBox(height: 8),
                 Wrap(
                   spacing: 8,
@@ -115,7 +113,7 @@ class HomeScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Kısa Görevler', style: AppTextStyles.section),
+                const Text('Kısa Görevler', style: AppTextStyles.section),
                 const SizedBox(height: 8),
                 for (final quest in openQuests)
                   ListTile(
@@ -137,7 +135,7 @@ class HomeScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Oba Günlüğü', style: AppTextStyles.section),
+                const Text('Oba Günlüğü', style: AppTextStyles.section),
                 for (final log in state.log)
                   Text('• $log', style: AppTextStyles.body),
               ],

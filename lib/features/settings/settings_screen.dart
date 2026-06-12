@@ -25,7 +25,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         child: ListView(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
           children: [
-            Text('Ayarlar', style: AppTextStyles.title),
+            const Text('Ayarlar', style: AppTextStyles.title),
             const SizedBox(height: 8),
             AshinaCard(
               child: Column(
@@ -51,8 +51,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Hakkında', style: AppTextStyles.section),
-                  Text(
+                  const Text('Hakkında', style: AppTextStyles.section),
+                  const Text(
                     'Ashina: Bozkırda Bir Ömür playable foundation. '
                     'Binary asset içermez.',
                     style: AppTextStyles.body,

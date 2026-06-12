@@ -71,7 +71,7 @@ class CampScreen extends StatelessWidget {
             icon: Icons.festival_rounded,
           ),
           const SizedBox(height: 12),
-          Text('Kamp / Oba Yönetimi', style: AppTextStyles.title),
+          const Text('Kamp / Oba Yönetimi', style: AppTextStyles.title),
           const SizedBox(height: 8),
           for (final item in cards)
             AshinaCard(

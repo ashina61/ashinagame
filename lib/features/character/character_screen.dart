@@ -51,7 +51,7 @@ class CharacterScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Oba Sözü', style: AppTextStyles.section),
+                const Text('Oba Sözü', style: AppTextStyles.section),
                 Text(state.clan.motto, style: AppTextStyles.body),
               ],
             ),

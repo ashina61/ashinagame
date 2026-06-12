@@ -20,7 +20,7 @@ class QuestsScreen extends StatelessWidget {
       child: ListView(
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
         children: [
-          Text('Görevler', style: AppTextStyles.title),
+          const Text('Görevler', style: AppTextStyles.title),
           const SizedBox(height: 8),
           for (final category in ['Günlük', 'Hikâye', 'Oba']) ...[
             Padding(
