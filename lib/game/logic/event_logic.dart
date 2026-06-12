@@ -5,7 +5,7 @@ class EventLogic {
   const EventLogic._();
 
   static GameEvent nextEvent(int index) {
-    final events = StarterGameData.events;
+    const events = StarterGameData.events;
     return events[index % events.length];
   }
 }

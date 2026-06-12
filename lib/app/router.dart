@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 
-import '../core/widgets/ashina_bottom_nav.dart';
-import '../features/camp/camp_screen.dart';
-import '../features/character/character_screen.dart';
+import '../core/widgets/ornate.dart';
+import '../features/atelier/atelier_screen.dart';
+import '../features/boy/boy_screen.dart';
+import '../features/clan/clan_screen.dart';
 import '../features/home/home_screen.dart';
-import '../features/map/map_screen.dart';
-import '../features/quests/quests_screen.dart';
+import '../features/settings/settings_screen.dart';
 
 class AshinaRouter extends StatefulWidget {
   const AshinaRouter({super.key});
@@ -19,17 +19,17 @@ class _AshinaRouterState extends State<AshinaRouter> {
 
   static const _screens = [
     HomeScreen(),
-    CampScreen(),
-    MapScreen(),
-    QuestsScreen(),
-    CharacterScreen(),
+    BoyScreen(),
+    AtelierScreen(),
+    ClanScreen(),
+    SettingsScreen(),
   ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: IndexedStack(index: _index, children: _screens),
-      bottomNavigationBar: AshinaBottomNav(
+      bottomNavigationBar: OrnateNavBar(
         index: _index,
         onChanged: (value) => setState(() => _index = value),
       ),

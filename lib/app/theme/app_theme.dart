@@ -15,8 +15,8 @@ class AppTheme {
     return ThemeData(
       useMaterial3: true,
       colorScheme: scheme,
-      scaffoldBackgroundColor: AppColors.deepNight,
-      fontFamily: 'Roboto',
+      scaffoldBackgroundColor: AppColors.ink,
+      fontFamily: 'Alegreya',
       textTheme: const TextTheme(
         bodyMedium: TextStyle(color: AppColors.sand),
       ),

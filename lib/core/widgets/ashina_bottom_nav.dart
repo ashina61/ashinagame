@@ -22,7 +22,7 @@ class AshinaBottomNav extends StatelessWidget {
           label: 'Oba',
         ),
         NavigationDestination(
-          icon: Icon(Icons.tent_outlined),
+          icon: Icon(Icons.festival_outlined),
           selectedIcon: Icon(Icons.festival),
           label: 'Kamp',
         ),
