@@ -22,4 +22,14 @@ class GameAssets {
   static const uiButtonGold = 'assets/images/ui/button_gold.png';
   static const uiSlotItem = 'assets/images/ui/slot_item.png';
   static const bgScreenNight = 'assets/images/backgrounds/bg_screen_night.png';
+  static const uiButtonBack = 'assets/images/ui/button_back.png';
+  static const uiButtonInfo = 'assets/images/ui/button_info.png';
+  static const uiDividerOrnate = 'assets/images/ui/divider_ornate.png';
+  static const uiPanelPlaque = 'assets/images/ui/panel_plaque.png';
+  static const uiProgressBarGold = 'assets/images/ui/progress_bar_gold.png';
+  static const uiBannerWolf = 'assets/images/ui/banner_wolf.png';
+  static const uiEmblemWolfRound = 'assets/images/ui/emblem_wolf_round.png';
+  static const iconSwordsCrossed = 'assets/images/icons/swords_crossed.png';
+  static const iconCoinsGold = 'assets/images/icons/coins_gold.png';
+  static const iconChest = 'assets/images/icons/chest.png';
 }
