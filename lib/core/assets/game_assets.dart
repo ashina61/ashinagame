@@ -83,4 +83,12 @@ class GameAssets {
   static const iconItemThread = 'assets/images/icons/item_thread.png';
   static const iconItemHelmet = 'assets/images/icons/item_helmet.png';
   static const iconItemArmor = 'assets/images/icons/item_armor.png';
+  static const sceneHunt = 'assets/images/characters/scene_hunt.png';
+  static const portraitTogan = 'assets/images/characters/portrait_togan.png';
+  static const uiButtonGoldLong = 'assets/images/ui/button_gold_long.png';
+  static const uiBarTrack = 'assets/images/ui/bar_track.png';
+  static const uiProgressBarWide = 'assets/images/ui/progress_bar_wide.png';
+  static const uiPanelStrip = 'assets/images/ui/panel_strip.png';
+  static const uiToggleOn = 'assets/images/ui/toggle_on.png';
+  static const uiToggleOff = 'assets/images/ui/toggle_off.png';
 }

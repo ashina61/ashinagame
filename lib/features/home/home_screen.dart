@@ -282,7 +282,7 @@ class _DailyJobsRow extends StatelessWidget {
   static const _jobs = [
     (GameAssets.iconItemWood, 'Odun Kes'),
     (GameAssets.iconItemWheat, 'Tarlada Çalış'),
-    (GameAssets.iconItemBow, 'Avlan'),
+    (GameAssets.sceneHunt, 'Avlan'),
     (GameAssets.iconPopulationMedallion, 'Paralı Asker Topla'),
   ];
 

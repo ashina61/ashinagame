@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../app/theme/app_colors.dart';
 import '../../app/theme/app_text_styles.dart';
+import '../../core/assets/game_assets.dart';
 import '../../core/widgets/ornate.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -181,16 +181,20 @@ class _Toggle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(child: Text(label, style: AppTextStyles.bodyStrong)),
-        Switch(
-          value: value,
-          onChanged: onChanged,
-          activeTrackColor: AppColors.gold,
-          thumbColor: const WidgetStatePropertyAll(AppColors.parchment),
-        ),
-      ],
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 5),
+      child: Row(
+        children: [
+          Expanded(child: Text(label, style: AppTextStyles.bodyStrong)),
+          GestureDetector(
+            onTap: () => onChanged(!value),
+            child: Image.asset(
+              value ? GameAssets.uiToggleOn : GameAssets.uiToggleOff,
+              width: 58,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

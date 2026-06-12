@@ -9,10 +9,10 @@ class BoyScreen extends StatelessWidget {
   const BoyScreen({super.key});
 
   static const _members = [
-    ('Togan', 'Lider', 92, true),
-    ('Bori', 'Avcı', 78, false),
-    ('Kaya', 'Asker', 65, false),
-    ('Alis', 'Tüccar', 58, false),
+    ('Togan', 'Lider', 92, GameAssets.portraitTogan),
+    ('Bori', 'Avcı', 78, GameAssets.iconPopulationMedallion),
+    ('Kaya', 'Asker', 65, GameAssets.iconPopulationMedallion),
+    ('Alis', 'Tüccar', 58, GameAssets.iconPopulationMedallion),
   ];
 
   @override
@@ -47,7 +47,7 @@ class BoyScreen extends StatelessWidget {
                   ),
                 ),
                 const SectionPlaque('BOY ÜYELERİ'),
-                for (final (name, role, power, leader) in _members)
+                for (final (name, role, power, portrait) in _members)
                   OrnatePanel(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 10,
@@ -64,7 +64,7 @@ class BoyScreen extends StatelessWidget {
                                 padding: const EdgeInsets.all(6),
                                 child: ClipOval(
                                   child: Image.asset(
-                                    GameAssets.iconPopulationMedallion,
+                                    portrait,
                                     fit: BoxFit.cover,
                                   ),
                                 ),
@@ -86,7 +86,7 @@ class BoyScreen extends StatelessWidget {
                               Row(
                                 children: [
                                   Text(name, style: AppTextStyles.bodyStrong),
-                                  if (leader)
+                                  if (role == 'Lider')
                                     Padding(
                                       padding: const EdgeInsets.only(left: 6),
                                       child: Text(
