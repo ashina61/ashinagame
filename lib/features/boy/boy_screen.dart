@@ -10,7 +10,7 @@ class BoyScreen extends StatelessWidget {
 
   static const _members = [
     ('Togan', 'Lider', 92, GameAssets.portraitTogan),
-    ('Bori', 'Avcı', 78, GameAssets.iconPopulationMedallion),
+    ('Bori', 'Avcı', 78, GameAssets.portraitBori),
     ('Kaya', 'Asker', 65, GameAssets.iconPopulationMedallion),
     ('Alis', 'Tüccar', 58, GameAssets.portraitAlis),
   ];

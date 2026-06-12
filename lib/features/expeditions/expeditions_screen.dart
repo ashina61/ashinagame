@@ -57,10 +57,39 @@ class _ExpeditionsScreenState extends State<ExpeditionsScreen> {
         child: Column(
           children: [
             const OrnateHeader(title: 'Seferler', showBack: true),
-            OrnateTabs(
-              tabs: const ['Harita', 'Sefer Listesi'],
-              index: _tab,
-              onChanged: (value) => setState(() => _tab = value),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 4, 12, 10),
+              child: Row(
+                children: [
+                  for (final (i, asset) in const [
+                    (0, GameAssets.uiTabHarita),
+                    (1, GameAssets.uiTabSeferListesi),
+                  ])
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () => setState(() => _tab = i),
+                        child: Container(
+                          margin: EdgeInsets.only(left: i == 0 ? 0 : 8),
+                          decoration: _tab == i
+                              ? BoxDecoration(
+                                  borderRadius: BorderRadius.circular(8),
+                                  boxShadow: const [
+                                    BoxShadow(
+                                      color: Color(0x66EEC36A),
+                                      blurRadius: 12,
+                                    ),
+                                  ],
+                                )
+                              : null,
+                          child: Opacity(
+                            opacity: _tab == i ? 1 : 0.7,
+                            child: Image.asset(asset, height: 36),
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
             ),
             Expanded(
               child: Stack(
@@ -200,8 +229,6 @@ class _MapNode extends StatelessWidget {
                           ],
                         ),
                       ),
-                      if (state == NodeState.locked)
-                        Image.asset(GameAssets.uiBadgeLocked, height: 30),
                     ],
                   ),
                 ),

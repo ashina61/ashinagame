@@ -106,8 +106,9 @@ class ExpeditionResultScreen extends StatelessWidget {
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(40, 4, 40, 12),
-              child: GoldButton(
-                label: 'DEVAM ET',
+              child: ImageButton(
+                asset: GameAssets.uiButtonDevamEt,
+                height: 52,
                 onPressed: () =>
                     Navigator.of(context).popUntil((route) => route.isFirst),
               ),

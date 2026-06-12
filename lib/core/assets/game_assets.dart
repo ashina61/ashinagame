@@ -164,4 +164,8 @@ class GameAssets {
   static const iconFortStone = 'assets/images/icons/fort_stone.png';
   static const iconFortRed = 'assets/images/icons/fort_red.png';
   static const iconFortDark = 'assets/images/icons/fort_dark.png';
+  static const portraitBori = 'assets/images/characters/portrait_bori.png';
+  static const uiButtonDevamEt = 'assets/images/ui/button_devam_et.png';
+  static const uiTabHarita = 'assets/images/ui/tab_harita.png';
+  static const uiTabSeferListesi = 'assets/images/ui/tab_sefer_listesi.png';
 }
