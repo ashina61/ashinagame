@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../../app/theme/app_colors.dart';
 import '../../app/theme/app_text_styles.dart';
-import '../../core/widgets/ashina_button.dart';
-import '../../core/widgets/ashina_card.dart';
-import '../../core/widgets/ashina_scaffold.dart';
-import '../../game/state/game_scope.dart';
+import '../../core/widgets/ornate.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -14,61 +12,185 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-  bool sound = true;
-  bool notifications = false;
+  bool _music = true;
+  bool _sfx = true;
+  bool _notifications = true;
+  bool _powerSave = false;
 
   @override
   Widget build(BuildContext context) {
-    final controller = GameScope.of(context);
-    return Scaffold(
-      body: AshinaScaffold(
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
-          children: [
-            const Text('Ayarlar', style: AppTextStyles.title),
-            const SizedBox(height: 8),
-            AshinaCard(
-              child: Column(
-                children: [
-                  SwitchListTile(
-                    value: sound,
-                    onChanged: (value) => setState(() => sound = value),
-                    title: const Text('Ses açık'),
-                    subtitle: const Text('Ses sistemi için placeholder.'),
+    return OrnateScaffold(
+      child: Column(
+        children: [
+          const OrnateHeader(title: 'Ayarlar'),
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.only(top: 4, bottom: 16),
+              children: [
+                const SectionPlaque('HESAP'),
+                OrnatePanel(
+                  child: Column(
+                    children: [
+                      Row(
+                        children: [
+                          const Expanded(
+                            child: Text(
+                              'Hesap Bağla',
+                              style: AppTextStyles.bodyStrong,
+                            ),
+                          ),
+                          DarkButton(
+                            label: 'GOOGLE PLAY',
+                            height: 32,
+                            onPressed: () => _soon(context),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      const _InfoRow('Kullanıcı ID', '#ASINA-4587'),
+                      const _InfoRow('Sunucu', 'TR-1'),
+                    ],
                   ),
-                  SwitchListTile(
-                    value: notifications,
-                    onChanged: (value) => setState(() => notifications = value),
-                    title: const Text('Bildirimler'),
-                    subtitle: const Text(
-                      'İleride yerel bildirimlere bağlanacak.',
-                    ),
+                ),
+                const SectionPlaque('OYUN'),
+                OrnatePanel(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 4,
                   ),
-                ],
-              ),
+                  child: Column(
+                    children: [
+                      _Toggle(
+                        label: 'Müzik',
+                        value: _music,
+                        onChanged: (v) => setState(() => _music = v),
+                      ),
+                      _Toggle(
+                        label: 'Ses Efektleri',
+                        value: _sfx,
+                        onChanged: (v) => setState(() => _sfx = v),
+                      ),
+                      _Toggle(
+                        label: 'Bildirimler',
+                        value: _notifications,
+                        onChanged: (v) => setState(() => _notifications = v),
+                      ),
+                      _Toggle(
+                        label: 'Güç Tasarrufu Modu',
+                        value: _powerSave,
+                        onChanged: (v) => setState(() => _powerSave = v),
+                      ),
+                    ],
+                  ),
+                ),
+                const SectionPlaque('DİL'),
+                const OrnatePanel(
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text('Dil', style: AppTextStyles.bodyStrong),
+                      ),
+                      Text('Türkçe  ▾', style: AppTextStyles.value),
+                    ],
+                  ),
+                ),
+                const SectionPlaque('DİĞER'),
+                OrnatePanel(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
+                  child: Column(
+                    children: [
+                      for (final label in const [
+                        'Destek',
+                        'Hediye Kodu',
+                        'Gizlilik Politikası',
+                        'Hizmet Şartları',
+                      ])
+                        InkWell(
+                          onTap: () => _soon(context),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    label,
+                                    style: AppTextStyles.body,
+                                  ),
+                                ),
+                                Text(
+                                  '›',
+                                  style: AppTextStyles.value.copyWith(
+                                    fontSize: 18,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ],
             ),
-            AshinaCard(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text('Hakkında', style: AppTextStyles.section),
-                  const Text(
-                    'Ashina: Bozkırda Bir Ömür playable foundation. '
-                    'Binary asset içermez.',
-                    style: AppTextStyles.body,
-                  ),
-                  const SizedBox(height: 12),
-                  AshinaButton(
-                    label: 'Oyunu sıfırla',
-                    icon: Icons.restart_alt_rounded,
-                    onPressed: controller.resetGame,
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
+    );
+  }
+
+  static void _soon(BuildContext context) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Bu özellik yakında geliyor.')),
+    );
+  }
+}
+
+class _InfoRow extends StatelessWidget {
+  const _InfoRow(this.label, this.value);
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 3),
+      child: Row(
+        children: [
+          Expanded(child: Text(label, style: AppTextStyles.body)),
+          Text(value, style: AppTextStyles.meta),
+        ],
+      ),
+    );
+  }
+}
+
+class _Toggle extends StatelessWidget {
+  const _Toggle({
+    required this.label,
+    required this.value,
+    required this.onChanged,
+  });
+
+  final String label;
+  final bool value;
+  final ValueChanged<bool> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(child: Text(label, style: AppTextStyles.bodyStrong)),
+        Switch(
+          value: value,
+          onChanged: onChanged,
+          activeTrackColor: AppColors.gold,
+          thumbColor: const WidgetStatePropertyAll(AppColors.parchment),
+        ),
+      ],
     );
   }
 }

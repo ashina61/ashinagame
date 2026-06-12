@@ -18,6 +18,13 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  fonts:
+    - family: Cinzel
+      fonts:
+        - asset: assets/fonts/Cinzel.ttf
+    - family: Alegreya
+      fonts:
+        - asset: assets/fonts/Alegreya.ttf
   assets:
     - assets/images/characters/
     - assets/images/backgrounds/
