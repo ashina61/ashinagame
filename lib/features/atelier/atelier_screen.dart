@@ -19,15 +19,15 @@ class _AtelierScreenState extends State<AtelierScreen> {
     (GameAssets.iconItemSword, 'Demir Kılıç', '30 dk.'),
     (GameAssets.iconItemArmor, 'Deri Zırh', '45 dk.'),
     (GameAssets.iconItemBow, 'Kompozit Yay', '60 dk.'),
-    (GameAssets.iconMedallionHorse, 'Ata Koşum', '90 dk.'),
-    (GameAssets.iconItemLeather, 'Kürk Pelerin', '45 dk.'),
-    (GameAssets.iconItemShield, 'Ahşap Kalkan', '20 dk.'),
+    (GameAssets.iconItemHorse, 'Ata Koşum', '90 dk.'),
+    (GameAssets.iconItemFur, 'Kürk Pelerin', '45 dk.'),
+    (GameAssets.iconItemShieldWood, 'Ahşap Kalkan', '20 dk.'),
   ];
 
   static const _costs = [
     (GameAssets.iconItemWood, 'Odun', '320'),
     (GameAssets.iconItemLeather, 'Deri', '180'),
-    (GameAssets.iconIronOre, 'Demir', '210'),
+    (GameAssets.iconIronIngots, 'Demir', '210'),
     (GameAssets.iconItemThread, 'İplik', '140'),
   ];
 

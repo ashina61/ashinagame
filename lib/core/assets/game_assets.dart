@@ -91,4 +91,15 @@ class GameAssets {
   static const uiPanelStrip = 'assets/images/ui/panel_strip.png';
   static const uiToggleOn = 'assets/images/ui/toggle_on.png';
   static const uiToggleOff = 'assets/images/ui/toggle_off.png';
+  static const iconItemHorse = 'assets/images/icons/item_horse.png';
+  static const iconItemFur = 'assets/images/icons/item_fur.png';
+  static const iconItemShieldWood = 'assets/images/icons/item_shield_wood.png';
+  static const iconIronIngots = 'assets/images/icons/iron_ingots.png';
+  static const portraitTugan = 'assets/images/characters/portrait_tugan.png';
+  static const uiPanelEmblemStrip = 'assets/images/ui/panel_emblem_strip.png';
+  static const uiPanelGoldEdge = 'assets/images/ui/panel_gold_edge.png';
+  static const uiPanelPlain = 'assets/images/ui/panel_plain.png';
+  static const uiButtonGoldOrnate = 'assets/images/ui/button_gold_ornate.png';
+  static const bgSceneCampNight =
+      'assets/images/backgrounds/scene_camp_night.png';
 }

@@ -33,7 +33,7 @@ class _MarketScreenState extends State<MarketScreen> {
     (GameAssets.iconItemLeather, 'Deri', 22, 40, 3),
     (GameAssets.iconItemWool, 'Yün', 24, 35, 1),
     (GameAssets.iconItemSalt, 'Tuz', 30, 25, 2),
-    (GameAssets.iconMedallionHorse, 'At', 350, 3, 5),
+    (GameAssets.iconItemHorse, 'At', 350, 3, 5),
     (GameAssets.iconItemBow, 'Kompozit Yay', 280, 2, 4),
   ];
 

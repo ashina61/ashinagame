@@ -131,24 +131,26 @@ class ResourceBar extends StatelessWidget {
 }
 
 /// Leather panel with thin gold border — the workhorse card of the atlas.
+/// An optional [backgroundAsset] scene is shown behind a dark overlay.
 class OrnatePanel extends StatelessWidget {
   const OrnatePanel({
     required this.child,
     this.padding = const EdgeInsets.all(12),
     this.margin = const EdgeInsets.fromLTRB(12, 0, 12, 10),
+    this.backgroundAsset,
     super.key,
   });
 
   final Widget child;
   final EdgeInsetsGeometry padding;
   final EdgeInsetsGeometry margin;
+  final String? backgroundAsset;
 
   @override
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
       margin: margin,
-      padding: padding,
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           begin: Alignment.topCenter,
@@ -165,7 +167,23 @@ class OrnatePanel extends StatelessWidget {
               color: Colors.black54, blurRadius: 10, offset: Offset(0, 5)),
         ],
       ),
-      child: child,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(11),
+        child: Stack(
+          children: [
+            if (backgroundAsset != null)
+              Positioned.fill(
+                child: Image.asset(
+                  backgroundAsset!,
+                  fit: BoxFit.cover,
+                  color: Colors.black.withValues(alpha: 0.45),
+                  colorBlendMode: BlendMode.darken,
+                ),
+              ),
+            Padding(padding: padding, child: child),
+          ],
+        ),
+      ),
     );
   }
 }

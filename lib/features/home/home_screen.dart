@@ -22,7 +22,7 @@ class HomeScreen extends StatelessWidget {
               (GameAssets.iconCoinGold, '7.101'),
               (GameAssets.iconFood, '5.740'),
               (GameAssets.iconSunEmblem, '120'),
-              (GameAssets.iconIronOre, '11.040'),
+              (GameAssets.iconIronIngots, '11.040'),
               (GameAssets.iconCoinsMedallion, '813'),
             ],
           ),

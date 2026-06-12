@@ -26,6 +26,7 @@ class BoyScreen extends StatelessWidget {
               padding: const EdgeInsets.only(top: 4, bottom: 16),
               children: [
                 OrnatePanel(
+                  backgroundAsset: GameAssets.bgSceneCampNight,
                   child: Row(
                     children: [
                       Image.asset(GameAssets.uiBannerWolf, height: 130),
