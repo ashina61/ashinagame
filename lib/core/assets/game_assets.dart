@@ -62,4 +62,15 @@ class GameAssets {
   static const uiCompassRose = 'assets/images/ui/compass_rose.png';
   static const uiFramePortraitRound =
       'assets/images/ui/frame_portrait_round.png';
+  static const uiButtonGoldPlaque = 'assets/images/ui/button_gold_plaque.png';
+  static const uiBadgeShieldBlue = 'assets/images/ui/badge_shield_blue.png';
+  static const uiCompassRoseNsew = 'assets/images/ui/compass_rose_nsew.png';
+  static const uiBannerWolfTall = 'assets/images/ui/banner_wolf_tall.png';
+  static const iconSwordsCrossedGold =
+      'assets/images/icons/swords_crossed_gold.png';
+  static const iconChestLarge = 'assets/images/icons/chest_large.png';
+  static const iconCoinGold = 'assets/images/icons/coin_gold.png';
+  static const iconIronOre = 'assets/images/icons/iron_ore.png';
+  static const iconItemWood = 'assets/images/icons/item_wood.png';
+  static const iconItemLeather = 'assets/images/icons/item_leather.png';
 }
