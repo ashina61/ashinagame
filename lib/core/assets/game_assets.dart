@@ -102,4 +102,14 @@ class GameAssets {
   static const uiButtonGoldOrnate = 'assets/images/ui/button_gold_ornate.png';
   static const bgSceneCampNight =
       'assets/images/backgrounds/scene_camp_night.png';
+  static const iconEnergyBolt = 'assets/images/icons/energy_bolt.png';
+  static const iconHeartMedallion = 'assets/images/icons/heart_medallion.png';
+  static const iconSleepMedallion = 'assets/images/icons/sleep_medallion.png';
+  static const iconStarMedallion = 'assets/images/icons/star_medallion.png';
+  static const iconCompassStar = 'assets/images/icons/compass_star.png';
+  static const sceneFarm = 'assets/images/characters/scene_farm.png';
+  static const sceneCraft = 'assets/images/characters/scene_craft.png';
+  static const sceneMercenary = 'assets/images/characters/scene_mercenary.png';
+  static const sceneWoodcut = 'assets/images/characters/scene_woodcut.png';
+  static const sceneArchery = 'assets/images/characters/scene_archery.png';
 }

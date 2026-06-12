@@ -21,7 +21,7 @@ class HomeScreen extends StatelessWidget {
             entries: [
               (GameAssets.iconCoinGold, '7.101'),
               (GameAssets.iconFood, '5.740'),
-              (GameAssets.iconSunEmblem, '120'),
+              (GameAssets.iconEnergyBolt, '120'),
               (GameAssets.iconIronIngots, '11.040'),
               (GameAssets.iconCoinsMedallion, '813'),
             ],
@@ -139,9 +139,24 @@ class _CharacterCard extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 8),
-                const _StatRow('Sağlık', 82, 100),
-                const _StatRow('Enerji', 70, 100),
-                const _StatRow('Yorgunluk', 35, 100),
+                const _StatRow(
+                  GameAssets.iconHeartMedallion,
+                  'Sağlık',
+                  82,
+                  100,
+                ),
+                const _StatRow(
+                  GameAssets.iconEnergyBolt,
+                  'Enerji',
+                  70,
+                  100,
+                ),
+                const _StatRow(
+                  GameAssets.iconSleepMedallion,
+                  'Yorgunluk',
+                  35,
+                  100,
+                ),
                 const SizedBox(height: 4),
                 Row(
                   children: [
@@ -172,8 +187,9 @@ class _CharacterCard extends StatelessWidget {
 }
 
 class _StatRow extends StatelessWidget {
-  const _StatRow(this.label, this.value, this.max);
+  const _StatRow(this.icon, this.label, this.value, this.max);
 
+  final String icon;
   final String label;
   final int value;
   final int max;
@@ -184,8 +200,10 @@ class _StatRow extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 6),
       child: Row(
         children: [
+          Image.asset(icon, width: 16, height: 16),
+          const SizedBox(width: 4),
           SizedBox(
-            width: 72,
+            width: 64,
             child:
                 Text(label, style: AppTextStyles.body.copyWith(fontSize: 13)),
           ),
@@ -232,7 +250,7 @@ class _DailyGoalCard extends StatelessWidget {
               const SizedBox(width: 2),
               Text('200', style: AppTextStyles.value.copyWith(fontSize: 13)),
               const SizedBox(width: 8),
-              Image.asset(GameAssets.iconSunEmblem, width: 16, height: 16),
+              Image.asset(GameAssets.iconStarMedallion, width: 16, height: 16),
               const SizedBox(width: 2),
               Text('50', style: AppTextStyles.value.copyWith(fontSize: 13)),
             ],
@@ -260,7 +278,15 @@ class _SuggestedMoveCard extends StatelessWidget {
           const SizedBox(height: 6),
           Row(
             children: [
-              Image.asset(GameAssets.navAtelier, width: 40, height: 40),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: Image.asset(
+                  GameAssets.sceneCraft,
+                  width: 56,
+                  height: 42,
+                  fit: BoxFit.cover,
+                ),
+              ),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
@@ -280,10 +306,10 @@ class _DailyJobsRow extends StatelessWidget {
   const _DailyJobsRow();
 
   static const _jobs = [
-    (GameAssets.iconItemWood, 'Odun Kes'),
-    (GameAssets.iconItemWheat, 'Tarlada Çalış'),
+    (GameAssets.sceneWoodcut, 'Odun Kes'),
+    (GameAssets.sceneFarm, 'Tarlada Çalış'),
     (GameAssets.sceneHunt, 'Avlan'),
-    (GameAssets.iconPopulationMedallion, 'Paralı Asker Topla'),
+    (GameAssets.sceneMercenary, 'Paralı Asker Topla'),
   ];
 
   @override
