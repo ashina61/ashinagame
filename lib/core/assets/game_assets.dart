@@ -52,4 +52,14 @@ class GameAssets {
   static const uiPanelPillGold = 'assets/images/ui/panel_pill_gold.png';
   static const uiButtonBronzeSlim = 'assets/images/ui/button_bronze_slim.png';
   static const uiBarSlots = 'assets/images/ui/bar_slots.png';
+  static const iconLeather = 'assets/images/icons/leather.png';
+  static const iconScrollMedallion = 'assets/images/icons/scroll_medallion.png';
+  static const iconYurtMedallion = 'assets/images/icons/yurt_medallion.png';
+  static const iconGearEmblem = 'assets/images/icons/gear_emblem.png';
+  static const iconSunEmblem = 'assets/images/icons/sun_emblem.png';
+  static const iconPopulationMedallion =
+      'assets/images/icons/population_medallion.png';
+  static const uiCompassRose = 'assets/images/ui/compass_rose.png';
+  static const uiFramePortraitRound =
+      'assets/images/ui/frame_portrait_round.png';
 }
