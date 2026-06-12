@@ -19,10 +19,35 @@ class _ExpeditionsScreenState extends State<ExpeditionsScreen> {
   int _tab = 0;
 
   static const _nodes = [
-    (1, 'Sınır Karakolu', 'Tamamlandı', NodeState.done),
-    (2, 'Bozkır Geçidi', 'Mevcut', NodeState.available),
-    (3, 'Yeşit Kalesi', 'Tehlikeli', NodeState.dangerous),
-    (4, 'Cin Hududu', 'Kilitli', NodeState.locked),
+    (
+      GameAssets.uiBadgeBanner1,
+      GameAssets.iconFortOutpost,
+      'Sınır Karakolu',
+      'Tamamlandı',
+      NodeState.done,
+    ),
+    (
+      GameAssets.uiBadgeBanner2,
+      GameAssets.iconFortStone,
+      'Bozkır Geçidi',
+      'Mevcut',
+      NodeState.available,
+    ),
+    (
+      // TODO: replace with a baked "3" banner when the asset arrives.
+      GameAssets.uiBadgeShieldBlue,
+      GameAssets.iconFortRed,
+      'Yeşit Kalesi',
+      'Tehlikeli',
+      NodeState.dangerous,
+    ),
+    (
+      GameAssets.uiBadgeBanner4,
+      GameAssets.iconFortDark,
+      'Cin Hududu',
+      'Kilitli',
+      NodeState.locked,
+    ),
   ];
 
   @override
@@ -41,14 +66,17 @@ class _ExpeditionsScreenState extends State<ExpeditionsScreen> {
               child: Stack(
                 children: [
                   ListView(
-                    padding: const EdgeInsets.only(top: 8, bottom: 16),
+                    padding: const EdgeInsets.only(top: 4, bottom: 16),
                     children: [
-                      for (final (number, name, status, state) in _nodes)
+                      for (var i = 0; i < _nodes.length; i++)
                         _MapNode(
-                          number: number,
-                          name: name,
-                          status: status,
-                          state: state,
+                          badge: _nodes[i].$1,
+                          fort: _nodes[i].$2,
+                          name: _nodes[i].$3,
+                          status: _nodes[i].$4,
+                          state: _nodes[i].$5,
+                          numberOverlay: i == 2 ? '3' : null,
+                          showRoute: i < _nodes.length - 1,
                         ),
                     ],
                   ),
@@ -56,8 +84,11 @@ class _ExpeditionsScreenState extends State<ExpeditionsScreen> {
                     left: 14,
                     bottom: 10,
                     child: Opacity(
-                      opacity: 0.85,
-                      child: Image.asset(GameAssets.uiCompassRose, width: 64),
+                      opacity: 0.9,
+                      child: Image.asset(
+                        GameAssets.uiCompassRoseNsew,
+                        width: 70,
+                      ),
                     ),
                   ),
                 ],
@@ -84,16 +115,22 @@ class _ExpeditionsScreenState extends State<ExpeditionsScreen> {
 
 class _MapNode extends StatelessWidget {
   const _MapNode({
-    required this.number,
+    required this.badge,
+    required this.fort,
     required this.name,
     required this.status,
     required this.state,
+    this.numberOverlay,
+    this.showRoute = false,
   });
 
-  final int number;
+  final String badge;
+  final String fort;
   final String name;
   final String status;
   final NodeState state;
+  final String? numberOverlay;
+  final bool showRoute;
 
   Color get _statusColor => switch (state) {
         NodeState.done => AppColors.success,
@@ -105,68 +142,81 @@ class _MapNode extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 0, 24, 6),
-      child: Row(
+      padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
+      child: Column(
         children: [
-          Column(
+          Row(
             children: [
               SizedBox(
-                width: 46,
-                height: 70,
+                width: 52,
+                height: 76,
                 child: Stack(
                   alignment: Alignment.center,
                   children: [
-                    Image.asset(
-                      GameAssets.uiBadgeShieldBlue,
-                      fit: BoxFit.contain,
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 14),
-                      child: Text(
-                        '$number',
-                        style: AppTextStyles.title.copyWith(
-                          fontSize: 19,
-                          color: Colors.white,
+                    Image.asset(badge, fit: BoxFit.contain),
+                    if (numberOverlay != null)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: Text(
+                          numberOverlay!,
+                          style: AppTextStyles.title.copyWith(
+                            fontSize: 20,
+                            color: AppColors.parchment,
+                          ),
                         ),
                       ),
-                    ),
                   ],
                 ),
               ),
-              if (number != 4)
-                Container(
-                  width: 2,
-                  height: 26,
-                  color: AppColors.gold.withValues(alpha: 0.5),
+              const SizedBox(width: 12),
+              Expanded(
+                child: OrnatePanel(
+                  margin: EdgeInsets.zero,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
+                  child: Row(
+                    children: [
+                      Image.asset(fort, height: 54),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              name.toUpperCase(),
+                              style: AppTextStyles.section.copyWith(
+                                color: AppColors.parchment,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              status,
+                              style: AppTextStyles.meta.copyWith(
+                                color: _statusColor,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      if (state == NodeState.locked)
+                        Image.asset(GameAssets.uiBadgeLocked, height: 30),
+                    ],
+                  ),
                 ),
+              ),
             ],
           ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: OrnatePanel(
-              margin: EdgeInsets.zero,
-              padding: const EdgeInsets.symmetric(
-                horizontal: 12,
-                vertical: 10,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    name.toUpperCase(),
-                    style: AppTextStyles.section.copyWith(
-                      color: AppColors.parchment,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    state == NodeState.locked ? '$status  🔒' : status,
-                    style: AppTextStyles.meta.copyWith(color: _statusColor),
-                  ),
-                ],
+          if (showRoute)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 2),
+              child: Image.asset(
+                GameAssets.uiMapRoute,
+                height: 30,
+                fit: BoxFit.contain,
               ),
             ),
-          ),
         ],
       ),
     );

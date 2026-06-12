@@ -156,4 +156,12 @@ class GameAssets {
   static const sceneGathering2 =
       'assets/images/characters/scene_gathering2.png';
   static const sceneCraft2 = 'assets/images/characters/scene_craft2.png';
+  static const uiBadgeBanner2 = 'assets/images/ui/badge_banner_2.png';
+  static const uiBadgeBanner4 = 'assets/images/ui/badge_banner_4.png';
+  static const uiBadgeLocked = 'assets/images/ui/badge_locked.png';
+  static const uiMapRoute = 'assets/images/ui/map_route.png';
+  static const iconFortOutpost = 'assets/images/icons/fort_outpost.png';
+  static const iconFortStone = 'assets/images/icons/fort_stone.png';
+  static const iconFortRed = 'assets/images/icons/fort_red.png';
+  static const iconFortDark = 'assets/images/icons/fort_dark.png';
 }
