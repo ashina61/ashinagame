@@ -32,4 +32,14 @@ class GameAssets {
   static const iconSwordsCrossed = 'assets/images/icons/swords_crossed.png';
   static const iconCoinsGold = 'assets/images/icons/coins_gold.png';
   static const iconChest = 'assets/images/icons/chest.png';
+  static const navHome = 'assets/images/icons/nav_home.png';
+  static const navBoy = 'assets/images/icons/nav_boy.png';
+  static const navAtelier = 'assets/images/icons/nav_atelier.png';
+  static const navSettings = 'assets/images/icons/nav_settings.png';
+  static const uiEmblemWarRound = 'assets/images/ui/emblem_war_round.png';
+  static const uiPanelPill = 'assets/images/ui/panel_pill.png';
+  static const uiButtonBronze = 'assets/images/ui/button_bronze.png';
+  static const uiPanelAnnouncement = 'assets/images/ui/panel_announcement.png';
+  static const uiPanelTitleWide = 'assets/images/ui/panel_title_wide.png';
+  static const uiPanelField = 'assets/images/ui/panel_field.png';
 }
