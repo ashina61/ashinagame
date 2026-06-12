@@ -1,11 +1,23 @@
 import 'package:flutter/material.dart';
 
-import '../../app/theme/app_colors.dart';
 import '../../app/theme/app_text_styles.dart';
 import '../../core/assets/game_assets.dart';
+import '../../core/utils/resource_visuals.dart';
 import '../../core/widgets/ornate.dart';
+import '../../game/data/craft_recipes.dart';
+import '../../game/models/craft.dart';
+import '../../game/models/resource.dart';
+import '../../game/state/game_scope.dart';
+import '../atelier/atelier_screen.dart';
 
-enum ItemKind { resource, equipment, other }
+class _Entry {
+  const _Entry(this.asset, this.label, this.count, this.kind);
+
+  final String asset;
+  final String label;
+  final int count;
+  final CraftKind? kind; // null marks raw resources
+}
 
 class InventoryScreen extends StatefulWidget {
   const InventoryScreen({super.key});
@@ -17,36 +29,45 @@ class InventoryScreen extends StatefulWidget {
 class _InventoryScreenState extends State<InventoryScreen> {
   int _tab = 0;
 
-  static const _items = [
-    (GameAssets.iconItemWood, 'Odun', 320, ItemKind.resource),
-    (GameAssets.iconItemLeather, 'Deri', 180, ItemKind.resource),
-    (GameAssets.iconIronOre, 'Demir Cevheri', 210, ItemKind.resource),
-    (GameAssets.iconItemThread, 'İplik', 140, ItemKind.resource),
-    (GameAssets.iconItemWheat, 'Buğday', 85, ItemKind.resource),
-    (GameAssets.iconItemStone, 'Taş', 60, ItemKind.resource),
-    (GameAssets.iconItemFur, 'Kürk', 40, ItemKind.resource),
-    (GameAssets.iconItemWool, 'Yün', 35, ItemKind.resource),
-    (GameAssets.iconItemSalt, 'Tuz', 25, ItemKind.resource),
-    (GameAssets.iconItemPotion, 'İksir', 12, ItemKind.other),
-    (GameAssets.iconItemHorse, 'At', 3, ItemKind.other),
-    (GameAssets.iconItemBow, 'Yay', 1, ItemKind.equipment),
-    (GameAssets.iconItemArmor, 'Zırh', 1, ItemKind.equipment),
-    (GameAssets.iconItemSword, 'Kılıç', 1, ItemKind.equipment),
-    (GameAssets.iconItemShield, 'Kalkan', 1, ItemKind.equipment),
-    (GameAssets.iconItemHelmet, 'Miğfer', 1, ItemKind.equipment),
+  static const _carriedResources = [
+    ResourceType.gold,
+    ResourceType.food,
+    ResourceType.wood,
+    ResourceType.leather,
+    ResourceType.horse,
   ];
-
-  List<(String, String, int, ItemKind)> get _filtered {
-    return switch (_tab) {
-      1 => _items.where((i) => i.$4 == ItemKind.resource).toList(),
-      2 => _items.where((i) => i.$4 == ItemKind.equipment).toList(),
-      3 => _items.where((i) => i.$4 == ItemKind.other).toList(),
-      _ => _items,
-    };
-  }
 
   @override
   Widget build(BuildContext context) {
+    final state = GameScope.of(context).state;
+
+    final entries = <_Entry>[
+      for (final type in _carriedResources)
+        _Entry(
+          ResourceVisuals.icon(type),
+          type.label,
+          state.resource(type),
+          null,
+        ),
+      for (final recipe in CraftRecipes.all)
+        if (state.craftedCount(recipe.id) > 0)
+          _Entry(
+            craftIcon(recipe.id),
+            recipe.name,
+            state.craftedCount(recipe.id),
+            recipe.kind,
+          ),
+    ];
+
+    final filtered = switch (_tab) {
+      1 => entries.where((e) => e.kind == null).toList(),
+      2 => entries.where((e) => e.kind == CraftKind.equipment).toList(),
+      3 => entries.where((e) => e.kind == CraftKind.other).toList(),
+      _ => entries,
+    };
+
+    final carried = entries.fold(0, (sum, e) => sum + e.count);
+
     return Scaffold(
       body: OrnateScaffold(
         child: Column(
@@ -58,22 +79,34 @@ class _InventoryScreenState extends State<InventoryScreen> {
               onChanged: (value) => setState(() => _tab = value),
             ),
             Expanded(
-              child: GridView.count(
-                padding: const EdgeInsets.fromLTRB(12, 4, 12, 12),
-                crossAxisCount: 4,
-                mainAxisSpacing: 10,
-                crossAxisSpacing: 10,
-                childAspectRatio: 0.74,
-                children: [
-                  for (final (asset, label, count, _) in _filtered)
-                    ItemSlot(
-                      asset: asset,
-                      label: label,
-                      labelAbove: true,
-                      count: '$count',
+              child: filtered.isEmpty
+                  ? Center(
+                      child: OrnatePanel(
+                        child: Text(
+                          _tab == 2
+                              ? 'Henüz ekipman yok. Atölyede üret.'
+                              : 'Bu bölme şimdilik boş.',
+                          style: AppTextStyles.body,
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    )
+                  : GridView.count(
+                      padding: const EdgeInsets.fromLTRB(12, 4, 12, 12),
+                      crossAxisCount: 4,
+                      mainAxisSpacing: 10,
+                      crossAxisSpacing: 10,
+                      childAspectRatio: 0.74,
+                      children: [
+                        for (final entry in filtered)
+                          ItemSlot(
+                            asset: entry.asset,
+                            label: entry.label,
+                            labelAbove: true,
+                            count: '${entry.count}',
+                          ),
+                      ],
                     ),
-                ],
-              ),
             ),
             Container(
               height: 42,
@@ -87,30 +120,9 @@ class _InventoryScreenState extends State<InventoryScreen> {
               ),
               child: Row(
                 children: [
-                  const Text('Kapasite', style: AppTextStyles.section),
+                  const Text('Taşınan', style: AppTextStyles.section),
                   const Spacer(),
-                  const Text('23/60', style: AppTextStyles.value),
-                  const SizedBox(width: 10),
-                  GestureDetector(
-                    onTap: () {},
-                    child: Container(
-                      width: 26,
-                      height: 26,
-                      decoration: BoxDecoration(
-                        color: AppColors.gold,
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      alignment: Alignment.center,
-                      child: const Text(
-                        '+',
-                        style: TextStyle(
-                          color: AppColors.ink,
-                          fontWeight: FontWeight.w900,
-                          fontSize: 18,
-                        ),
-                      ),
-                    ),
-                  ),
+                  Text('$carried birim', style: AppTextStyles.value),
                 ],
               ),
             ),

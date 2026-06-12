@@ -2,11 +2,15 @@ import 'package:flutter/material.dart';
 
 import '../game/state/game_controller.dart';
 import '../game/state/game_scope.dart';
+import '../game/state/game_storage.dart';
 import 'router.dart';
 import 'theme/app_theme.dart';
 
 class AshinaApp extends StatefulWidget {
-  const AshinaApp({super.key});
+  const AshinaApp({this.storage, super.key});
+
+  /// Optional so widget tests can run without platform storage.
+  final GameStorage? storage;
 
   @override
   State<AshinaApp> createState() => _AshinaAppState();
@@ -18,7 +22,10 @@ class _AshinaAppState extends State<AshinaApp> {
   @override
   void initState() {
     super.initState();
-    _controller = GameController.starter();
+    final storage = widget.storage;
+    _controller = storage == null
+        ? GameController.starter()
+        : GameController.restored(storage);
   }
 
   @override

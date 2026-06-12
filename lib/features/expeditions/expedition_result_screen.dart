@@ -1,31 +1,27 @@
 import 'package:flutter/material.dart';
 
+import '../../app/theme/app_colors.dart';
 import '../../app/theme/app_text_styles.dart';
 import '../../core/assets/game_assets.dart';
+import '../../core/utils/formatters.dart';
+import '../../core/utils/resource_visuals.dart';
 import '../../core/widgets/ornate.dart';
+import '../../game/models/expedition.dart';
 
 class ExpeditionResultScreen extends StatelessWidget {
-  const ExpeditionResultScreen({super.key});
+  const ExpeditionResultScreen({required this.outcome, super.key});
 
-  static const _gains = [
-    (GameAssets.iconCoinsGold, '3.000', 'Altın'),
-    (GameAssets.iconScrollMedallion, '700', 'İtibar'),
-    (GameAssets.iconSwordsCrossedGold, '2', 'Klan Puanı'),
-    (GameAssets.iconChestLarge, '1', 'Nadir Sandık'),
-  ];
-
-  static const _details = [
-    ('Süre', '02:15'),
-    ('Yaralılar', '8'),
-    ('Tecrübe', '+150 XP'),
-    ('Kayıplar', '0'),
-    ('Kalan Asker', '30'),
-  ];
+  final ExpeditionOutcome outcome;
 
   @override
   Widget build(BuildContext context) {
+    final gains = outcome.effects.entries.where((e) => e.value > 0).toList();
+    final costs = outcome.effects.entries.where((e) => e.value < 0).toList();
+    final success = outcome.success;
+
     return Scaffold(
       body: OrnateScaffold(
+        backgroundAsset: GameAssets.sceneBattlefieldDusk,
         child: Column(
           children: [
             const OrnateHeader(title: 'Sefer Sonucu', showBack: true),
@@ -39,65 +35,78 @@ class ExpeditionResultScreen extends StatelessWidget {
                   const SizedBox(height: 8),
                   Center(
                     child: Text(
-                      'ZAFER!',
-                      style: AppTextStyles.display.copyWith(fontSize: 34),
+                      success ? 'ZAFER!' : 'BOZGUN!',
+                      style: AppTextStyles.display.copyWith(
+                        fontSize: 34,
+                        color: success ? null : AppColors.danger,
+                      ),
                     ),
                   ),
                   Center(
                     child: Text(
-                      'Sınır Karakolu',
+                      outcome.site.name,
                       style: AppTextStyles.body.copyWith(fontSize: 16),
                     ),
                   ),
                   const SizedBox(height: 6),
-                  const SectionPlaque('KAZANÇLAR'),
+                  SectionPlaque(success ? 'KAZANÇLAR' : 'KAYIPLAR'),
                   OrnatePanel(
-                    child: Row(
-                      children: [
-                        for (final (asset, value, label) in _gains)
-                          Expanded(
-                            child: Column(
-                              children: [
-                                Image.asset(asset, height: 42),
-                                const SizedBox(height: 4),
-                                Text(
-                                  value,
-                                  style: AppTextStyles.value.copyWith(
-                                    fontSize: 16,
-                                  ),
-                                ),
-                                Text(
-                                  label,
-                                  textAlign: TextAlign.center,
-                                  style: AppTextStyles.meta.copyWith(
-                                    fontSize: 11,
-                                  ),
-                                ),
-                              ],
+                    child: gains.isEmpty && costs.isEmpty
+                        ? Center(
+                            child: Text(
+                              'Sefer iz bırakmadan sona erdi.',
+                              style: AppTextStyles.meta.copyWith(fontSize: 14),
                             ),
+                          )
+                        : Row(
+                            children: [
+                              for (final entry in success ? gains : costs)
+                                Expanded(
+                                  child: Column(
+                                    children: [
+                                      Image.asset(
+                                        ResourceVisuals.icon(entry.key),
+                                        height: 42,
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        Formatters.signed(entry.value),
+                                        style: AppTextStyles.value.copyWith(
+                                          fontSize: 16,
+                                          color: entry.value < 0
+                                              ? AppColors.danger
+                                              : null,
+                                        ),
+                                      ),
+                                      Text(
+                                        entry.key.label,
+                                        textAlign: TextAlign.center,
+                                        style: AppTextStyles.meta.copyWith(
+                                          fontSize: 11,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                            ],
                           ),
-                      ],
-                    ),
                   ),
                   const SectionPlaque('SEFER BİLGİSİ'),
                   OrnatePanel(
                     child: Column(
                       children: [
-                        for (final (label, value) in _details)
-                          Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 3),
-                            child: Row(
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    label,
-                                    style: AppTextStyles.body,
-                                  ),
-                                ),
-                                Text(value, style: AppTextStyles.value),
-                              ],
+                        _DetailRow('Hedef', outcome.site.name),
+                        _DetailRow('Tehlike', outcome.site.dangerLabel),
+                        _DetailRow(
+                          'Sonuç',
+                          success ? 'Hedef fethedildi' : 'Geri çekilme',
+                        ),
+                        if (success)
+                          for (final entry in costs)
+                            _DetailRow(
+                              '${entry.key.label} Harcandı',
+                              '${-entry.value}',
                             ),
-                          ),
                       ],
                     ),
                   ),
@@ -115,6 +124,26 @@ class ExpeditionResultScreen extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _DetailRow extends StatelessWidget {
+  const _DetailRow(this.label, this.value);
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 3),
+      child: Row(
+        children: [
+          Expanded(child: Text(label, style: AppTextStyles.body)),
+          Text(value, style: AppTextStyles.value),
+        ],
       ),
     );
   }

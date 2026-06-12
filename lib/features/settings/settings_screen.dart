@@ -4,6 +4,7 @@ import '../../app/theme/app_colors.dart';
 import '../../app/theme/app_text_styles.dart';
 import '../../core/assets/game_assets.dart';
 import '../../core/widgets/ornate.dart';
+import '../../game/state/game_scope.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -87,6 +88,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ],
                   ),
                 ),
+                const SectionPlaque('OYUN VERİSİ'),
+                OrnatePanel(
+                  child: Row(
+                    children: [
+                      const Expanded(
+                        child: Text(
+                          'Obayı baştan kur. Tüm ilerleme silinir.',
+                          style: AppTextStyles.body,
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      DarkButton(
+                        label: 'OYUNU SIFIRLA',
+                        onPressed: () => _confirmReset(context),
+                      ),
+                    ],
+                  ),
+                ),
                 const SectionPlaque('DİĞER'),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -124,6 +143,47 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                 ),
               ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _confirmReset(BuildContext context) {
+    final controller = GameScope.of(context);
+    showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: AppColors.leatherDark,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: BorderSide(color: AppColors.gold.withValues(alpha: 0.5)),
+        ),
+        title: const Text('Oyunu Sıfırla', style: AppTextStyles.title),
+        content: const Text(
+          'Oba ateşi söndürülüp yeni bir ömür başlatılacak. Emin misin?',
+          style: AppTextStyles.body,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text('Vazgeç', style: AppTextStyles.bodyStrong),
+          ),
+          TextButton(
+            onPressed: () {
+              controller.resetGame();
+              Navigator.of(dialogContext).pop();
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content:
+                      Text('Oba ateşi yeniden yakıldı. Yeni ömür başladı.'),
+                ),
+              );
+            },
+            child: Text(
+              'Sıfırla',
+              style: AppTextStyles.bodyStrong.copyWith(color: AppColors.danger),
             ),
           ),
         ],

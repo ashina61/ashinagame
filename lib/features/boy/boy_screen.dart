@@ -4,6 +4,8 @@ import '../../app/theme/app_colors.dart';
 import '../../app/theme/app_text_styles.dart';
 import '../../core/assets/game_assets.dart';
 import '../../core/widgets/ornate.dart';
+import '../../game/models/resource.dart';
+import '../../game/state/game_scope.dart';
 
 class BoyScreen extends StatelessWidget {
   const BoyScreen({super.key});
@@ -17,6 +19,7 @@ class BoyScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final state = GameScope.of(context).state;
     return OrnateScaffold(
       child: Column(
         children: [
@@ -31,16 +34,22 @@ class BoyScreen extends StatelessWidget {
                     children: [
                       Image.asset(GameAssets.uiBannerWolf, height: 130),
                       const SizedBox(width: 14),
-                      const Expanded(
+                      Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('KARA KURTLAR', style: AppTextStyles.title),
-                            SizedBox(height: 8),
-                            _InfoRow('Lider', 'Togan'),
-                            _InfoRow('Üyeler', '44/60'),
-                            _InfoRow('Nüfus', '1.250'),
-                            _InfoRow('Bölge', 'Sınır Karakolu'),
+                            Text(
+                              state.clan.name.toUpperCase(),
+                              style: AppTextStyles.title,
+                            ),
+                            const SizedBox(height: 8),
+                            const _InfoRow('Lider', 'Togan'),
+                            const _InfoRow('Üyeler', '44/60'),
+                            _InfoRow(
+                              'Nüfus',
+                              '${state.resource(ResourceType.population)}',
+                            ),
+                            const _InfoRow('Bölge', 'Sınır Karakolu'),
                           ],
                         ),
                       ),
