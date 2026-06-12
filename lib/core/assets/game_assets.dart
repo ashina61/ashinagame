@@ -134,4 +134,14 @@ class GameAssets {
   static const iconTokenGold = 'assets/images/icons/token_gold.png';
   static const uiProgressBarCompass =
       'assets/images/ui/progress_bar_compass.png';
+  static const uiButtonSefereCik = 'assets/images/ui/button_sefere_cik.png';
+  static const uiButtonDestek = 'assets/images/ui/button_destek.png';
+  static const uiButtonHediyeKodu = 'assets/images/ui/button_hediye_kodu.png';
+  static const uiButtonGizlilik = 'assets/images/ui/button_gizlilik.png';
+  static const uiButtonHizmetSartlari =
+      'assets/images/ui/button_hizmet_sartlari.png';
+  static const uiTabGenelBakis = 'assets/images/ui/tab_genel_bakis.png';
+  static const uiTabUyeler = 'assets/images/ui/tab_uyeler.png';
+  static const uiTabSavaslar = 'assets/images/ui/tab_savaslar.png';
+  static const uiBadgeBanner1 = 'assets/images/ui/badge_banner_1.png';
 }

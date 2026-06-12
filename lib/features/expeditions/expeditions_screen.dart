@@ -65,8 +65,9 @@ class _ExpeditionsScreenState extends State<ExpeditionsScreen> {
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(40, 4, 40, 12),
-              child: GoldButton(
-                label: 'SEFERE ÇIK',
+              child: ImageButton(
+                asset: GameAssets.uiButtonSefereCik,
+                height: 56,
                 onPressed: () => Navigator.of(context).push(
                   MaterialPageRoute<void>(
                     builder: (context) => const ExpeditionResultScreen(),

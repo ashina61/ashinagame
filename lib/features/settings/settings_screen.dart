@@ -95,39 +95,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                 ),
                 const SectionPlaque('DİĞER'),
-                OrnatePanel(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
-                  ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
                   child: Column(
                     children: [
-                      for (final label in const [
-                        'Destek',
-                        'Hediye Kodu',
-                        'Gizlilik Politikası',
-                        'Hizmet Şartları',
+                      for (final asset in const [
+                        GameAssets.uiButtonDestek,
+                        GameAssets.uiButtonHediyeKodu,
+                        GameAssets.uiButtonGizlilik,
+                        GameAssets.uiButtonHizmetSartlari,
                       ])
-                        InkWell(
-                          onTap: () => _soon(context),
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 8),
-                            child: Row(
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    label,
-                                    style: AppTextStyles.body,
-                                  ),
-                                ),
-                                Text(
-                                  '›',
-                                  style: AppTextStyles.value.copyWith(
-                                    fontSize: 18,
-                                  ),
-                                ),
-                              ],
-                            ),
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 8),
+                          child: ImageButton(
+                            asset: asset,
+                            height: 46,
+                            onPressed: () => _soon(context),
                           ),
                         ),
                     ],
