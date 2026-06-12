@@ -10,6 +10,8 @@ class ResourceVisuals {
         ResourceType.food => GameAssets.iconFood,
         ResourceType.wood => GameAssets.iconItemWood,
         ResourceType.leather => GameAssets.iconItemLeather,
+        ResourceType.stone => GameAssets.iconItemStone,
+        ResourceType.iron => GameAssets.iconItemStone,
         ResourceType.horse => GameAssets.iconItemHorse,
         ResourceType.reputation => GameAssets.iconScrollMedallion,
         ResourceType.morale => GameAssets.iconMoraleEmblem,

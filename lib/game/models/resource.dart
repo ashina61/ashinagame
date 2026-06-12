@@ -3,6 +3,8 @@ enum ResourceType {
   food('Erzak'),
   wood('Odun'),
   leather('Deri'),
+  stone('Taş'),
+  iron('Demir'),
   horse('At'),
   reputation('İtibar'),
   morale('Moral'),

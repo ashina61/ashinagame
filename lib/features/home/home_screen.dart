@@ -11,7 +11,6 @@ import '../../game/models/event_choice.dart';
 import '../../game/models/resource.dart';
 import '../../game/state/game_controller.dart';
 import '../../game/state/game_scope.dart';
-import '../../game/state/game_state.dart';
 import '../character/character_screen.dart';
 import '../inventory/inventory_screen.dart';
 import '../market/market_screen.dart';
@@ -48,6 +47,8 @@ class HomeScreen extends StatelessWidget {
               padding: const EdgeInsets.only(top: 6, bottom: 16),
               children: [
                 const _CharacterCard(),
+                const SectionPlaque('MANEVİ DENGE'),
+                const _FaithBalancePanel(),
                 if (state.currentEvent != null) ...[
                   const SectionPlaque('OBA OLAYI'),
                   const _EventPanel(),
@@ -196,7 +197,7 @@ class _DayStrip extends StatelessWidget {
                 Image.asset(GameAssets.iconEnergyBolt, width: 16, height: 16),
                 const SizedBox(width: 4),
                 Text(
-                  '${state.energy}/${GameState.maxEnergy}',
+                  'Aksiyon: ${state.dailyActionPoints}/${state.maxDailyActionPoints}',
                   style: AppTextStyles.value.copyWith(fontSize: 14),
                 ),
               ],
@@ -298,13 +299,13 @@ class _CharacterCard extends StatelessWidget {
                   ),
                   _StatRow(
                     GameAssets.iconEnergyBolt,
-                    'Enerji',
-                    state.energy,
-                    GameState.maxEnergy,
+                    'Sağlık',
+                    profile.health,
+                    100,
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    state.day.season.atmosphere,
+                    'Enerji ${profile.energy}/100 • Yorgunluk ${profile.fatigue}/100 — ${state.day.season.atmosphere}',
                     style: AppTextStyles.meta.copyWith(fontSize: 12),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
@@ -399,9 +400,9 @@ class _EventChoiceButton extends StatelessWidget {
     final controller = GameScope.of(context);
     return GestureDetector(
       onTap: () {
-        controller.chooseEvent(choice);
+        final ok = controller.chooseEvent(choice);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${choice.label}: ${choice.description}')),
+          SnackBar(content: Text(ok ? '${choice.label}: ${choice.description}' : 'Bu karar için aksiyon hakkı yok.')),
         );
       },
       child: Container(
@@ -549,31 +550,52 @@ class _DailyJobsRow extends StatelessWidget {
       GameAssets.sceneWoodcut2,
       GameActions.wood,
       'Odun Kes',
-      {ResourceType.wood: 8, ResourceType.food: -2},
+      {ResourceType.wood: 15, ResourceType.food: -2},
+      10,
+      8,
+      12,
     ),
     (
       GameAssets.sceneFarm3,
       GameActions.farm,
       'Tarlada Çalış',
-      {ResourceType.food: 10},
+      {ResourceType.food: 12},
+      8,
+      6,
+      10,
     ),
     (
       GameAssets.sceneHunt2,
       GameActions.hunt,
       'Avlan',
-      {ResourceType.food: 12, ResourceType.leather: 2},
+      {ResourceType.food: 20, ResourceType.leather: 2},
+      15,
+      10,
+      18,
     ),
     (
       GameAssets.sceneRiders,
-      GameActions.mercenary,
-      'Paralı Asker Topla',
-      {ResourceType.reputation: 2, ResourceType.food: -5, ResourceType.gold: 6},
+      GameActions.training,
+      'Eğitim Yap',
+      {ResourceType.reputation: 2, ResourceType.food: -5},
+      12,
+      9,
+      16,
+    ),
+    (
+      GameAssets.bgSceneCampNight,
+      GameActions.rest,
+      'Dinlen',
+      <ResourceType, int>{},
+      0,
+      0,
+      5,
     ),
   ];
-
   @override
   Widget build(BuildContext context) {
     final controller = GameScope.of(context);
+    final state = controller.state;
     return SizedBox(
       height: 160,
       child: ListView.separated(
@@ -582,17 +604,25 @@ class _DailyJobsRow extends StatelessWidget {
         itemCount: _jobs.length,
         separatorBuilder: (context, index) => const SizedBox(width: 8),
         itemBuilder: (context, index) {
-          final (asset, actionId, label, effects) = _jobs[index];
+          final (asset, actionId, label, effects, energyCost, fatigueGain, xp) = _jobs[index];
           return GestureDetector(
             onTap: () {
-              final done =
-                  controller.performCampAction(actionId, label, effects);
+              final done = actionId == GameActions.rest
+                  ? controller.rest()
+                  : controller.performCampAction(
+                      actionId,
+                      label,
+                      effects,
+                      energyCost: energyCost,
+                      fatigueGain: fatigueGain,
+                      xp: xp,
+                    );
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(
                     done
                         ? '$label: ${Formatters.resourceDelta(effects)}'
-                        : 'Enerji tükendi. Günü bitirerek dinlen.',
+                        : state.dailyActionPoints <= 0 ? 'Aksiyon hakkı bitti. Günü bitir.' : 'Aksiyon yapılamadı.',
                   ),
                   duration: const Duration(seconds: 2),
                 ),
@@ -619,13 +649,13 @@ class _DailyJobsRow extends StatelessWidget {
                     style: AppTextStyles.bodyStrong.copyWith(fontSize: 11),
                   ),
                   Text(
-                    '⚡${GameController.campActionCost} • '
+                    'AP ${GameController.campActionCost} • '
                     '${Formatters.resourceDelta(effects)}',
                     textAlign: TextAlign.center,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: AppTextStyles.meta.copyWith(
-                      color: AppColors.goldBright,
+                      color: state.dailyActionPoints > 0 ? AppColors.goldBright : AppColors.stone,
                       fontSize: 9,
                     ),
                   ),
@@ -634,6 +664,80 @@ class _DailyJobsRow extends StatelessWidget {
             ),
           );
         },
+      ),
+    );
+  }
+}
+
+
+class _FaithBalancePanel extends StatelessWidget {
+  const _FaithBalancePanel();
+
+  @override
+  Widget build(BuildContext context) {
+    final controller = GameScope.of(context);
+    final state = controller.state;
+    final faith = state.faithState;
+    return OrnatePanel(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(child: _FaithValue('Kut', faith.kut)),
+              Expanded(child: _FaithValue('Töre', faith.tore)),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Row(
+            children: [
+              Expanded(child: _FaithValue('İnanç', faith.faith)),
+              Expanded(child: _FaithValue('Atalar', faith.ancestorHonor)),
+            ],
+          ),
+          if (faith.hasOmen) ...[
+            const SizedBox(height: 8),
+            Text('Alamet: ${faith.omen}', style: AppTextStyles.bodyStrong),
+            const SizedBox(height: 6),
+            SizedBox(
+              width: 150,
+              child: DarkButton(
+                label: 'KAM’A DANIŞ',
+                height: 34,
+                onPressed: state.dailyActionPoints > 0
+                    ? () {
+                        final ok = controller.consultAdvisor('interpret_omen');
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text(ok ? 'Aruk Kam alameti yorumladı.' : 'Kam bugün dinleniyor veya AP yok.')),
+                        );
+                      }
+                    : null,
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _FaithValue extends StatelessWidget {
+  const _FaithValue(this.label, this.value);
+
+  final String label;
+  final int value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4),
+      child: Row(
+        children: [
+          SizedBox(width: 54, child: Text(label, style: AppTextStyles.meta)),
+          Expanded(child: StatBar(fraction: value / 100, height: 8)),
+          const SizedBox(width: 4),
+          Text('$value', style: AppTextStyles.value.copyWith(fontSize: 12)),
+        ],
       ),
     );
   }
@@ -731,6 +835,10 @@ class _SkillsPanel extends StatelessWidget {
       (GameAssets.iconScrollMedallion, 'Bilgelik', profile.wisdom),
       (GameAssets.iconArmyEmblem, 'Liderlik', profile.leadership),
       (GameAssets.iconShieldSwords, 'Dayanıklılık', profile.endurance),
+      (GameAssets.iconCoinGold, 'Ticaret', profile.trade),
+      (GameAssets.iconItemShield, 'Zanaat', profile.craft),
+      (GameAssets.iconItemBow, 'Okçuluk', profile.archery),
+      (GameAssets.iconShieldSwords, 'Savaş', profile.warfare),
     ];
     return OrnatePanel(
       child: Column(
