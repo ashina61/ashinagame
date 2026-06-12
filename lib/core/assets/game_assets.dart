@@ -168,4 +168,8 @@ class GameAssets {
   static const uiButtonDevamEt = 'assets/images/ui/button_devam_et.png';
   static const uiTabHarita = 'assets/images/ui/tab_harita.png';
   static const uiTabSeferListesi = 'assets/images/ui/tab_sefer_listesi.png';
+  static const sceneRiders = 'assets/images/characters/scene_riders.png';
+  static const sceneWoodcut4 = 'assets/images/characters/scene_woodcut4.png';
+  static const sceneCraft3 = 'assets/images/characters/scene_craft3.png';
+  static const sceneArchery3 = 'assets/images/characters/scene_archery3.png';
 }
