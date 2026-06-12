@@ -281,7 +281,7 @@ class _SuggestedMoveCard extends StatelessWidget {
               ClipRRect(
                 borderRadius: BorderRadius.circular(8),
                 child: Image.asset(
-                  GameAssets.sceneCraftNight,
+                  GameAssets.sceneCraft3,
                   width: 56,
                   height: 42,
                   fit: BoxFit.cover,
@@ -309,7 +309,7 @@ class _DailyJobsRow extends StatelessWidget {
     (GameAssets.sceneWoodcut2, 'Odun Kes'),
     (GameAssets.sceneFarm3, 'Tarlada Çalış'),
     (GameAssets.sceneHunt2, 'Avlan'),
-    (GameAssets.sceneMercenary, 'Paralı Asker Topla'),
+    (GameAssets.sceneRiders, 'Paralı Asker Topla'),
   ];
 
   @override
