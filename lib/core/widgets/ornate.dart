@@ -6,9 +6,14 @@ import '../assets/game_assets.dart';
 
 /// Full-screen night-steppe background with framed border, per the atlas.
 class OrnateScaffold extends StatelessWidget {
-  const OrnateScaffold({required this.child, super.key});
+  const OrnateScaffold({
+    required this.child,
+    this.backgroundAsset = GameAssets.bgScreenNight,
+    super.key,
+  });
 
   final Widget child;
+  final String backgroundAsset;
 
   @override
   Widget build(BuildContext context) {
@@ -16,7 +21,7 @@ class OrnateScaffold extends StatelessWidget {
       fit: StackFit.expand,
       children: [
         Image.asset(
-          GameAssets.bgScreenNight,
+          backgroundAsset,
           fit: BoxFit.cover,
           errorBuilder: (context, error, stackTrace) =>
               const ColoredBox(color: AppColors.leatherDeep),

@@ -335,22 +335,40 @@ class _MarketScreenState extends State<MarketScreen> {
   Widget _buildOffers() {
     return ListView(
       padding: const EdgeInsets.only(top: 2, bottom: 8),
-      children: const [
+      children: [
         OrnatePanel(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          child: Row(
             children: [
-              Text('Kervan Teklifi', style: AppTextStyles.bodyStrong),
-              SizedBox(height: 4),
-              Text(
-                'Batıdan gelen kervan yün ve tuz karşılığında at arıyor. '
-                'Teklifler pazar yenilenince güncellenir.',
-                style: AppTextStyles.body,
+              ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: Image.asset(
+                  GameAssets.portraitMerchant,
+                  width: 72,
+                  height: 92,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) =>
+                      const SizedBox.shrink(),
+                ),
+              ),
+              const SizedBox(width: 12),
+              const Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Kervan Teklifi', style: AppTextStyles.bodyStrong),
+                    SizedBox(height: 4),
+                    Text(
+                      'Batıdan gelen kervan yün ve tuz karşılığında at '
+                      'arıyor. Teklifler pazar yenilenince güncellenir.',
+                      style: AppTextStyles.body,
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
         ),
-        OrnatePanel(
+        const OrnatePanel(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [

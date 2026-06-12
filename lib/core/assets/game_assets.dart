@@ -175,4 +175,13 @@ class GameAssets {
   static const iconItemStone = 'assets/images/icons/item_stone.png';
   static const bgSceneFortressNight =
       'assets/images/backgrounds/scene_fortress_night.png';
+
+  // Crops supplied by the user from the atlas sheets (world & characters).
+  static const bgMapParchment =
+      'assets/images/backgrounds/bg_map_parchment.png';
+  static const sceneBattlefieldDusk =
+      'assets/images/backgrounds/scene_battlefield_dusk.png';
+  static const portraitMerchant =
+      'assets/images/characters/portrait_merchant.png';
+  static const iconYurtLarge = 'assets/images/icons/yurt_large.png';
 }

@@ -621,8 +621,20 @@ class _HouseholdPanel extends StatelessWidget {
     final state = GameScope.of(context).state;
     return OrnatePanel(
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: Image.asset(
+              GameAssets.iconYurtLarge,
+              width: 64,
+              height: 56,
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) =>
+                  const SizedBox.shrink(),
+            ),
+          ),
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
               children: [
@@ -638,7 +650,7 @@ class _HouseholdPanel extends StatelessWidget {
                 ),
                 _KeyValue(
                   GameAssets.iconMedallionHorse,
-                  'At Sürüsü',
+                  'Atlar',
                   '${state.resource(ResourceType.horse)}',
                 ),
                 _KeyValue(

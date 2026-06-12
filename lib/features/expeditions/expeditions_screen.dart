@@ -183,6 +183,22 @@ class _ExpeditionsScreenState extends State<ExpeditionsScreen> {
   Widget _buildMap() {
     return Stack(
       children: [
+        Positioned.fill(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(10, 0, 10, 6),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: Image.asset(
+                GameAssets.bgMapParchment,
+                fit: BoxFit.cover,
+                color: Colors.black.withValues(alpha: 0.35),
+                colorBlendMode: BlendMode.darken,
+                errorBuilder: (context, error, stackTrace) =>
+                    const SizedBox.shrink(),
+              ),
+            ),
+          ),
+        ),
         ListView(
           padding: const EdgeInsets.only(top: 4, bottom: 16),
           children: [

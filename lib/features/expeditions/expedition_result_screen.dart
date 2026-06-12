@@ -28,6 +28,7 @@ class ExpeditionResultScreen extends StatelessWidget {
 
     return Scaffold(
       body: OrnateScaffold(
+        backgroundAsset: GameAssets.sceneBattlefieldDusk,
         child: Column(
           children: [
             const OrnateHeader(title: 'Sefer Sonucu', showBack: true),
