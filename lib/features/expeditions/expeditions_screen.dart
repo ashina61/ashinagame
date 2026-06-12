@@ -6,7 +6,9 @@ import '../../core/assets/game_assets.dart';
 import '../../core/utils/formatters.dart';
 import '../../core/widgets/ornate.dart';
 import '../../game/models/resource.dart';
+import '../../game/state/game_controller.dart';
 import '../../game/state/game_scope.dart';
+import '../../game/state/game_state.dart';
 import 'expedition_result_screen.dart';
 
 enum NodeState { done, available, dangerous, locked }
@@ -125,57 +127,71 @@ class _ExpeditionsScreenState extends State<ExpeditionsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: OrnateScaffold(
-        child: Column(
-          children: [
-            const OrnateHeader(title: 'Seferler', showBack: true),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(12, 4, 12, 10),
-              child: Row(
-                children: [
-                  for (final (i, asset) in const [
-                    (0, GameAssets.uiTabHarita),
-                    (1, GameAssets.uiTabSeferListesi),
-                  ])
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: () => setState(() => _tab = i),
-                        child: Container(
-                          margin: EdgeInsets.only(left: i == 0 ? 0 : 8),
-                          decoration: _tab == i
-                              ? BoxDecoration(
-                                  borderRadius: BorderRadius.circular(8),
-                                  boxShadow: const [
-                                    BoxShadow(
-                                      color: Color(0x66EEC36A),
-                                      blurRadius: 12,
-                                    ),
-                                  ],
-                                )
-                              : null,
-                          child: Opacity(
-                            opacity: _tab == i ? 1 : 0.7,
-                            child: Image.asset(asset, height: 36),
-                          ),
+    final energy = GameScope.of(context).state.energy;
+    return OrnateScaffold(
+      child: Column(
+        children: [
+          const OrnateHeader(title: 'Seferler'),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 0, 12, 2),
+            child: Row(
+              children: [
+                Image.asset(GameAssets.iconEnergyBolt, width: 16, height: 16),
+                const SizedBox(width: 4),
+                Text(
+                  'Enerji $energy/${GameState.maxEnergy}  •  '
+                  'Keşif ${GameController.exploreCost}  •  '
+                  'Sefer ${GameController.expeditionCost}',
+                  style: AppTextStyles.meta.copyWith(fontSize: 11),
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 4, 12, 10),
+            child: Row(
+              children: [
+                for (final (i, asset) in const [
+                  (0, GameAssets.uiTabHarita),
+                  (1, GameAssets.uiTabSeferListesi),
+                ])
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () => setState(() => _tab = i),
+                      child: Container(
+                        margin: EdgeInsets.only(left: i == 0 ? 0 : 8),
+                        decoration: _tab == i
+                            ? BoxDecoration(
+                                borderRadius: BorderRadius.circular(8),
+                                boxShadow: const [
+                                  BoxShadow(
+                                    color: Color(0x66EEC36A),
+                                    blurRadius: 12,
+                                  ),
+                                ],
+                              )
+                            : null,
+                        child: Opacity(
+                          opacity: _tab == i ? 1 : 0.7,
+                          child: Image.asset(asset, height: 36),
                         ),
                       ),
                     ),
-                ],
+                  ),
+              ],
+            ),
+          ),
+          Expanded(child: _tab == 0 ? _buildMap() : _buildList()),
+          if (_tab == 0)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(40, 4, 40, 12),
+              child: ImageButton(
+                asset: GameAssets.uiButtonSefereCik,
+                height: 56,
+                onPressed: () => _embark(context),
               ),
             ),
-            Expanded(child: _tab == 0 ? _buildMap() : _buildList()),
-            if (_tab == 0)
-              Padding(
-                padding: const EdgeInsets.fromLTRB(40, 4, 40, 12),
-                child: ImageButton(
-                  asset: GameAssets.uiButtonSefereCik,
-                  height: 56,
-                  onPressed: () => _embark(context),
-                ),
-              ),
-          ],
-        ),
+        ],
       ),
     );
   }
@@ -258,12 +274,15 @@ class _ExpeditionsScreenState extends State<ExpeditionsScreen> {
                 DarkButton(
                   label: 'KEŞFET',
                   onPressed: () {
-                    controller.exploreRegion(region.name, region.effects);
+                    final done =
+                        controller.exploreRegion(region.name, region.effects);
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text(
-                          '${region.name} keşfi: '
-                          '${Formatters.resourceDelta(region.effects)}',
+                          done
+                              ? '${region.name} keşfi: '
+                                  '${Formatters.resourceDelta(region.effects)}'
+                              : 'Enerji tükendi. Günü bitirerek dinlen.',
                         ),
                         duration: const Duration(seconds: 2),
                       ),
@@ -285,7 +304,18 @@ class _ExpeditionsScreenState extends State<ExpeditionsScreen> {
       );
       return;
     }
-    GameScope.of(context).exploreRegion(node.name, node.effects);
+    final done = GameScope.of(context).embarkExpedition(
+      node.name,
+      node.effects,
+    );
+    if (!done) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Sefer için enerji yetmiyor. Günü bitirerek dinlen.'),
+        ),
+      );
+      return;
+    }
     Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (context) => ExpeditionResultScreen(

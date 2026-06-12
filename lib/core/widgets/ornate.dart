@@ -503,7 +503,7 @@ class OrnateNavBar extends StatelessWidget {
     (GameAssets.navHome, 'Ana Sayfa'),
     (GameAssets.navBoy, 'Boy'),
     (GameAssets.navAtelier, 'Atölye'),
-    (GameAssets.navClan, 'Klan'),
+    (GameAssets.iconCompassStar, 'Seferler'),
     (GameAssets.navSettings, 'Ayarlar'),
   ];
 

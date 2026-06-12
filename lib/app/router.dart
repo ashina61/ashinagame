@@ -3,9 +3,11 @@ import 'package:flutter/material.dart';
 import '../core/widgets/ornate.dart';
 import '../features/atelier/atelier_screen.dart';
 import '../features/boy/boy_screen.dart';
-import '../features/clan/clan_screen.dart';
+import '../features/expeditions/expeditions_screen.dart';
+import '../features/game_over/game_over_screen.dart';
 import '../features/home/home_screen.dart';
 import '../features/settings/settings_screen.dart';
+import '../game/state/game_scope.dart';
 
 class AshinaRouter extends StatefulWidget {
   const AshinaRouter({super.key});
@@ -21,12 +23,15 @@ class _AshinaRouterState extends State<AshinaRouter> {
     HomeScreen(),
     BoyScreen(),
     AtelierScreen(),
-    ClanScreen(),
+    ExpeditionsScreen(),
     SettingsScreen(),
   ];
 
   @override
   Widget build(BuildContext context) {
+    if (GameScope.of(context).state.gameOver) {
+      return const Scaffold(body: GameOverScreen());
+    }
     return Scaffold(
       body: IndexedStack(index: _index, children: _screens),
       bottomNavigationBar: OrnateNavBar(

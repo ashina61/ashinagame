@@ -15,7 +15,13 @@ class GameState {
     required this.currentEvent,
     required this.eventIndex,
     required this.log,
+    this.energy = maxEnergy,
+    this.collapseDays = 0,
+    this.gameOver = false,
+    this.gameOverReason,
   });
+
+  static const maxEnergy = 10;
 
   final PlayerProfile profile;
   final Clan clan;
@@ -26,7 +32,25 @@ class GameState {
   final int eventIndex;
   final List<String> log;
 
+  /// Action points left for the current day.
+  final int energy;
+
+  /// Consecutive days the camp spent at zero morale.
+  final int collapseDays;
+  final bool gameOver;
+  final String? gameOverReason;
+
   int resource(ResourceType type) => resources[type] ?? 0;
+
+  /// Live progress of a quest (resource goals read the stockpile).
+  int questProgress(Quest quest) => switch (quest.goalType) {
+        QuestGoalType.action => quest.progress,
+        QuestGoalType.resource => resource(quest.goalResource!),
+      };
+
+  /// Whether a quest's goal is met and its reward can be claimed.
+  bool questReady(Quest quest) =>
+      !quest.completed && questProgress(quest) >= quest.goalTarget;
 
   GameState copyWith({
     PlayerProfile? profile,
@@ -38,6 +62,10 @@ class GameState {
     bool clearEvent = false,
     int? eventIndex,
     List<String>? log,
+    int? energy,
+    int? collapseDays,
+    bool? gameOver,
+    String? gameOverReason,
   }) {
     return GameState(
       profile: profile ?? this.profile,
@@ -48,6 +76,10 @@ class GameState {
       currentEvent: clearEvent ? null : currentEvent ?? this.currentEvent,
       eventIndex: eventIndex ?? this.eventIndex,
       log: log ?? this.log,
+      energy: energy ?? this.energy,
+      collapseDays: collapseDays ?? this.collapseDays,
+      gameOver: gameOver ?? this.gameOver,
+      gameOverReason: gameOverReason ?? this.gameOverReason,
     );
   }
 }

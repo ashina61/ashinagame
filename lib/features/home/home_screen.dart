@@ -6,11 +6,13 @@ import '../../core/assets/game_assets.dart';
 import '../../core/utils/formatters.dart';
 import '../../core/utils/resource_visuals.dart';
 import '../../core/widgets/ornate.dart';
+import '../../game/data/starter_game_data.dart';
 import '../../game/models/event_choice.dart';
 import '../../game/models/resource.dart';
+import '../../game/state/game_controller.dart';
 import '../../game/state/game_scope.dart';
+import '../../game/state/game_state.dart';
 import '../character/character_screen.dart';
-import '../expeditions/expeditions_screen.dart';
 import '../inventory/inventory_screen.dart';
 import '../market/market_screen.dart';
 import '../quests/quests_screen.dart';
@@ -87,24 +89,12 @@ class HomeScreen extends StatelessWidget {
                                   _push(context, const MarketScreen()),
                             ),
                           ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      Row(
-                        children: [
+                          const SizedBox(width: 8),
                           Expanded(
                             child: DarkButton(
                               label: 'GÖREVLER',
                               onPressed: () =>
                                   _push(context, const QuestsScreen()),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: DarkButton(
-                              label: 'SEFERLER',
-                              onPressed: () =>
-                                  _push(context, const ExpeditionsScreen()),
                             ),
                           ),
                         ],
@@ -151,7 +141,8 @@ class _DayStrip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = GameScope.of(context);
-    final day = controller.state.day;
+    final state = controller.state;
+    final day = state.day;
     return Padding(
       padding: const EdgeInsets.fromLTRB(12, 2, 12, 2),
       child: Row(
@@ -187,6 +178,28 @@ class _DayStrip extends StatelessWidget {
                   ),
                 ],
               ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Container(
+            height: 36,
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            decoration: const BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage(GameAssets.uiPanelPill),
+                fit: BoxFit.fill,
+              ),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Image.asset(GameAssets.iconEnergyBolt, width: 16, height: 16),
+                const SizedBox(width: 4),
+                Text(
+                  '${state.energy}/${GameState.maxEnergy}',
+                  style: AppTextStyles.value.copyWith(fontSize: 14),
+                ),
+              ],
             ),
           ),
           const SizedBox(width: 8),
@@ -285,9 +298,9 @@ class _CharacterCard extends StatelessWidget {
                   ),
                   _StatRow(
                     GameAssets.iconEnergyBolt,
-                    'Erzak',
-                    state.resource(ResourceType.food),
-                    200,
+                    'Enerji',
+                    state.energy,
+                    GameState.maxEnergy,
                   ),
                   const SizedBox(height: 4),
                   Text(
@@ -425,9 +438,10 @@ class _DailyGoalCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final state = GameScope.of(context).state;
-    final quests = state.quests;
-    final done = quests.where((q) => q.completed).length;
-    final next = quests.where((q) => !q.completed).toList();
+    final dailies = state.quests.where((q) => q.category == 'Günlük').toList();
+    final done = dailies.where((q) => q.completed).length;
+    final next = dailies.where((q) => !q.completed).toList();
+    final ready = next.where(state.questReady).toList();
     return GestureDetector(
       onTap: () => Navigator.of(context).push(
         MaterialPageRoute<void>(builder: (_) => const QuestsScreen()),
@@ -444,8 +458,12 @@ class _DailyGoalCard extends StatelessWidget {
             const SizedBox(height: 6),
             Text(
               next.isEmpty
-                  ? 'Tüm görevler tamamlandı.'
-                  : '${next.first.title}. $done/${quests.length}',
+                  ? 'Bugünün hedefleri tamam. $done/${dailies.length}'
+                  : ready.isNotEmpty
+                      ? '${ready.first.title} — ödül hazır!'
+                      : '${next.first.title} '
+                          '${state.questProgress(next.first)}'
+                          '/${next.first.goalTarget}',
               style: AppTextStyles.body.copyWith(fontSize: 13),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
@@ -529,21 +547,25 @@ class _DailyJobsRow extends StatelessWidget {
   static const _jobs = [
     (
       GameAssets.sceneWoodcut2,
+      GameActions.wood,
       'Odun Kes',
       {ResourceType.wood: 8, ResourceType.food: -2},
     ),
     (
       GameAssets.sceneFarm3,
+      GameActions.farm,
       'Tarlada Çalış',
       {ResourceType.food: 10},
     ),
     (
       GameAssets.sceneHunt2,
+      GameActions.hunt,
       'Avlan',
       {ResourceType.food: 12, ResourceType.leather: 2},
     ),
     (
       GameAssets.sceneRiders,
+      GameActions.mercenary,
       'Paralı Asker Topla',
       {ResourceType.reputation: 2, ResourceType.food: -5, ResourceType.gold: 6},
     ),
@@ -560,14 +582,17 @@ class _DailyJobsRow extends StatelessWidget {
         itemCount: _jobs.length,
         separatorBuilder: (context, index) => const SizedBox(width: 8),
         itemBuilder: (context, index) {
-          final (asset, label, effects) = _jobs[index];
+          final (asset, actionId, label, effects) = _jobs[index];
           return GestureDetector(
             onTap: () {
-              controller.performCampAction(label, effects);
+              final done =
+                  controller.performCampAction(actionId, label, effects);
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(
-                    '$label: ${Formatters.resourceDelta(effects)}',
+                    done
+                        ? '$label: ${Formatters.resourceDelta(effects)}'
+                        : 'Enerji tükendi. Günü bitirerek dinlen.',
                   ),
                   duration: const Duration(seconds: 2),
                 ),
@@ -594,7 +619,8 @@ class _DailyJobsRow extends StatelessWidget {
                     style: AppTextStyles.bodyStrong.copyWith(fontSize: 11),
                   ),
                   Text(
-                    Formatters.resourceDelta(effects),
+                    '⚡${GameController.campActionCost} • '
+                    '${Formatters.resourceDelta(effects)}',
                     textAlign: TextAlign.center,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,

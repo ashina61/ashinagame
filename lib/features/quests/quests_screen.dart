@@ -46,6 +46,9 @@ class _QuestPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = GameScope.of(context);
+    final state = controller.state;
+    final progress = state.questProgress(quest).clamp(0, quest.goalTarget);
+    final ready = state.questReady(quest);
     return OrnatePanel(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -61,44 +64,71 @@ class _QuestPanel extends StatelessWidget {
               Expanded(
                 child: Text(quest.title, style: AppTextStyles.bodyStrong),
               ),
+              if (!quest.completed)
+                Text(
+                  '$progress/${quest.goalTarget}',
+                  style: AppTextStyles.value.copyWith(
+                    fontSize: 14,
+                    color: ready ? AppColors.success : AppColors.goldBright,
+                  ),
+                ),
             ],
           ),
           const SizedBox(height: 4),
           Text(quest.description, style: AppTextStyles.body),
-          const SizedBox(height: 4),
-          Text(
-            'Ödül: ${quest.rewardText}',
-            style: AppTextStyles.meta.copyWith(color: AppColors.goldBright),
-          ),
-          const SizedBox(height: 8),
-          Align(
-            alignment: Alignment.centerRight,
-            child: quest.completed
-                ? Text(
-                    'TAMAMLANDI',
-                    style: AppTextStyles.buttonDark.copyWith(
-                      color: AppColors.success,
-                      fontSize: 12,
-                    ),
-                  )
-                : SizedBox(
-                    width: 140,
-                    child: GoldButton(
-                      label: 'TAMAMLA',
-                      height: 36,
-                      onPressed: () {
-                        controller.completeQuest(quest.id);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              '${quest.title} tamamlandı. '
-                              'Ödül: ${quest.rewardText}',
-                            ),
-                          ),
-                        );
-                      },
-                    ),
+          const SizedBox(height: 6),
+          if (!quest.completed)
+            StatBar(
+              fraction: progress / quest.goalTarget,
+              height: 8,
+              fill: ready ? AppColors.success : null,
+            ),
+          const SizedBox(height: 6),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  'Ödül: ${quest.rewardText}',
+                  style:
+                      AppTextStyles.meta.copyWith(color: AppColors.goldBright),
+                ),
+              ),
+              if (quest.completed)
+                Text(
+                  'TAMAMLANDI',
+                  style: AppTextStyles.buttonDark.copyWith(
+                    color: AppColors.success,
+                    fontSize: 12,
                   ),
+                )
+              else if (ready)
+                SizedBox(
+                  width: 130,
+                  child: GoldButton(
+                    label: 'ÖDÜLÜ AL',
+                    height: 34,
+                    onPressed: () {
+                      controller.claimQuest(quest.id);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            '${quest.title} tamamlandı. '
+                            'Ödül: ${quest.rewardText}',
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                )
+              else
+                Text(
+                  'DEVAM EDİYOR',
+                  style: AppTextStyles.buttonDark.copyWith(
+                    color: AppColors.stone,
+                    fontSize: 12,
+                  ),
+                ),
+            ],
           ),
         ],
       ),
