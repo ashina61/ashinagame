@@ -122,4 +122,16 @@ class GameAssets {
   static const iconWatchtower = 'assets/images/icons/watchtower.png';
   static const iconItemShieldPlain =
       'assets/images/icons/item_shield_plain.png';
+  static const uiButtonHazirlik = 'assets/images/ui/button_hazirlik.png';
+  static const uiButtonYardimIste = 'assets/images/ui/button_yardim_iste.png';
+  static const uiButtonKlanMagazasi =
+      'assets/images/ui/button_klan_magazasi.png';
+  static const iconCraftEmblem = 'assets/images/icons/craft_emblem.png';
+  static const iconDaggersCrossed = 'assets/images/icons/daggers_crossed.png';
+  static const iconYurtGold = 'assets/images/icons/yurt_gold.png';
+  static const iconShieldSwords = 'assets/images/icons/shield_swords.png';
+  static const iconGearRing = 'assets/images/icons/gear_ring.png';
+  static const iconTokenGold = 'assets/images/icons/token_gold.png';
+  static const uiProgressBarCompass =
+      'assets/images/ui/progress_bar_compass.png';
 }

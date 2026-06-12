@@ -95,8 +95,8 @@ class _ClanScreenState extends State<ClanScreen> {
                           ],
                         ),
                       ),
-                      DarkButton(
-                        label: 'HAZIRLIK',
+                      ImageButton(
+                        asset: GameAssets.uiButtonHazirlik,
                         onPressed: () => Navigator.of(context).push(
                           MaterialPageRoute<void>(
                             builder: (context) => const ExpeditionsScreen(),
@@ -133,15 +133,15 @@ class _ClanScreenState extends State<ClanScreen> {
                   child: Row(
                     children: [
                       Expanded(
-                        child: DarkButton(
-                          label: 'YARDIM İSTE',
+                        child: ImageButton(
+                          asset: GameAssets.uiButtonYardimIste,
                           onPressed: () => _soon(context),
                         ),
                       ),
                       const SizedBox(width: 8),
                       Expanded(
-                        child: DarkButton(
-                          label: 'KLAN MAĞAZASI',
+                        child: ImageButton(
+                          asset: GameAssets.uiButtonKlanMagazasi,
                           onPressed: () => _soon(context),
                         ),
                       ),

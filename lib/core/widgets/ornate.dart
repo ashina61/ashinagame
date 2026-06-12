@@ -279,6 +279,28 @@ class DarkButton extends StatelessWidget {
   }
 }
 
+/// A button whose entire artwork (including label) is a baked image.
+class ImageButton extends StatelessWidget {
+  const ImageButton({
+    required this.asset,
+    required this.onPressed,
+    this.height = 42,
+    super.key,
+  });
+
+  final String asset;
+  final VoidCallback? onPressed;
+  final double height;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onPressed,
+      child: Image.asset(asset, height: height, fit: BoxFit.contain),
+    );
+  }
+}
+
 /// Pill tab row (selected tab gets the bronze plaque).
 class OrnateTabs extends StatelessWidget {
   const OrnateTabs({
