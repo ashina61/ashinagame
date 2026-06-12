@@ -4,36 +4,23 @@ import '../../app/theme/app_colors.dart';
 import '../../app/theme/app_text_styles.dart';
 import '../../core/assets/game_assets.dart';
 import '../../core/widgets/ornate.dart';
+import '../../game/data/market_goods.dart';
+import '../../game/logic/market_logic.dart';
 import '../../game/models/resource.dart';
 import '../../game/state/game_scope.dart';
 
-class _Good {
-  const _Good(
-    this.asset,
-    this.name,
-    this.price,
-    this.stock,
-    this.category, {
-    this.buyEffects,
-  });
-
-  final String asset;
-  final String name;
-  final int price;
-  final int stock;
-  final int category;
-
-  /// Resource delta applied on purchase (gold cost added separately).
-  final Map<ResourceType, int>? buyEffects;
-}
-
-class _SellLot {
-  const _SellLot(this.type, this.amount, this.price);
-
-  final ResourceType type;
-  final int amount;
-  final int price;
-}
+/// Atlas icons for market goods.
+String goodIcon(String goodId) => switch (goodId) {
+      'wheat' => GameAssets.iconItemWheat,
+      'wood' => GameAssets.iconItemWood,
+      'iron_ore' => GameAssets.iconIronOre,
+      'leather' => GameAssets.iconItemLeather,
+      'wool' => GameAssets.iconItemWool,
+      'salt' => GameAssets.iconItemSalt,
+      'horse' => GameAssets.iconItemHorse,
+      'bow' => GameAssets.iconItemBow,
+      _ => GameAssets.iconItemWheat,
+    };
 
 class MarketScreen extends StatefulWidget {
   const MarketScreen({super.key});
@@ -56,32 +43,18 @@ class _MarketScreenState extends State<MarketScreen> {
     'Diğer',
   ];
 
-  static const _goods = [
-    _Good(GameAssets.iconItemWheat, 'Buğday', 18, 120, 2,
-        buyEffects: {ResourceType.food: 10}),
-    _Good(GameAssets.iconItemWood, 'Odun', 16, 85, 1,
-        buyEffects: {ResourceType.wood: 10}),
-    _Good(GameAssets.iconIronOre, 'Demir Cevheri', 35, 60, 1),
-    _Good(GameAssets.iconItemLeather, 'Deri', 22, 40, 3,
-        buyEffects: {ResourceType.leather: 5}),
-    _Good(GameAssets.iconItemWool, 'Yün', 24, 35, 3),
-    _Good(GameAssets.iconItemSalt, 'Tuz', 30, 25, 2,
-        buyEffects: {ResourceType.food: 6}),
-    _Good(GameAssets.iconItemHorse, 'At', 120, 3, 5,
-        buyEffects: {ResourceType.horse: 1}),
-    _Good(GameAssets.iconItemBow, 'Kompozit Yay', 280, 2, 4),
-  ];
-
+  /// Lots the player can sell back, tied to the matching market good so
+  /// their prices follow the same daily wobble.
   static const _sellLots = [
-    _SellLot(ResourceType.food, 10, 14),
-    _SellLot(ResourceType.wood, 10, 12),
-    _SellLot(ResourceType.leather, 5, 18),
-    _SellLot(ResourceType.horse, 1, 90),
+    (ResourceType.food, 10, 'wheat'),
+    (ResourceType.wood, 10, 'wood'),
+    (ResourceType.leather, 5, 'leather'),
+    (ResourceType.horse, 1, 'horse'),
   ];
 
-  List<_Good> get _filtered {
-    if (_category == 0) return _goods;
-    return _goods.where((g) => g.category == _category).toList();
+  List<MarketGood> get _filtered {
+    if (_category == 0) return MarketGoods.all;
+    return MarketGoods.all.where((g) => g.category == _category).toList();
   }
 
   @override
@@ -142,19 +115,15 @@ class _MarketScreenState extends State<MarketScreen> {
                 children: [
                   Expanded(
                     child: Text(
-                      'Pazar Yenilenmesine: 01:30:45',
+                      'Fiyatlar ve stok her gün yenilenir.',
                       style: AppTextStyles.meta.copyWith(fontSize: 12),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                  DarkButton(
-                    label: 'YENİLE  ⦿10',
-                    height: 30,
-                    onPressed: () => _notify(
-                      context,
-                      'Pazar tezgâhları zamanı gelince yenilenecek.',
-                    ),
+                  Text(
+                    'Gün ${controller.state.day.day}',
+                    style: AppTextStyles.value.copyWith(fontSize: 13),
                   ),
                 ],
               ),
@@ -228,9 +197,9 @@ class _MarketScreenState extends State<MarketScreen> {
                       ),
                     ),
                     SizedBox(
-                      width: 48,
+                      width: 44,
                       child: Text(
-                        'MEVCUT',
+                        'STOK',
                         textAlign: TextAlign.right,
                         style: AppTextStyles.meta,
                       ),
@@ -257,36 +226,28 @@ class _MarketScreenState extends State<MarketScreen> {
   Widget _buildSell() {
     final controller = GameScope.of(context);
     final state = controller.state;
+    final day = state.day.day;
     return ListView(
       padding: const EdgeInsets.only(top: 2, bottom: 8),
       children: [
-        for (final lot in _sellLots)
+        for (final (type, amount, goodId) in _sellLots)
           OrnatePanel(
             margin: const EdgeInsets.fromLTRB(12, 0, 12, 6),
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
             child: Row(
               children: [
-                Image.asset(
-                  switch (lot.type) {
-                    ResourceType.food => GameAssets.iconItemWheat,
-                    ResourceType.wood => GameAssets.iconItemWood,
-                    ResourceType.leather => GameAssets.iconItemLeather,
-                    _ => GameAssets.iconItemHorse,
-                  },
-                  width: 30,
-                  height: 30,
-                ),
+                Image.asset(goodIcon(goodId), width: 30, height: 30),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        '${lot.amount} ${lot.type.label}',
+                        '$amount ${type.label}',
                         style: AppTextStyles.bodyStrong.copyWith(fontSize: 14),
                       ),
                       Text(
-                        'Depoda: ${state.resource(lot.type)}',
+                        'Depoda: ${state.resource(type)}',
                         style: AppTextStyles.meta.copyWith(fontSize: 11),
                       ),
                     ],
@@ -301,7 +262,7 @@ class _MarketScreenState extends State<MarketScreen> {
                     ),
                     const SizedBox(width: 3),
                     Text(
-                      '+${lot.price}',
+                      '+${MarketLogic.sellPriceFor(MarketGoods.byId(goodId)!, day)}',
                       style: AppTextStyles.value.copyWith(fontSize: 14),
                     ),
                   ],
@@ -311,17 +272,19 @@ class _MarketScreenState extends State<MarketScreen> {
                   label: 'SAT',
                   height: 32,
                   onPressed: () {
+                    final price = MarketLogic.sellPriceFor(
+                      MarketGoods.byId(goodId)!,
+                      day,
+                    );
                     final done = controller.tryTrade(
-                      '${lot.amount} ${lot.type.label} satışı',
-                      {lot.type: -lot.amount, ResourceType.gold: lot.price},
+                      '$amount ${type.label} satışı',
+                      {type: -amount, ResourceType.gold: price},
                     );
                     _notify(
                       context,
                       done
-                          ? '${lot.amount} ${lot.type.label} satıldı, '
-                              '+${lot.price} altın.'
-                          : 'Depoda yeterli ${lot.type.label.toLowerCase()} '
-                              'yok.',
+                          ? '$amount ${type.label} satıldı, +$price altın.'
+                          : 'Depoda yeterli ${type.label.toLowerCase()} yok.',
                     );
                   },
                 ),
@@ -399,17 +362,20 @@ class _MarketScreenState extends State<MarketScreen> {
 class _BuyRow extends StatelessWidget {
   const _BuyRow({required this.good});
 
-  final _Good good;
+  final MarketGood good;
 
   @override
   Widget build(BuildContext context) {
     final controller = GameScope.of(context);
+    final state = controller.state;
+    final price = MarketLogic.priceFor(good, state.day.day);
+    final stock = state.stockOf(good.id);
     return OrnatePanel(
       margin: const EdgeInsets.only(bottom: 6),
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
       child: Row(
         children: [
-          Image.asset(good.asset, width: 30, height: 30),
+          Image.asset(goodIcon(good.id), width: 30, height: 30),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
@@ -427,18 +393,27 @@ class _BuyRow extends StatelessWidget {
                 Image.asset(GameAssets.iconCoinGold, width: 13, height: 13),
                 const SizedBox(width: 3),
                 Text(
-                  '${good.price}',
-                  style: AppTextStyles.value.copyWith(fontSize: 14),
+                  '$price',
+                  style: AppTextStyles.value.copyWith(
+                    fontSize: 14,
+                    color: price > good.basePrice
+                        ? AppColors.danger
+                        : price < good.basePrice
+                            ? AppColors.success
+                            : null,
+                  ),
                 ),
               ],
             ),
           ),
           SizedBox(
-            width: 48,
+            width: 44,
             child: Text(
-              'x${good.stock}',
+              stock > 0 ? 'x$stock' : '—',
               textAlign: TextAlign.right,
-              style: AppTextStyles.meta,
+              style: AppTextStyles.meta.copyWith(
+                color: stock > 0 ? null : AppColors.danger,
+              ),
             ),
           ),
           const SizedBox(width: 6),
@@ -446,22 +421,25 @@ class _BuyRow extends StatelessWidget {
             label: 'AL',
             height: 30,
             onPressed: () {
-              final effects = good.buyEffects;
-              if (effects == null) {
+              if (good.grants == null) {
                 _MarketScreenState._notify(
                   context,
                   '${good.name} için takas yakında açılacak.',
                 );
                 return;
               }
-              final done = controller.tryTrade('${good.name} alımı', {
-                ...effects,
-                ResourceType.gold: -good.price,
-              });
+              if (stock <= 0) {
+                _MarketScreenState._notify(
+                  context,
+                  'Tezgâh boş. Yarın yeniden stoklanır.',
+                );
+                return;
+              }
+              final done = controller.buyGood(good.id);
               _MarketScreenState._notify(
                 context,
                 done
-                    ? '${good.name} satın alındı (-${good.price} altın).'
+                    ? '${good.name} satın alındı (-$price altın).'
                     : 'Yeterli altın yok.',
               );
             },

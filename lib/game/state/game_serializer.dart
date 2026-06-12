@@ -1,7 +1,9 @@
 import 'dart:convert';
 
+import '../data/market_goods.dart';
 import '../data/starter_game_data.dart';
 import '../models/clan.dart';
+import '../models/craft.dart';
 import '../models/game_day.dart';
 import '../models/player_profile.dart';
 import '../models/quest.dart';
@@ -45,6 +47,13 @@ class GameSerializer {
         'collapseDays': state.collapseDays,
         'gameOver': state.gameOver,
         'gameOverReason': state.gameOverReason,
+        'craftQueue': [
+          for (final job in state.craftQueue)
+            {'recipeId': job.recipeId, 'daysLeft': job.daysLeft},
+        ],
+        'craftedItems': state.craftedItems,
+        'completedExpeditions': state.completedExpeditions,
+        'marketStock': state.marketStock,
       });
 
   static GameState? decode(String raw) {
@@ -87,6 +96,25 @@ class GameSerializer {
         collapseDays: json['collapseDays'] as int,
         gameOver: json['gameOver'] as bool,
         gameOverReason: json['gameOverReason'] as String?,
+        craftQueue: [
+          for (final job in (json['craftQueue'] as List<dynamic>? ?? [])
+              .cast<Map<String, dynamic>>())
+            CraftJob(
+              recipeId: job['recipeId'] as String,
+              daysLeft: job['daysLeft'] as int,
+            ),
+        ],
+        craftedItems: (json['craftedItems'] as Map<String, dynamic>? ?? {})
+            .cast<String, int>(),
+        completedExpeditions:
+            (json['completedExpeditions'] as List<dynamic>? ?? [])
+                .cast<String>(),
+        marketStock: switch (
+            (json['marketStock'] as Map<String, dynamic>? ?? {})
+                .cast<String, int>()) {
+          final stock when stock.isEmpty => MarketGoods.startingStock(),
+          final stock => stock,
+        },
       );
     } catch (_) {
       return null;

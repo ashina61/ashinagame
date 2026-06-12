@@ -6,6 +6,7 @@ import '../models/quest.dart';
 import '../models/resource.dart';
 import '../models/season.dart';
 import '../state/game_state.dart';
+import 'market_goods.dart';
 
 /// Action ids counted by quest goals.
 class GameActions {
@@ -53,6 +54,7 @@ class StarterGameData {
         currentEvent: events.first,
         eventIndex: 0,
         log: const ['Oba ateşi yakıldı. Yeni bir ömür başladı.'],
+        marketStock: MarketGoods.startingStock(),
       );
 
   /// Rotating pool of daily quests; three are active per day.

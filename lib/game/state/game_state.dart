@@ -1,4 +1,5 @@
 import '../models/clan.dart';
+import '../models/craft.dart';
 import '../models/event_choice.dart';
 import '../models/game_day.dart';
 import '../models/player_profile.dart';
@@ -19,6 +20,10 @@ class GameState {
     this.collapseDays = 0,
     this.gameOver = false,
     this.gameOverReason,
+    this.craftQueue = const [],
+    this.craftedItems = const {},
+    this.completedExpeditions = const [],
+    this.marketStock = const {},
   });
 
   static const maxEnergy = 10;
@@ -40,7 +45,25 @@ class GameState {
   final bool gameOver;
   final String? gameOverReason;
 
+  /// Workshop jobs currently in production.
+  final List<CraftJob> craftQueue;
+
+  /// Finished workshop items by recipe id.
+  final Map<String, int> craftedItems;
+
+  /// Conquered expedition site ids, in order.
+  final List<String> completedExpeditions;
+
+  /// Remaining market stock by good id; restocked daily.
+  final Map<String, int> marketStock;
+
   int resource(ResourceType type) => resources[type] ?? 0;
+
+  int craftedCount(String recipeId) => craftedItems[recipeId] ?? 0;
+
+  int stockOf(String goodId) => marketStock[goodId] ?? 0;
+
+  bool expeditionDone(String siteId) => completedExpeditions.contains(siteId);
 
   /// Live progress of a quest (resource goals read the stockpile).
   int questProgress(Quest quest) => switch (quest.goalType) {
@@ -66,6 +89,10 @@ class GameState {
     int? collapseDays,
     bool? gameOver,
     String? gameOverReason,
+    List<CraftJob>? craftQueue,
+    Map<String, int>? craftedItems,
+    List<String>? completedExpeditions,
+    Map<String, int>? marketStock,
   }) {
     return GameState(
       profile: profile ?? this.profile,
@@ -80,6 +107,10 @@ class GameState {
       collapseDays: collapseDays ?? this.collapseDays,
       gameOver: gameOver ?? this.gameOver,
       gameOverReason: gameOverReason ?? this.gameOverReason,
+      craftQueue: craftQueue ?? this.craftQueue,
+      craftedItems: craftedItems ?? this.craftedItems,
+      completedExpeditions: completedExpeditions ?? this.completedExpeditions,
+      marketStock: marketStock ?? this.marketStock,
     );
   }
 }

@@ -5,34 +5,13 @@ import '../../app/theme/app_text_styles.dart';
 import '../../core/assets/game_assets.dart';
 import '../../core/utils/formatters.dart';
 import '../../core/widgets/ornate.dart';
+import '../../game/data/expedition_sites.dart';
+import '../../game/models/expedition.dart';
 import '../../game/models/resource.dart';
 import '../../game/state/game_controller.dart';
 import '../../game/state/game_scope.dart';
 import '../../game/state/game_state.dart';
 import 'expedition_result_screen.dart';
-
-enum NodeState { done, available, dangerous, locked }
-
-class _ExpeditionNode {
-  const _ExpeditionNode({
-    required this.badge,
-    required this.fort,
-    required this.name,
-    required this.status,
-    required this.state,
-    this.effects = const {},
-  });
-
-  final String badge;
-  final String fort;
-  final String name;
-  final String status;
-  final NodeState state;
-  final Map<ResourceType, int> effects;
-
-  bool get explorable =>
-      state == NodeState.available || state == NodeState.dangerous;
-}
 
 class _Region {
   const _Region(this.name, this.risk, this.reward, this.effects);
@@ -52,48 +31,20 @@ class ExpeditionsScreen extends StatefulWidget {
 
 class _ExpeditionsScreenState extends State<ExpeditionsScreen> {
   int _tab = 0;
-  int _selected = 1;
+  String? _selectedId;
 
-  static const _nodes = [
-    _ExpeditionNode(
-      badge: GameAssets.uiBadgeBanner1,
-      fort: GameAssets.iconFortOutpost,
-      name: 'Sınır Karakolu',
-      status: 'Tamamlandı',
-      state: NodeState.done,
-    ),
-    _ExpeditionNode(
-      badge: GameAssets.uiBadgeBanner2,
-      fort: GameAssets.iconFortStone,
-      name: 'Bozkır Geçidi',
-      status: 'Mevcut',
-      state: NodeState.available,
-      effects: {
-        ResourceType.gold: 25,
-        ResourceType.reputation: 2,
-        ResourceType.food: -6,
-      },
-    ),
-    _ExpeditionNode(
-      badge: GameAssets.uiBadgeBanner3,
-      fort: GameAssets.iconFortRed,
-      name: 'Yeşit Kalesi',
-      status: 'Tehlikeli',
-      state: NodeState.dangerous,
-      effects: {
-        ResourceType.gold: 60,
-        ResourceType.reputation: 4,
-        ResourceType.food: -14,
-        ResourceType.morale: -3,
-      },
-    ),
-    _ExpeditionNode(
-      badge: GameAssets.uiBadgeBanner4,
-      fort: GameAssets.iconFortDark,
-      name: 'Çin Hududu',
-      status: 'Kilitli',
-      state: NodeState.locked,
-    ),
+  static const _badges = [
+    GameAssets.uiBadgeBanner1,
+    GameAssets.uiBadgeBanner2,
+    GameAssets.uiBadgeBanner3,
+    GameAssets.uiBadgeBanner4,
+  ];
+
+  static const _forts = [
+    GameAssets.iconFortOutpost,
+    GameAssets.iconFortStone,
+    GameAssets.iconFortRed,
+    GameAssets.iconFortDark,
   ];
 
   // Scouting runs preserved from the old map screen; each applies its
@@ -125,9 +76,26 @@ class _ExpeditionsScreenState extends State<ExpeditionsScreen> {
     }),
   ];
 
+  /// The tapped site if it is still attackable, else the first open one.
+  ExpeditionSite? _effectiveTarget(GameController controller) {
+    ExpeditionSite? firstOpen;
+    for (final site in ExpeditionSites.all) {
+      final open = controller.siteUnlocked(site) &&
+          !controller.state.expeditionDone(site.id);
+      if (open) {
+        firstOpen ??= site;
+        if (site.id == _selectedId) {
+          return site;
+        }
+      }
+    }
+    return firstOpen;
+  }
+
   @override
   Widget build(BuildContext context) {
-    final energy = GameScope.of(context).state.energy;
+    final controller = GameScope.of(context);
+    final energy = controller.state.energy;
     return OrnateScaffold(
       child: Column(
         children: [
@@ -181,14 +149,14 @@ class _ExpeditionsScreenState extends State<ExpeditionsScreen> {
               ],
             ),
           ),
-          Expanded(child: _tab == 0 ? _buildMap() : _buildList()),
+          Expanded(child: _tab == 0 ? _buildMap(controller) : _buildList()),
           if (_tab == 0)
             Padding(
               padding: const EdgeInsets.fromLTRB(40, 4, 40, 12),
               child: ImageButton(
                 asset: GameAssets.uiButtonSefereCik,
                 height: 56,
-                onPressed: () => _embark(context),
+                onPressed: () => _embark(context, controller),
               ),
             ),
         ],
@@ -196,7 +164,8 @@ class _ExpeditionsScreenState extends State<ExpeditionsScreen> {
     );
   }
 
-  Widget _buildMap() {
+  Widget _buildMap(GameController controller) {
+    final target = _effectiveTarget(controller);
     return Stack(
       children: [
         Positioned.fill(
@@ -218,14 +187,16 @@ class _ExpeditionsScreenState extends State<ExpeditionsScreen> {
         ListView(
           padding: const EdgeInsets.only(top: 4, bottom: 16),
           children: [
-            for (var i = 0; i < _nodes.length; i++)
+            for (var i = 0; i < ExpeditionSites.all.length; i++)
               _MapNode(
-                node: _nodes[i],
-                selected: i == _selected,
-                showRoute: i < _nodes.length - 1,
-                onTap: _nodes[i].explorable
-                    ? () => setState(() => _selected = i)
-                    : null,
+                site: ExpeditionSites.all[i],
+                badge: _badges[i % _badges.length],
+                fort: _forts[i % _forts.length],
+                controller: controller,
+                selected: ExpeditionSites.all[i].id == target?.id,
+                showRoute: i < ExpeditionSites.all.length - 1,
+                onTap: () =>
+                    setState(() => _selectedId = ExpeditionSites.all[i].id),
               ),
           ],
         ),
@@ -296,19 +267,17 @@ class _ExpeditionsScreenState extends State<ExpeditionsScreen> {
     );
   }
 
-  void _embark(BuildContext context) {
-    final node = _nodes[_selected];
-    if (!node.explorable) {
+  void _embark(BuildContext context, GameController controller) {
+    final target = _effectiveTarget(controller);
+    if (target == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Bu hedef şu an sefere kapalı.')),
+        const SnackBar(
+          content: Text('Tüm hedefler fethedildi. Bozkır senin!'),
+        ),
       );
       return;
     }
-    final done = GameScope.of(context).embarkExpedition(
-      node.name,
-      node.effects,
-    );
-    if (!done) {
+    if (controller.state.energy < GameController.expeditionCost) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Sefer için enerji yetmiyor. Günü bitirerek dinlen.'),
@@ -316,12 +285,13 @@ class _ExpeditionsScreenState extends State<ExpeditionsScreen> {
       );
       return;
     }
+    final outcome = controller.embarkExpedition(target.id);
+    if (outcome == null) {
+      return;
+    }
     Navigator.of(context).push(
       MaterialPageRoute<void>(
-        builder: (context) => ExpeditionResultScreen(
-          title: node.name,
-          effects: node.effects,
-        ),
+        builder: (context) => ExpeditionResultScreen(outcome: outcome),
       ),
     );
   }
@@ -329,97 +299,117 @@ class _ExpeditionsScreenState extends State<ExpeditionsScreen> {
 
 class _MapNode extends StatelessWidget {
   const _MapNode({
-    required this.node,
+    required this.site,
+    required this.badge,
+    required this.fort,
+    required this.controller,
     required this.selected,
     this.showRoute = false,
     this.onTap,
   });
 
-  final _ExpeditionNode node;
+  final ExpeditionSite site;
+  final String badge;
+  final String fort;
+  final GameController controller;
   final bool selected;
   final bool showRoute;
   final VoidCallback? onTap;
 
-  Color get _statusColor => switch (node.state) {
-        NodeState.done => AppColors.success,
-        NodeState.available => AppColors.info,
-        NodeState.dangerous => AppColors.danger,
-        NodeState.locked => AppColors.lockedGrey,
-      };
-
   @override
   Widget build(BuildContext context) {
+    final done = controller.state.expeditionDone(site.id);
+    final unlocked = controller.siteUnlocked(site);
+    final (status, color) = done
+        ? ('Fethedildi', AppColors.success)
+        : !unlocked
+            ? ('Kilitli', AppColors.lockedGrey)
+            : (
+                '${site.dangerLabel} • Başarı %'
+                    '${controller.successChanceFor(site)}',
+                site.baseChance >= 60 ? AppColors.info : AppColors.danger
+              );
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
       child: Column(
         children: [
           GestureDetector(
-            onTap: onTap,
-            child: Row(
-              children: [
-                SizedBox(
-                  width: 52,
-                  height: 76,
-                  child: Image.asset(node.badge, fit: BoxFit.contain),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Container(
-                    foregroundDecoration: selected
-                        ? BoxDecoration(
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: AppColors.goldBright,
-                              width: 1.6,
-                            ),
-                          )
-                        : null,
-                    child: OrnatePanel(
-                      margin: EdgeInsets.zero,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 8,
-                      ),
-                      child: Row(
-                        children: [
-                          Image.asset(node.fort, height: 54),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  node.name.toUpperCase(),
-                                  style: AppTextStyles.section.copyWith(
-                                    color: AppColors.parchment,
-                                  ),
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  node.status,
-                                  style: AppTextStyles.meta.copyWith(
-                                    color: _statusColor,
-                                  ),
-                                ),
-                                if (node.effects.isNotEmpty)
+            onTap: done || !unlocked ? null : onTap,
+            child: Opacity(
+              opacity: unlocked || done ? 1 : 0.55,
+              child: Row(
+                children: [
+                  SizedBox(
+                    width: 52,
+                    height: 76,
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        Image.asset(badge, fit: BoxFit.contain),
+                        if (!unlocked && !done)
+                          Image.asset(GameAssets.uiBadgeLocked, width: 24),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Container(
+                      foregroundDecoration: selected
+                          ? BoxDecoration(
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: AppColors.goldBright,
+                                width: 1.6,
+                              ),
+                            )
+                          : null,
+                      child: OrnatePanel(
+                        margin: EdgeInsets.zero,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 8,
+                        ),
+                        child: Row(
+                          children: [
+                            Image.asset(fort, height: 54),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
                                   Text(
-                                    Formatters.resourceDelta(node.effects),
-                                    style: AppTextStyles.meta.copyWith(
-                                      color: AppColors.goldBright,
-                                      fontSize: 11,
+                                    site.name.toUpperCase(),
+                                    style: AppTextStyles.section.copyWith(
+                                      color: AppColors.parchment,
                                     ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
                                   ),
-                              ],
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    status,
+                                    style: AppTextStyles.meta.copyWith(
+                                      color: color,
+                                    ),
+                                  ),
+                                  if (unlocked && !done)
+                                    Text(
+                                      Formatters.resourceDelta(site.gains),
+                                      style: AppTextStyles.meta.copyWith(
+                                        color: AppColors.goldBright,
+                                        fontSize: 11,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                ],
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
           if (showRoute)

@@ -1,30 +1,23 @@
 import 'package:flutter/material.dart';
 
+import '../../app/theme/app_colors.dart';
 import '../../app/theme/app_text_styles.dart';
 import '../../core/assets/game_assets.dart';
 import '../../core/utils/formatters.dart';
 import '../../core/utils/resource_visuals.dart';
 import '../../core/widgets/ornate.dart';
-import '../../game/models/resource.dart';
+import '../../game/models/expedition.dart';
 
 class ExpeditionResultScreen extends StatelessWidget {
-  const ExpeditionResultScreen({
-    this.title = 'Sınır Karakolu',
-    this.effects = const {
-      ResourceType.gold: 30,
-      ResourceType.reputation: 3,
-      ResourceType.leather: 2,
-    },
-    super.key,
-  });
+  const ExpeditionResultScreen({required this.outcome, super.key});
 
-  final String title;
-  final Map<ResourceType, int> effects;
+  final ExpeditionOutcome outcome;
 
   @override
   Widget build(BuildContext context) {
-    final gains = effects.entries.where((e) => e.value > 0).toList();
-    final costs = effects.entries.where((e) => e.value < 0).toList();
+    final gains = outcome.effects.entries.where((e) => e.value > 0).toList();
+    final costs = outcome.effects.entries.where((e) => e.value < 0).toList();
+    final success = outcome.success;
 
     return Scaffold(
       body: OrnateScaffold(
@@ -42,29 +35,32 @@ class ExpeditionResultScreen extends StatelessWidget {
                   const SizedBox(height: 8),
                   Center(
                     child: Text(
-                      'ZAFER!',
-                      style: AppTextStyles.display.copyWith(fontSize: 34),
+                      success ? 'ZAFER!' : 'BOZGUN!',
+                      style: AppTextStyles.display.copyWith(
+                        fontSize: 34,
+                        color: success ? null : AppColors.danger,
+                      ),
                     ),
                   ),
                   Center(
                     child: Text(
-                      title,
+                      outcome.site.name,
                       style: AppTextStyles.body.copyWith(fontSize: 16),
                     ),
                   ),
                   const SizedBox(height: 6),
-                  const SectionPlaque('KAZANÇLAR'),
+                  SectionPlaque(success ? 'KAZANÇLAR' : 'KAYIPLAR'),
                   OrnatePanel(
-                    child: gains.isEmpty
+                    child: gains.isEmpty && costs.isEmpty
                         ? Center(
                             child: Text(
-                              'Bu seferden ganimet çıkmadı.',
+                              'Sefer iz bırakmadan sona erdi.',
                               style: AppTextStyles.meta.copyWith(fontSize: 14),
                             ),
                           )
                         : Row(
                             children: [
-                              for (final entry in gains)
+                              for (final entry in success ? gains : costs)
                                 Expanded(
                                   child: Column(
                                     children: [
@@ -77,6 +73,9 @@ class ExpeditionResultScreen extends StatelessWidget {
                                         Formatters.signed(entry.value),
                                         style: AppTextStyles.value.copyWith(
                                           fontSize: 16,
+                                          color: entry.value < 0
+                                              ? AppColors.danger
+                                              : null,
                                         ),
                                       ),
                                       Text(
@@ -96,14 +95,18 @@ class ExpeditionResultScreen extends StatelessWidget {
                   OrnatePanel(
                     child: Column(
                       children: [
-                        _DetailRow('Hedef', title),
-                        for (final entry in costs)
-                          _DetailRow(
-                            '${entry.key.label} Harcandı',
-                            '${-entry.value}',
-                          ),
-                        const _DetailRow('Kayıplar', '0'),
-                        const _DetailRow('Durum', 'Oba güvende'),
+                        _DetailRow('Hedef', outcome.site.name),
+                        _DetailRow('Tehlike', outcome.site.dangerLabel),
+                        _DetailRow(
+                          'Sonuç',
+                          success ? 'Hedef fethedildi' : 'Geri çekilme',
+                        ),
+                        if (success)
+                          for (final entry in costs)
+                            _DetailRow(
+                              '${entry.key.label} Harcandı',
+                              '${-entry.value}',
+                            ),
                       ],
                     ),
                   ),
