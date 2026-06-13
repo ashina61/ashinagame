@@ -228,6 +228,44 @@ void main() {
     expect(quest.progress, 1);
   });
 
+  test('conquest: diplomacy then peaceful annexation', () {
+    final base = StarterGameData.create();
+    final controller = GameController(
+      base.copyWith(
+        regionRelations: const {'otuken': 75},
+        resources: {...base.resources, ResourceType.gold: 500},
+      ),
+    );
+    expect(controller.annexRegion('otuken'), isFalse); // 75 < 80
+
+    expect(controller.improveRegionRelation('otuken'), isTrue); // -> 87
+    expect(controller.annexRegion('otuken'), isTrue);
+    expect(controller.state.regionConquered('otuken'), isTrue);
+    expect(controller.annexRegion('otuken'), isFalse); // already ours
+  });
+
+  test('conquest: war seizes a region on a winning roll', () {
+    final base = StarterGameData.create();
+    final winner = GameController(
+      base.copyWith(
+        resources: {...base.resources, ResourceType.population: 200},
+        profile: base.profile.copyWith(warfare: 12),
+      ),
+      random: _FixedRandom(0),
+    );
+    expect(winner.attackRegion('otuken'), isTrue);
+    expect(winner.state.regionConquered('otuken'), isTrue);
+
+    final loser = GameController(base, random: _FixedRandom(99));
+    final moraleBefore = loser.state.resource(ResourceType.morale);
+    expect(loser.attackRegion('kasgar'), isFalse);
+    expect(loser.state.regionConquered('kasgar'), isFalse);
+    expect(
+      loser.state.resource(ResourceType.morale),
+      lessThan(moraleBefore),
+    );
+  });
+
   test('equipping crafted gear drives the expedition bonus', () {
     final controller = GameController.starter();
     expect(controller.equipmentBonus, 0);

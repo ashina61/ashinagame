@@ -10,6 +10,7 @@ import '../../game/models/expedition.dart';
 import '../../game/models/resource.dart';
 import '../../game/state/game_controller.dart';
 import '../../game/state/game_scope.dart';
+import '../conquest/conquest_screen.dart';
 import 'expedition_result_screen.dart';
 
 class _Region {
@@ -105,11 +106,23 @@ class _ExpeditionsScreenState extends State<ExpeditionsScreen> {
               children: [
                 Image.asset(GameAssets.iconEnergyBolt, width: 16, height: 16),
                 const SizedBox(width: 4),
-                Text(
-                  'Aksiyon $energy/${controller.state.maxDailyActionPoints}  •  '
-                  'Keşif ${GameController.exploreCost}  •  '
-                  'Sefer ${GameController.expeditionCost}',
-                  style: AppTextStyles.meta.copyWith(fontSize: 11),
+                Expanded(
+                  child: Text(
+                    'Aksiyon $energy/${controller.state.maxDailyActionPoints}',
+                    style: AppTextStyles.meta.copyWith(fontSize: 11),
+                  ),
+                ),
+                SizedBox(
+                  height: 30,
+                  child: GoldButton(
+                    label: 'FETİH HARİTASI',
+                    height: 30,
+                    onPressed: () => Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) => const ConquestScreen(),
+                      ),
+                    ),
+                  ),
                 ),
               ],
             ),

@@ -60,6 +60,8 @@ class GameState {
     this.isKhan = false,
     this.vassalObas = 0,
     this.equipped = const {},
+    this.regionRelations = const {},
+    this.conqueredRegions = const [],
   });
 
   static const baseDailyActionPoints = 4;
@@ -126,9 +128,17 @@ class GameState {
   /// Equipped gear keyed by slot id (see [EquipmentData]); value is recipe id.
   final Map<String, String> equipped;
 
+  /// Per-region diplomatic relation overrides (id → relation).
+  final Map<String, int> regionRelations;
+
+  /// Ids of conquest regions now under your banner.
+  final List<String> conqueredRegions;
+
   int resource(ResourceType type) => resources[type] ?? 0;
 
   String? equippedIn(String slotId) => equipped[slotId];
+
+  bool regionConquered(String id) => conqueredRegions.contains(id);
 
   bool achievementClaimed(String id) => claimedAchievements.contains(id);
 
@@ -212,6 +222,8 @@ class GameState {
     bool? isKhan,
     int? vassalObas,
     Map<String, String>? equipped,
+    Map<String, int>? regionRelations,
+    List<String>? conqueredRegions,
   }) {
     final nextMax = maxDailyActionPoints ?? this.maxDailyActionPoints;
     final nextAp = (dailyActionPoints ?? energy ?? this.dailyActionPoints)
@@ -256,6 +268,8 @@ class GameState {
       isKhan: isKhan ?? this.isKhan,
       vassalObas: vassalObas ?? this.vassalObas,
       equipped: equipped ?? this.equipped,
+      regionRelations: regionRelations ?? this.regionRelations,
+      conqueredRegions: conqueredRegions ?? this.conqueredRegions,
     );
   }
 }

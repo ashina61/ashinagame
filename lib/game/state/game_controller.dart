@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/foundation.dart';
 
 import '../data/achievements.dart';
+import '../data/conquest_regions.dart';
 import '../data/craft_recipes.dart';
 import '../data/equipment.dart';
 import '../data/expedition_sites.dart';
@@ -17,6 +18,7 @@ import '../logic/resource_logic.dart';
 import '../logic/season_logic.dart';
 import '../models/achievement.dart';
 import '../models/clan.dart';
+import '../models/conquest_region.dart';
 import '../models/craft.dart';
 import '../models/event_choice.dart';
 import '../models/faith.dart';
@@ -961,6 +963,106 @@ class GameController extends ChangeNotifier {
           ResourceType.gold: -200,
         }),
         log: _prependLog('İsyan bastırıldı; oba ağır kayıp verdi.'),
+      ));
+    }
+    return success;
+  }
+
+  /// Military weight thrown behind a regional war.
+  int get warStrength =>
+      _state.resource(ResourceType.population) +
+      _state.profile.warfare * 8 +
+      _state.profile.courage * 3 +
+      equipmentBonus * 3 +
+      _state.completedExpeditions.length * 10 +
+      _state.vassalObas * 20 +
+      (_state.isKhan ? 50 : 0);
+
+  /// Current relation with a conquest region.
+  int regionRelation(ConquestRegion region) =>
+      _state.regionRelations[region.id] ?? region.baseRelation;
+
+  /// War success chance against a region, 10–90 percent.
+  int warChanceFor(ConquestRegion region) {
+    final s = warStrength;
+    return (s * 100 / (s + region.power)).round().clamp(10, 90);
+  }
+
+  bool canAnnex(ConquestRegion region) =>
+      !_state.regionConquered(region.id) &&
+      regionRelation(region) >= ConquestRegions.annexRelation;
+
+  /// Diplomacy: gold and an action point to warm a region toward you.
+  bool improveRegionRelation(String regionId) {
+    final region = ConquestRegions.byId(regionId);
+    if (region == null ||
+        _state.regionConquered(regionId) ||
+        _state.dailyActionPoints < 1 ||
+        _state.resource(ResourceType.gold) < 80) {
+      return false;
+    }
+    final next = (regionRelation(region) + 12).clamp(0, 100).toInt();
+    _commit(_state.copyWith(
+      dailyActionPoints: _state.dailyActionPoints - 1,
+      resources: ResourceLogic.apply(_state.resources, const {
+        ResourceType.gold: -80,
+      }),
+      regionRelations: {..._state.regionRelations, regionId: next},
+      log: _prependLog('${region.name} ile ilişkiler ısındı ($next/100).'),
+    ));
+    return true;
+  }
+
+  /// Annex a friendly region peacefully once relations are high enough.
+  bool annexRegion(String regionId) {
+    final region = ConquestRegions.byId(regionId);
+    if (region == null || !canAnnex(region)) {
+      return false;
+    }
+    _commit(_state.copyWith(
+      conqueredRegions: [..._state.conqueredRegions, regionId],
+      vassalObas: _state.vassalObas + 1,
+      resources: ResourceLogic.apply(_state.resources, {
+        ResourceType.reputation: region.rewardReputation,
+        ResourceType.gold: region.rewardGold ~/ 2,
+      }),
+      log: _prependLog('${region.name} barışla tamganın altına girdi.'),
+    ));
+    return true;
+  }
+
+  /// Wage war for a region. Win to seize it, lose and bleed for it.
+  bool attackRegion(String regionId) {
+    final region = ConquestRegions.byId(regionId);
+    if (region == null ||
+        _state.regionConquered(regionId) ||
+        _state.dailyActionPoints < 1) {
+      return false;
+    }
+    final success = _random.nextInt(100) < warChanceFor(region);
+    if (success) {
+      _commit(_state.copyWith(
+        dailyActionPoints: _state.dailyActionPoints - 1,
+        conqueredRegions: [..._state.conqueredRegions, regionId],
+        vassalObas: _state.vassalObas + 1,
+        resources: ResourceLogic.apply(_state.resources, {
+          ResourceType.gold: region.rewardGold,
+          ResourceType.reputation: region.rewardReputation,
+          ResourceType.morale: 6,
+          ResourceType.food: -15,
+        }),
+        log: _prependLog('${region.name} kılıçla fethedildi!'),
+      ));
+    } else {
+      _commit(_state.copyWith(
+        dailyActionPoints: _state.dailyActionPoints - 1,
+        resources: ResourceLogic.apply(_state.resources, const {
+          ResourceType.morale: -10,
+          ResourceType.population: -5,
+          ResourceType.food: -15,
+        }),
+        log:
+            _prependLog('${region.name} kuşatması püskürtüldü; kayıp verildi.'),
       ));
     }
     return success;
