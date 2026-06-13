@@ -25,7 +25,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return OrnateScaffold(
       child: Column(
         children: [
-          const OrnateHeader(title: 'Ayarlar'),
+          const OrnateHeader(title: 'Ayarlar', showBack: true),
           Expanded(
             child: ListView(
               padding: const EdgeInsets.only(top: 4, bottom: 16),

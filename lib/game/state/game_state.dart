@@ -59,6 +59,7 @@ class GameState {
     this.khanateStanding = 20,
     this.isKhan = false,
     this.vassalObas = 0,
+    this.equipped = const {},
   });
 
   static const baseDailyActionPoints = 4;
@@ -122,7 +123,12 @@ class GameState {
   /// Number of nearby obas rallied under this banner.
   final int vassalObas;
 
+  /// Equipped gear keyed by slot id (see [EquipmentData]); value is recipe id.
+  final Map<String, String> equipped;
+
   int resource(ResourceType type) => resources[type] ?? 0;
+
+  String? equippedIn(String slotId) => equipped[slotId];
 
   bool achievementClaimed(String id) => claimedAchievements.contains(id);
 
@@ -205,6 +211,7 @@ class GameState {
     int? khanateStanding,
     bool? isKhan,
     int? vassalObas,
+    Map<String, String>? equipped,
   }) {
     final nextMax = maxDailyActionPoints ?? this.maxDailyActionPoints;
     final nextAp = (dailyActionPoints ?? energy ?? this.dailyActionPoints)
@@ -248,6 +255,7 @@ class GameState {
           (khanateStanding ?? this.khanateStanding).clamp(0, 100).toInt(),
       isKhan: isKhan ?? this.isKhan,
       vassalObas: vassalObas ?? this.vassalObas,
+      equipped: equipped ?? this.equipped,
     );
   }
 }

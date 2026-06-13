@@ -8,10 +8,14 @@ import '../../core/widgets/ornate.dart';
 import '../../game/models/marriage_candidate.dart';
 import '../../game/models/resource.dart';
 import '../../game/state/game_scope.dart';
+import '../equipment/equipment_screen.dart';
 import '../inventory/inventory_screen.dart';
 
 class CharacterScreen extends StatelessWidget {
-  const CharacterScreen({super.key});
+  const CharacterScreen({this.showBack = false, super.key});
+
+  /// True when pushed as its own route; false when shown as a bottom tab.
+  final bool showBack;
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +25,7 @@ class CharacterScreen extends StatelessWidget {
       body: OrnateScaffold(
         child: Column(
           children: [
-            const OrnateHeader(title: 'Karakter', showBack: true),
+            OrnateHeader(title: 'Karakter', showBack: showBack),
             Expanded(
               child: ListView(
                 padding: const EdgeInsets.only(top: 4, bottom: 16),
@@ -124,11 +128,26 @@ class CharacterScreen extends StatelessWidget {
                   ),
                   Padding(
                     padding: const EdgeInsets.fromLTRB(12, 4, 12, 0),
-                    child: DarkButton(
-                      label: 'ENVANTER',
-                      onPressed: () => Navigator.of(context).push(
-                          MaterialPageRoute<void>(
-                              builder: (_) => const InventoryScreen())),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: DarkButton(
+                            label: 'KUŞAM',
+                            onPressed: () => Navigator.of(context).push(
+                                MaterialPageRoute<void>(
+                                    builder: (_) => const EquipmentScreen())),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: DarkButton(
+                            label: 'ENVANTER',
+                            onPressed: () => Navigator.of(context).push(
+                                MaterialPageRoute<void>(
+                                    builder: (_) => const InventoryScreen())),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],

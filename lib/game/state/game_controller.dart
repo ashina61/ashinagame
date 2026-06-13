@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 
 import '../data/achievements.dart';
 import '../data/craft_recipes.dart';
+import '../data/equipment.dart';
 import '../data/expedition_sites.dart';
 import '../data/faith_paths.dart';
 import '../data/market_goods.dart';
@@ -48,15 +49,38 @@ class GameController extends ChangeNotifier {
   GameState _state;
   GameState get state => _state;
 
-  /// Percent added to expedition rolls by owned equipment.
+  /// Percent added to expedition rolls by gear the leader has equipped.
   int get equipmentBonus {
     var bonus = 0;
-    for (final recipe in CraftRecipes.all) {
-      if (_state.craftedCount(recipe.id) > 0) {
-        bonus += recipe.successBonus;
-      }
+    for (final recipeId in _state.equipped.values) {
+      bonus += CraftRecipes.byId(recipeId)?.successBonus ?? 0;
     }
     return bonus;
+  }
+
+  /// Equips an owned crafted item into its slot. Returns false if the item
+  /// is not gear or none have been crafted.
+  bool equipItem(String recipeId) {
+    final slot = EquipmentData.slotForRecipe(recipeId);
+    if (slot == null || _state.craftedCount(recipeId) <= 0) {
+      return false;
+    }
+    _commit(_state.copyWith(
+      equipped: {..._state.equipped, slot.id: recipeId},
+      log: _prependLog(
+        '${CraftRecipes.byId(recipeId)?.name ?? recipeId} kuşanıldı.',
+      ),
+    ));
+    return true;
+  }
+
+  /// Clears the gear in [slotId].
+  void unequip(String slotId) {
+    if (!_state.equipped.containsKey(slotId)) {
+      return;
+    }
+    final next = Map<String, String>.from(_state.equipped)..remove(slotId);
+    _commit(_state.copyWith(equipped: next));
   }
 
   /// Final success chance for a site, clamped to 5–95 percent.

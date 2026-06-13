@@ -502,10 +502,10 @@ class OrnateNavBar extends StatelessWidget {
 
   static const _items = [
     (GameAssets.navHome, 'Ana Sayfa'),
-    (GameAssets.navBoy, 'Boy'),
+    (GameAssets.iconPopulationMedallion, 'Karakter'),
     (GameAssets.navAtelier, 'Oba'),
+    (GameAssets.navBoy, 'Boy'),
     (GameAssets.iconCompassStar, 'Seferler'),
-    (GameAssets.navSettings, 'Ayarlar'),
   ];
 
   @override

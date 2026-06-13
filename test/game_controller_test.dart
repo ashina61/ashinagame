@@ -228,6 +228,26 @@ void main() {
     expect(quest.progress, 1);
   });
 
+  test('equipping crafted gear drives the expedition bonus', () {
+    final controller = GameController.starter();
+    expect(controller.equipmentBonus, 0);
+
+    // Cannot equip what has not been crafted.
+    expect(controller.equipItem('iron_sword'), isFalse);
+
+    controller.startCraft('wood_shield');
+    controller.endDay();
+    expect(controller.state.craftedCount('wood_shield'), 1);
+
+    expect(controller.equipItem('wood_shield'), isTrue);
+    expect(controller.state.equippedIn('shield'), 'wood_shield');
+    expect(controller.equipmentBonus, greaterThan(0));
+
+    controller.unequip('shield');
+    expect(controller.state.equippedIn('shield'), isNull);
+    expect(controller.equipmentBonus, 0);
+  });
+
   test('founding a new oba is gated behind tent level and reputation', () {
     final base = StarterGameData.create();
     final weak = GameController(base);

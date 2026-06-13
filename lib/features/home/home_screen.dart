@@ -19,6 +19,7 @@ import '../expeditions/expeditions_screen.dart';
 import '../inventory/inventory_screen.dart';
 import '../market/market_screen.dart';
 import '../quests/quests_screen.dart';
+import '../settings/settings_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -32,7 +33,21 @@ class HomeScreen extends StatelessWidget {
       child: Column(
         children: [
           const SizedBox(height: 4),
-          const _LogoHeader(),
+          Stack(
+            alignment: Alignment.center,
+            children: [
+              const _LogoHeader(),
+              Positioned(
+                right: 8,
+                top: 0,
+                child: IconButton(
+                  icon: const Icon(Icons.settings, color: AppColors.gold),
+                  tooltip: 'Ayarlar',
+                  onPressed: () => _push(context, const SettingsScreen()),
+                ),
+              ),
+            ],
+          ),
           ResourceBar(
             entries: [
               for (final type in const [
@@ -248,7 +263,8 @@ class _CharacterCard extends StatelessWidget {
     final reputation = state.resource(ResourceType.reputation);
     return GestureDetector(
       onTap: () => Navigator.of(context).push(
-        MaterialPageRoute<void>(builder: (_) => const CharacterScreen()),
+        MaterialPageRoute<void>(
+            builder: (_) => const CharacterScreen(showBack: true)),
       ),
       child: OrnatePanel(
         child: Row(

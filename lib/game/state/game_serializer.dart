@@ -123,6 +123,7 @@ class GameSerializer {
         'khanateStanding': state.khanateStanding,
         'isKhan': state.isKhan,
         'vassalObas': state.vassalObas,
+        'equipped': state.equipped,
       });
 
   static GameState? decode(String raw) {
@@ -227,6 +228,8 @@ class GameSerializer {
         khanateStanding: json['khanateStanding'] as int? ?? 20,
         isKhan: json['isKhan'] as bool? ?? false,
         vassalObas: json['vassalObas'] as int? ?? 0,
+        equipped: (json['equipped'] as Map<String, dynamic>? ?? {})
+            .cast<String, String>(),
       );
     } catch (_) {
       return null;
