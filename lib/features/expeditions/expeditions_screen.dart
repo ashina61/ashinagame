@@ -274,8 +274,10 @@ class _ExpeditionsScreenState extends State<ExpeditionsScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(place.name, style: AppTextStyles.bodyStrong),
-                      Text('Risk: ${place.risk} • Ödül: ${place.reward}', style: AppTextStyles.meta),
-                      Text(place.description, style: AppTextStyles.body.copyWith(fontSize: 13)),
+                      Text('Risk: ${place.risk} • Ödül: ${place.reward}',
+                          style: AppTextStyles.meta),
+                      Text(place.description,
+                          style: AppTextStyles.body.copyWith(fontSize: 13)),
                     ],
                   ),
                 ),
@@ -286,7 +288,10 @@ class _ExpeditionsScreenState extends State<ExpeditionsScreen> {
                       ? () {
                           final done = controller.visitSacredPlace(place.id);
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text(done ? '${place.name} ziyaret edildi.' : 'Ziyaret için cooldown/AP uygun değil.')),
+                            SnackBar(
+                                content: Text(done
+                                    ? '${place.name} ziyaret edildi.'
+                                    : 'Ziyaret için cooldown/AP uygun değil.')),
                           );
                         }
                       : null,

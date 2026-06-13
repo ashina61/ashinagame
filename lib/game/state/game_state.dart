@@ -1,3 +1,4 @@
+import '../models/achievement.dart';
 import '../models/camp_building.dart';
 import '../models/clan.dart';
 import '../models/craft.dart';
@@ -43,11 +44,16 @@ class GameState {
       level: 1,
       effect: 'Alametleri yorumlar, kötü olay riskini azaltır.',
       cooldownDays: 1,
-      description: 'Gök, ateş ve rüzgâr işaretlerini obaya sade bir dille açıklar.',
+      description:
+          'Gök, ateş ve rüzgâr işaretlerini obaya sade bir dille açıklar.',
     ),
     this.rituals = const [],
     this.sacredPlaces = const [],
     this.ritualCooldowns = const {},
+    this.generation = 1,
+    this.pendingSuccession = false,
+    this.leaderLifespan = 64,
+    this.claimedAchievements = const [],
   });
 
   static const baseDailyActionPoints = 4;
@@ -84,7 +90,38 @@ class GameState {
   final List<SacredPlace> sacredPlaces;
   final Map<String, int> ritualCooldowns;
 
+  /// How many leaders have ruled this clan, the founder counted as one.
+  final int generation;
+
+  /// True once the leader has died of old age and an heir awaits the seat.
+  final bool pendingSuccession;
+
+  /// Age at which the current leader dies of old age.
+  final int leaderLifespan;
+
+  /// Ids of achievements whose reward has been collected.
+  final List<String> claimedAchievements;
+
   int resource(ResourceType type) => resources[type] ?? 0;
+
+  bool achievementClaimed(String id) => claimedAchievements.contains(id);
+
+  /// The live figure an achievement measures.
+  int achievementProgress(Achievement achievement) =>
+      switch (achievement.metric) {
+        AchievementMetric.population => resource(ResourceType.population),
+        AchievementMetric.gold => resource(ResourceType.gold),
+        AchievementMetric.conquered => completedExpeditions.length,
+        AchievementMetric.crafted =>
+          craftedItems.values.fold(0, (sum, n) => sum + n),
+        AchievementMetric.generation => generation,
+        AchievementMetric.reputation => profile.reputation,
+        AchievementMetric.daysSurvived => day.day,
+      };
+
+  bool achievementReady(Achievement achievement) =>
+      !achievementClaimed(achievement.id) &&
+      achievementProgress(achievement) >= achievement.target;
   int craftedCount(String recipeId) => craftedItems[recipeId] ?? 0;
   int stockOf(String goodId) => marketStock[goodId] ?? 0;
   bool expeditionDone(String siteId) => completedExpeditions.contains(siteId);
@@ -139,6 +176,10 @@ class GameState {
     List<Ritual>? rituals,
     List<SacredPlace>? sacredPlaces,
     Map<String, int>? ritualCooldowns,
+    int? generation,
+    bool? pendingSuccession,
+    int? leaderLifespan,
+    List<String>? claimedAchievements,
   }) {
     final nextMax = maxDailyActionPoints ?? this.maxDailyActionPoints;
     final nextAp = (dailyActionPoints ?? energy ?? this.dailyActionPoints)
@@ -172,6 +213,10 @@ class GameState {
       rituals: rituals ?? this.rituals,
       sacredPlaces: sacredPlaces ?? this.sacredPlaces,
       ritualCooldowns: ritualCooldowns ?? this.ritualCooldowns,
+      generation: generation ?? this.generation,
+      pendingSuccession: pendingSuccession ?? this.pendingSuccession,
+      leaderLifespan: leaderLifespan ?? this.leaderLifespan,
+      claimedAchievements: claimedAchievements ?? this.claimedAchievements,
     );
   }
 }

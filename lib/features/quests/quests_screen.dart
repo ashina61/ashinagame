@@ -23,7 +23,12 @@ class QuestsScreen extends StatelessWidget {
               child: ListView(
                 padding: const EdgeInsets.only(top: 4, bottom: 16),
                 children: [
-                  for (final category in const ['Günlük', 'Hikâye', 'Oba', 'İnanç']) ...[
+                  for (final category in const [
+                    'Günlük',
+                    'Hikâye',
+                    'Oba',
+                    'İnanç'
+                  ]) ...[
                     SectionPlaque('${category.toUpperCase()} GÖREVLERİ'),
                     for (final quest in _questsByCategory(quests, category))
                       _QuestPanel(quest: quest),

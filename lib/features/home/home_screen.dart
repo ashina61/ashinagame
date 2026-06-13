@@ -6,12 +6,16 @@ import '../../core/assets/game_assets.dart';
 import '../../core/utils/formatters.dart';
 import '../../core/utils/resource_visuals.dart';
 import '../../core/widgets/ornate.dart';
+import '../../game/data/achievements.dart';
+import '../../game/data/expedition_sites.dart';
 import '../../game/data/starter_game_data.dart';
 import '../../game/models/event_choice.dart';
 import '../../game/models/resource.dart';
 import '../../game/state/game_controller.dart';
 import '../../game/state/game_scope.dart';
+import '../achievements/achievements_screen.dart';
 import '../character/character_screen.dart';
+import '../expeditions/expeditions_screen.dart';
 import '../inventory/inventory_screen.dart';
 import '../market/market_screen.dart';
 import '../quests/quests_screen.dart';
@@ -47,6 +51,8 @@ class HomeScreen extends StatelessWidget {
               padding: const EdgeInsets.only(top: 6, bottom: 16),
               children: [
                 const _CharacterCard(),
+                const SectionPlaque('YAPILACAKLAR'),
+                const _TodoPanel(),
                 const SectionPlaque('MANEVİ DENGE'),
                 const _FaithBalancePanel(),
                 if (state.currentEvent != null) ...[
@@ -99,6 +105,12 @@ class HomeScreen extends StatelessWidget {
                             ),
                           ),
                         ],
+                      ),
+                      const SizedBox(height: 8),
+                      DarkButton(
+                        label: 'BAŞARIMLAR',
+                        onPressed: () =>
+                            _push(context, const AchievementsScreen()),
                       ),
                     ],
                   ),
@@ -357,6 +369,100 @@ class _StatRow extends StatelessWidget {
 }
 
 /// Active steppe event with its branching choices.
+/// A live checklist of what the player can do right now.
+class _TodoPanel extends StatelessWidget {
+  const _TodoPanel();
+
+  @override
+  Widget build(BuildContext context) {
+    final state = GameScope.of(context).state;
+    final items = <(IconData, String, Widget?)>[];
+
+    final readyQuests = state.quests.where(state.questReady).length;
+    if (readyQuests > 0) {
+      items.add((
+        Icons.emoji_events,
+        '$readyQuests görev ödülü almaya hazır',
+        const QuestsScreen(),
+      ));
+    }
+
+    final readyAchievements =
+        Achievements.all.where(state.achievementReady).length;
+    if (readyAchievements > 0) {
+      items.add((
+        Icons.military_tech,
+        '$readyAchievements başarım ödülü hazır',
+        const AchievementsScreen(),
+      ));
+    }
+
+    if (state.currentEvent != null) {
+      items.add((Icons.campaign, 'Oba olayını karara bağla', null));
+    }
+
+    for (final site in ExpeditionSites.all) {
+      if (!state.expeditionDone(site.id)) {
+        items.add((
+          Icons.flag,
+          '${site.name} henüz fethedilmedi',
+          const ExpeditionsScreen(),
+        ));
+        break;
+      }
+    }
+
+    if (state.dailyActionPoints > 0) {
+      items.add((
+        Icons.bolt,
+        '${state.dailyActionPoints} hamle hakkın var — işlere bak',
+        null,
+      ));
+    }
+
+    if (items.isEmpty) {
+      items.add((Icons.bedtime, 'Bugünlük her şey tamam — günü bitir', null));
+    }
+
+    return OrnatePanel(
+      child: Column(
+        children: [
+          for (final (icon, label, target) in items.take(4))
+            GestureDetector(
+              onTap: target == null
+                  ? null
+                  : () => Navigator.of(context).push(
+                        MaterialPageRoute<void>(builder: (_) => target),
+                      ),
+              behavior: HitTestBehavior.opaque,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: Row(
+                  children: [
+                    Icon(icon, size: 18, color: AppColors.goldBright),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        label,
+                        style: AppTextStyles.body.copyWith(fontSize: 13),
+                      ),
+                    ),
+                    if (target != null)
+                      const Icon(
+                        Icons.chevron_right,
+                        size: 18,
+                        color: AppColors.stone,
+                      ),
+                  ],
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
 class _EventPanel extends StatelessWidget {
   const _EventPanel();
 
@@ -402,7 +508,10 @@ class _EventChoiceButton extends StatelessWidget {
       onTap: () {
         final ok = controller.chooseEvent(choice);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(ok ? '${choice.label}: ${choice.description}' : 'Bu karar için aksiyon hakkı yok.')),
+          SnackBar(
+              content: Text(ok
+                  ? '${choice.label}: ${choice.description}'
+                  : 'Bu karar için aksiyon hakkı yok.')),
         );
       },
       child: Container(
@@ -604,7 +713,8 @@ class _DailyJobsRow extends StatelessWidget {
         itemCount: _jobs.length,
         separatorBuilder: (context, index) => const SizedBox(width: 8),
         itemBuilder: (context, index) {
-          final (asset, actionId, label, effects, energyCost, fatigueGain, xp) = _jobs[index];
+          final (asset, actionId, label, effects, energyCost, fatigueGain, xp) =
+              _jobs[index];
           return GestureDetector(
             onTap: () {
               final done = actionId == GameActions.rest
@@ -622,7 +732,9 @@ class _DailyJobsRow extends StatelessWidget {
                   content: Text(
                     done
                         ? '$label: ${Formatters.resourceDelta(effects)}'
-                        : state.dailyActionPoints <= 0 ? 'Aksiyon hakkı bitti. Günü bitir.' : 'Aksiyon yapılamadı.',
+                        : state.dailyActionPoints <= 0
+                            ? 'Aksiyon hakkı bitti. Günü bitir.'
+                            : 'Aksiyon yapılamadı.',
                   ),
                   duration: const Duration(seconds: 2),
                 ),
@@ -655,7 +767,9 @@ class _DailyJobsRow extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: AppTextStyles.meta.copyWith(
-                      color: state.dailyActionPoints > 0 ? AppColors.goldBright : AppColors.stone,
+                      color: state.dailyActionPoints > 0
+                          ? AppColors.goldBright
+                          : AppColors.stone,
                       fontSize: 9,
                     ),
                   ),
@@ -668,7 +782,6 @@ class _DailyJobsRow extends StatelessWidget {
     );
   }
 }
-
 
 class _FaithBalancePanel extends StatelessWidget {
   const _FaithBalancePanel();
@@ -708,7 +821,10 @@ class _FaithBalancePanel extends StatelessWidget {
                     ? () {
                         final ok = controller.consultAdvisor('interpret_omen');
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text(ok ? 'Aruk Kam alameti yorumladı.' : 'Kam bugün dinleniyor veya AP yok.')),
+                          SnackBar(
+                              content: Text(ok
+                                  ? 'Aruk Kam alameti yorumladı.'
+                                  : 'Kam bugün dinleniyor veya AP yok.')),
                         );
                       }
                     : null,

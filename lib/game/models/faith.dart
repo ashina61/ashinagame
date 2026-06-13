@@ -47,7 +47,8 @@ class FaithState {
       faith: (faith ?? this.faith).clamp(0, 100).toInt(),
       kut: (kut ?? this.kut).clamp(0, 100).toInt(),
       tore: (tore ?? this.tore).clamp(0, 100).toInt(),
-      ancestorHonor: (ancestorHonor ?? this.ancestorHonor).clamp(0, 100).toInt(),
+      ancestorHonor:
+          (ancestorHonor ?? this.ancestorHonor).clamp(0, 100).toInt(),
       omen: omen ?? this.omen,
       omenSeverity: omenSeverity ?? this.omenSeverity,
       lastRitualDay: lastRitualDay ?? this.lastRitualDay,

@@ -7,6 +7,7 @@ import '../features/expeditions/expeditions_screen.dart';
 import '../features/game_over/game_over_screen.dart';
 import '../features/home/home_screen.dart';
 import '../features/settings/settings_screen.dart';
+import '../features/succession/succession_screen.dart';
 import '../game/state/game_scope.dart';
 
 class AshinaRouter extends StatefulWidget {
@@ -29,8 +30,12 @@ class _AshinaRouterState extends State<AshinaRouter> {
 
   @override
   Widget build(BuildContext context) {
-    if (GameScope.of(context).state.gameOver) {
+    final state = GameScope.of(context).state;
+    if (state.gameOver) {
       return const Scaffold(body: GameOverScreen());
+    }
+    if (state.pendingSuccession) {
+      return const Scaffold(body: SuccessionScreen());
     }
     return Scaffold(
       body: IndexedStack(index: _index, children: _screens),

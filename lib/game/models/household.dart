@@ -25,7 +25,8 @@ class Household {
       Household(
         spouseName: spouseName ?? this.spouseName,
         spouseBonus: spouseBonus ?? this.spouseBonus,
-        householdMorale: (householdMorale ?? this.householdMorale).clamp(0, 100).toInt(),
+        householdMorale:
+            (householdMorale ?? this.householdMorale).clamp(0, 100).toInt(),
         childrenCount: childrenCount ?? this.childrenCount,
         familyPrestige: familyPrestige ?? this.familyPrestige,
       );

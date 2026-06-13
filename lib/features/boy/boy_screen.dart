@@ -32,11 +32,15 @@ class BoyScreen extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(state.clan.name.toUpperCase(), style: AppTextStyles.title),
+                            Text(state.clan.name.toUpperCase(),
+                                style: AppTextStyles.title),
                             const SizedBox(height: 8),
-                            _InfoRow('Nüfus', '${state.resource(ResourceType.population)}'),
-                            _InfoRow('İtibar', '${state.resource(ResourceType.reputation)}'),
-                            _InfoRow('Aksiyon', '${state.dailyActionPoints}/${state.maxDailyActionPoints}'),
+                            _InfoRow('Nüfus',
+                                '${state.resource(ResourceType.population)}'),
+                            _InfoRow('İtibar',
+                                '${state.resource(ResourceType.reputation)}'),
+                            _InfoRow('Aksiyon',
+                                '${state.dailyActionPoints}/${state.maxDailyActionPoints}'),
                             _InfoRow('Boy sayısı', '${state.tribes.length}'),
                           ],
                         ),
@@ -70,24 +74,51 @@ class _TribePanel extends StatelessWidget {
         children: [
           Row(
             children: [
-              Expanded(child: Text(tribe.name, style: AppTextStyles.bodyStrong.copyWith(fontSize: 16))),
-              Text(tribe.status, style: AppTextStyles.value.copyWith(fontSize: 14, color: _statusColor(tribe.status))),
+              Expanded(
+                  child: Text(tribe.name,
+                      style: AppTextStyles.bodyStrong.copyWith(fontSize: 16))),
+              Text(tribe.status,
+                  style: AppTextStyles.value.copyWith(
+                      fontSize: 14, color: _statusColor(tribe.status))),
             ],
           ),
           const SizedBox(height: 4),
-          Text('Lider ${tribe.leader} • Güç ${tribe.power} • Nüfus ${tribe.population}', style: AppTextStyles.body),
-          Text('İlişki ${tribe.relation}/100 • Savaş riski %${tribe.warRisk} • Ticaret ${tribe.tradeOpen ? 'Açık' : 'Kapalı'} • Evlilik bağı ${tribe.marriageTie ? 'Var' : 'Yok'}', style: AppTextStyles.meta),
+          Text(
+              'Lider ${tribe.leader} • Güç ${tribe.power} • Nüfus ${tribe.population}',
+              style: AppTextStyles.body),
+          Text(
+              'İlişki ${tribe.relation}/100 • Savaş riski %${tribe.warRisk} • Ticaret ${tribe.tradeOpen ? 'Açık' : 'Kapalı'} • Evlilik bağı ${tribe.marriageTie ? 'Var' : 'Yok'}',
+              style: AppTextStyles.meta),
           const SizedBox(height: 8),
           Wrap(
             spacing: 6,
             runSpacing: 6,
             children: [
-              _Action(label: 'Hediye', enabled: hasAp && state.resource(ResourceType.gold) >= 100, onTap: () => controller.performDiplomacy(tribe.id, 'gift')),
-              _Action(label: 'Ticaret', enabled: hasAp && state.resource(ResourceType.gold) >= 60, onTap: () => controller.performDiplomacy(tribe.id, 'trade')),
-              _Action(label: 'Elçi', enabled: hasAp, onTap: () => controller.performDiplomacy(tribe.id, 'envoy')),
-              _Action(label: 'Yardım', enabled: hasAp && state.resource(ResourceType.food) >= 20, onTap: () => controller.performDiplomacy(tribe.id, 'aid')),
-              _Action(label: 'Savaş Haz.', enabled: hasAp && state.resource(ResourceType.gold) >= 40, onTap: () => controller.performDiplomacy(tribe.id, 'war')),
-              _Action(label: 'Evlilik Bağı', enabled: hasAp && state.resource(ResourceType.gold) >= 80, onTap: () => controller.performDiplomacy(tribe.id, 'marriage')),
+              _Action(
+                  label: 'Hediye',
+                  enabled: hasAp && state.resource(ResourceType.gold) >= 100,
+                  onTap: () => controller.performDiplomacy(tribe.id, 'gift')),
+              _Action(
+                  label: 'Ticaret',
+                  enabled: hasAp && state.resource(ResourceType.gold) >= 60,
+                  onTap: () => controller.performDiplomacy(tribe.id, 'trade')),
+              _Action(
+                  label: 'Elçi',
+                  enabled: hasAp,
+                  onTap: () => controller.performDiplomacy(tribe.id, 'envoy')),
+              _Action(
+                  label: 'Yardım',
+                  enabled: hasAp && state.resource(ResourceType.food) >= 20,
+                  onTap: () => controller.performDiplomacy(tribe.id, 'aid')),
+              _Action(
+                  label: 'Savaş Haz.',
+                  enabled: hasAp && state.resource(ResourceType.gold) >= 40,
+                  onTap: () => controller.performDiplomacy(tribe.id, 'war')),
+              _Action(
+                  label: 'Evlilik Bağı',
+                  enabled: hasAp && state.resource(ResourceType.gold) >= 80,
+                  onTap: () =>
+                      controller.performDiplomacy(tribe.id, 'marriage')),
             ],
           ),
         ],
@@ -103,7 +134,8 @@ class _TribePanel extends StatelessWidget {
 }
 
 class _Action extends StatelessWidget {
-  const _Action({required this.label, required this.enabled, required this.onTap});
+  const _Action(
+      {required this.label, required this.enabled, required this.onTap});
   final String label;
   final bool enabled;
   final VoidCallback onTap;
@@ -119,7 +151,8 @@ class _Action extends StatelessWidget {
             ? () {
                 final ok = onTap;
                 ok();
-                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$label diplomasi aksiyonu işlendi.')));
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    content: Text('$label diplomasi aksiyonu işlendi.')));
               }
             : null,
       ),
@@ -138,7 +171,8 @@ class _InfoRow extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 3),
       child: Row(
         children: [
-          SizedBox(width: 70, child: Text('$label:', style: AppTextStyles.meta)),
+          SizedBox(
+              width: 70, child: Text('$label:', style: AppTextStyles.meta)),
           Expanded(child: Text(value, style: AppTextStyles.bodyStrong)),
         ],
       ),

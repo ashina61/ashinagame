@@ -2,15 +2,18 @@ import 'dart:math';
 
 import 'package:flutter/foundation.dart';
 
+import '../data/achievements.dart';
 import '../data/craft_recipes.dart';
 import '../data/expedition_sites.dart';
 import '../data/market_goods.dart';
 import '../data/starter_game_data.dart';
 import '../logic/event_logic.dart';
+import '../logic/life_logic.dart';
 import '../logic/market_logic.dart';
 import '../logic/progression_logic.dart';
 import '../logic/resource_logic.dart';
 import '../logic/season_logic.dart';
+import '../models/achievement.dart';
 import '../models/craft.dart';
 import '../models/event_choice.dart';
 import '../models/faith.dart';
@@ -56,8 +59,10 @@ class GameController extends ChangeNotifier {
 
   /// Final success chance for a site, clamped to 5–95 percent.
   int successChanceFor(ExpeditionSite site) {
-    final chance =
-        site.baseChance + _state.profile.courage + _state.profile.warfare * 2 + equipmentBonus;
+    final chance = site.baseChance +
+        _state.profile.courage +
+        _state.profile.warfare * 2 +
+        equipmentBonus;
     return chance.clamp(5, 95).toInt();
   }
 
@@ -120,7 +125,8 @@ class GameController extends ChangeNotifier {
     }
     final enduranceDiscount = (_state.profile.endurance / 4).floor();
     final winterTax = _state.day.season.name == 'winter' ? 3 : 0;
-    final adjustedEnergy = (energyCost + winterTax - enduranceDiscount).clamp(3, 30).toInt();
+    final adjustedEnergy =
+        (energyCost + winterTax - enduranceDiscount).clamp(3, 30).toInt();
     final profile = ProgressionLogic.addXp(
       _state.profile.copyWith(
         energy: _state.profile.energy - adjustedEnergy,
@@ -163,7 +169,11 @@ class GameController extends ChangeNotifier {
     }
     _commit(_state.copyWith(
       dailyActionPoints: _state.dailyActionPoints - exploreCost,
-      profile: ProgressionLogic.addXp(_state.profile.copyWith(energy: _state.profile.energy - 12, fatigue: _state.profile.fatigue + 8), 16),
+      profile: ProgressionLogic.addXp(
+          _state.profile.copyWith(
+              energy: _state.profile.energy - 12,
+              fatigue: _state.profile.fatigue + 8),
+          16),
       resources: ResourceLogic.apply(_state.resources, effects),
       quests: _trackAction(GameActions.explore),
       log: _prependLog('$title keşfi tamamlandı.'),
@@ -185,7 +195,11 @@ class GameController extends ChangeNotifier {
     final effects = success ? site.gains : site.losses;
     _commit(_state.copyWith(
       dailyActionPoints: _state.dailyActionPoints - expeditionCost,
-      profile: ProgressionLogic.addXp(_state.profile.copyWith(energy: _state.profile.energy - 18, fatigue: _state.profile.fatigue + 12), success ? 28 : 12),
+      profile: ProgressionLogic.addXp(
+          _state.profile.copyWith(
+              energy: _state.profile.energy - 18,
+              fatigue: _state.profile.fatigue + 12),
+          success ? 28 : 12),
       resources: ResourceLogic.apply(_state.resources, effects),
       quests: _trackAction(GameActions.expedition),
       completedExpeditions: success
@@ -273,6 +287,9 @@ class GameController extends ChangeNotifier {
   }
 
   void endDay() {
+    if (_state.pendingSuccession) {
+      return;
+    }
     final nextDay = _state.day.nextDay();
     final dailyCost = SeasonLogic.dailyCost(
       nextDay.season,
@@ -323,13 +340,34 @@ class GameController extends ChangeNotifier {
       }
     }
 
+    // The leader ages a year each time the seasons come full circle.
+    var profile = _recoverProfile(resources);
+    var pendingSuccession = false;
+    if (LifeLogic.isYearBoundary(nextDay.day)) {
+      final agedTo = profile.age + 1;
+      profile = profile.copyWith(
+        age: agedTo,
+        title: LifeLogic.titleForAge(agedTo),
+      );
+      log = ['${profile.name} bir yaş aldı: $agedTo. ${profile.title}.', ...log]
+          .take(6)
+          .toList();
+      if (agedTo >= _state.leaderLifespan && !gameOver) {
+        pendingSuccession = true;
+        log = [
+          '${profile.name}, $agedTo yaşında göçtü. Mirasçı bekleniyor.',
+          ...log,
+        ].take(6).toList();
+      }
+    }
+
     final eventIndex = _state.eventIndex + 1;
     final omenState = _rollOmen(resources);
     _commit(_state.copyWith(
       day: nextDay,
       resources: resources,
       dailyActionPoints: _dailyActionLimit(resources),
-      profile: _recoverProfile(resources),
+      profile: profile,
       faithState: omenState,
       collapseDays: collapseDays,
       gameOver: gameOver,
@@ -337,11 +375,13 @@ class GameController extends ChangeNotifier {
           ? 'Moral günlerce sıfırda kaldı; oba dağıldı ve halk '
               'başka beyliklere göçtü.'
           : null,
+      pendingSuccession: pendingSuccession,
       quests: quests,
       craftQueue: queue,
       craftedItems: crafted,
       marketStock: MarketGoods.startingStock(),
-      currentEvent: EventLogic.nextEvent(eventIndex),
+      currentEvent: pendingSuccession ? null : EventLogic.nextEvent(eventIndex),
+      clearEvent: pendingSuccession,
       eventIndex: eventIndex,
       log: log,
     ));
@@ -403,13 +443,13 @@ class GameController extends ChangeNotifier {
       resources: resources,
       household: household,
       faithState: _state.faithState.apply(ritual.faithEffects).copyWith(
-        lastRitualDay: _state.day.day,
-        ritualCooldownDays: ritual.cooldownDays,
-        activeBlessings: [
-          '${ritual.name} (${ritual.bonusDurationDays} gün)',
-          ..._state.faithState.activeBlessings,
-        ].take(4).toList(),
-      ),
+            lastRitualDay: _state.day.day,
+            ritualCooldownDays: ritual.cooldownDays,
+            activeBlessings: [
+              '${ritual.name} (${ritual.bonusDurationDays} gün)',
+              ..._state.faithState.activeBlessings,
+            ].take(4).toList(),
+          ),
       ritualCooldowns: {..._state.ritualCooldowns, ritual.id: _state.day.day},
       profile: ProgressionLogic.addXp(
         ProgressionLogic.applyStats(
@@ -422,7 +462,8 @@ class GameController extends ChangeNotifier {
         16,
       ),
       quests: _trackAction(GameActions.ritual),
-      log: _prependLog('${ritual.name} tamamlandı: ${ritual.effectDescription}.'),
+      log: _prependLog(
+          '${ritual.name} tamamlandı: ${ritual.effectDescription}.'),
     ));
     return true;
   }
@@ -448,14 +489,18 @@ class GameController extends ChangeNotifier {
         ResourceType.morale: isBadOmen ? 3 : 1,
       }),
       faithState: _state.faithState.apply(effects).copyWith(
-        omen: isBadOmen ? 'Kam alameti yatıştırdı.' : _state.faithState.omen,
-        omenSeverity: isBadOmen ? OmenSeverity.neutral : _state.faithState.omenSeverity,
-        activeWarnings: isBadOmen ? const [] : _state.faithState.activeWarnings,
-        activeBlessings: [
-          '${advisor.name} yorumu',
-          ..._state.faithState.activeBlessings,
-        ].take(4).toList(),
-      ),
+            omen:
+                isBadOmen ? 'Kam alameti yatıştırdı.' : _state.faithState.omen,
+            omenSeverity: isBadOmen
+                ? OmenSeverity.neutral
+                : _state.faithState.omenSeverity,
+            activeWarnings:
+                isBadOmen ? const [] : _state.faithState.activeWarnings,
+            activeBlessings: [
+              '${advisor.name} yorumu',
+              ..._state.faithState.activeBlessings,
+            ].take(4).toList(),
+          ),
       profile: ProgressionLogic.addXp(_state.profile, 12),
       quests: _trackAction(GameActions.advisor),
       log: _prependLog('${advisor.name} alameti yorumladı.'),
@@ -496,7 +541,8 @@ class GameController extends ChangeNotifier {
 
   bool spendSkillPoint(String stat) {
     final next = ProgressionLogic.spendSkillPoint(_state.profile, stat);
-    if (identical(next, _state.profile) || next.skillPoints == _state.profile.skillPoints) {
+    if (identical(next, _state.profile) ||
+        next.skillPoints == _state.profile.skillPoints) {
       return false;
     }
     _commit(_state.copyWith(
@@ -509,7 +555,8 @@ class GameController extends ChangeNotifier {
   bool upgradeBuilding(String id) {
     final building = _state.building(id);
     if (building == null || !building.canUpgrade) return false;
-    final craftDiscount = id == 'workshop' ? (_state.profile.craft / 5).floor() : 0;
+    final craftDiscount =
+        id == 'workshop' ? (_state.profile.craft / 5).floor() : 0;
     final cost = {
       for (final entry in building.upgradeCost.entries)
         entry.key: (entry.value - craftDiscount).clamp(1, 9999).toInt(),
@@ -544,7 +591,9 @@ class GameController extends ChangeNotifier {
     switch (action) {
       case 'gift':
         resourceCost = const {ResourceType.gold: -100};
-        delta = 8 + (_state.profile.trade / 5).floor() + (_state.faithState.kut / 35).floor();
+        delta = 8 +
+            (_state.profile.trade / 5).floor() +
+            (_state.faithState.kut / 35).floor();
         break;
       case 'trade':
         resourceCost = const {ResourceType.gold: -60};
@@ -552,7 +601,12 @@ class GameController extends ChangeNotifier {
         tradeOpen = true;
         break;
       case 'envoy':
-        delta = _state.profile.wisdom + _state.profile.trade + (_state.faithState.kut / 25).floor() >= 10 ? 5 : -3;
+        delta = _state.profile.wisdom +
+                    _state.profile.trade +
+                    (_state.faithState.kut / 25).floor() >=
+                10
+            ? 5
+            : -3;
         break;
       case 'aid':
         resourceCost = const {ResourceType.food: -20};
@@ -581,12 +635,16 @@ class GameController extends ChangeNotifier {
       tribes: [
         for (final item in _state.tribes)
           item.id == tribeId
-              ? item.copyWith(relation: item.relation + delta, tradeOpen: tradeOpen)
+              ? item.copyWith(
+                  relation: item.relation + delta, tradeOpen: tradeOpen)
               : item,
       ],
-      profile: ProgressionLogic.addXp(_state.profile.copyWith(reputation: _state.profile.reputation + 1), 14),
+      profile: ProgressionLogic.addXp(
+          _state.profile.copyWith(reputation: _state.profile.reputation + 1),
+          14),
       quests: _trackAction(GameActions.diplomacy),
-      log: _prependLog('${tribe.name}: diplomasi ($action), ilişki ${delta >= 0 ? '+' : ''}$delta.'),
+      log: _prependLog(
+          '${tribe.name}: diplomasi ($action), ilişki ${delta >= 0 ? '+' : ''}$delta.'),
     ));
     return true;
   }
@@ -607,9 +665,14 @@ class GameController extends ChangeNotifier {
 
   bool proposeMarriage(String candidateId) {
     final candidate = _candidateById(candidateId);
-    if (candidate == null || !candidate.isAvailable || _state.household.isMarried || _state.dailyActionPoints < 1) return false;
+    if (candidate == null ||
+        !candidate.isAvailable ||
+        _state.household.isMarried ||
+        _state.dailyActionPoints < 1) return false;
     final tribe = _state.tribeByName(candidate.tribeName);
-    if (_state.resource(ResourceType.reputation) < 20 || _state.resource(ResourceType.gold) < 300 || (tribe?.relation ?? -100) + (_state.faithState.kut / 25).floor() < 10) {
+    if (_state.resource(ResourceType.reputation) < 20 ||
+        _state.resource(ResourceType.gold) < 300 ||
+        (tribe?.relation ?? -100) + (_state.faithState.kut / 25).floor() < 10) {
       return false;
     }
     _commit(_state.copyWith(
@@ -623,9 +686,15 @@ class GameController extends ChangeNotifier {
         spouseName: candidate.name,
         spouseBonus: candidate.bonusType,
         householdMorale: _state.household.householdMorale + 25,
-        familyPrestige: _state.household.familyPrestige + candidate.diplomaticValue,
+        familyPrestige:
+            (_state.household.familyPrestige + candidate.diplomaticValue)
+                .toInt(),
       ),
-      profile: ProgressionLogic.addXp(_state.profile.copyWith(familyStatus: 'Kurulu hane', marriageStatus: '${candidate.name} ile evli'), 40),
+      profile: ProgressionLogic.addXp(
+          _state.profile.copyWith(
+              familyStatus: 'Kurulu hane',
+              marriageStatus: '${candidate.name} ile evli'),
+          40),
       marriageCandidates: [
         for (final c in _state.marriageCandidates)
           c.id == candidateId
@@ -646,9 +715,11 @@ class GameController extends ChangeNotifier {
   int _dailyActionLimit(Map<ResourceType, int> resources, {List? buildings}) {
     final source = buildings ?? _state.buildings;
     final main = _buildingById(source, 'main_tent');
-    var max = GameState.baseDailyActionPoints + ((main?.level ?? 1) >= 3 ? 1 : 0);
+    var max =
+        GameState.baseDailyActionPoints + ((main?.level ?? 1) >= 3 ? 1 : 0);
     if (_state.profile.fatigue >= 75) max -= 1;
-    if ((resources[ResourceType.morale] ?? 0) >= 80 && _state.profile.leadership >= 8) max += 1;
+    if ((resources[ResourceType.morale] ?? 0) >= 80 &&
+        _state.profile.leadership >= 8) max += 1;
     return max.clamp(2, 6).toInt();
   }
 
@@ -663,6 +734,51 @@ class GameController extends ChangeNotifier {
       fatigue: _state.profile.fatigue - 22,
       health: _state.profile.health + healer + healthLoss,
     );
+  }
+
+  /// Collects an achievement reward once its goal is met.
+  bool claimAchievement(String id) {
+    Achievement? achievement;
+    for (final item in Achievements.all) {
+      if (item.id == id) {
+        achievement = item;
+        break;
+      }
+    }
+    if (achievement == null || !_state.achievementReady(achievement)) {
+      return false;
+    }
+    _commit(_state.copyWith(
+      resources: ResourceLogic.apply(_state.resources, achievement.reward),
+      claimedAchievements: [..._state.claimedAchievements, achievement.id],
+      log: _prependLog('Başarım kazanıldı: ${achievement.title}.'),
+    ));
+    return true;
+  }
+
+  /// Seats the late leader's heir, carrying the clan and legacy forward.
+  void succeedWithHeir() {
+    if (!_state.pendingSuccession) {
+      return;
+    }
+    final heir = LifeLogic.heirOf(_state.profile, _random);
+    // The heir inherits the realm, but the funeral spends a fifth of the
+    // treasury and the interregnum shakes morale.
+    final resources = ResourceLogic.apply(_state.resources, {
+      ResourceType.gold: -(_state.resource(ResourceType.gold) ~/ 5),
+      ResourceType.morale: -10,
+    });
+    _commit(_state.copyWith(
+      profile: heir,
+      resources: resources,
+      generation: _state.generation + 1,
+      leaderLifespan: 60 + _random.nextInt(13),
+      pendingSuccession: false,
+      log: _prependLog(
+        '${heir.name} obanın başına geçti. ${_state.generation + 1}. nesil '
+        'başladı.',
+      ),
+    ));
   }
 
   void resetGame() {
@@ -720,7 +836,8 @@ class GameController extends ChangeNotifier {
 
   FaithState _rollOmen(Map<ResourceType, int> resources) {
     var faith = _state.faithState;
-    final badPressure = (resources[ResourceType.morale] ?? 0) < 30 || faith.kut < 25;
+    final badPressure =
+        (resources[ResourceType.morale] ?? 0) < 30 || faith.kut < 25;
     final roll = _random.nextInt(100);
     if (roll < 25) {
       final good = faith.kut >= 55 || roll < 10;
@@ -731,8 +848,12 @@ class GameController extends ChangeNotifier {
                 ? 'Sabah rüzgârı kuzeyden sert esti.'
                 : 'Kurt uluması oba yakınında duyuldu.',
         omenSeverity: good ? OmenSeverity.good : OmenSeverity.bad,
-        activeBlessings: good ? ['İyi alamet', ...faith.activeBlessings].take(4).toList() : faith.activeBlessings,
-        activeWarnings: good ? faith.activeWarnings : ['Kötü alamet', ...faith.activeWarnings].take(4).toList(),
+        activeBlessings: good
+            ? ['İyi alamet', ...faith.activeBlessings].take(4).toList()
+            : faith.activeBlessings,
+        activeWarnings: good
+            ? faith.activeWarnings
+            : ['Kötü alamet', ...faith.activeWarnings].take(4).toList(),
         kut: faith.kut + (good ? 1 : -1),
       );
     }
@@ -742,7 +863,8 @@ class GameController extends ChangeNotifier {
         omenSeverity: OmenSeverity.neutral,
       );
     }
-    return faith.copyWith(omen: 'Alamet yok', omenSeverity: OmenSeverity.neutral);
+    return faith.copyWith(
+        omen: 'Alamet yok', omenSeverity: OmenSeverity.neutral);
   }
 
   List<String> _prependLog(String message) =>
