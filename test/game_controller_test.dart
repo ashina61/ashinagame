@@ -340,6 +340,27 @@ void main() {
     expect(ready.canFoundNewOba, isTrue);
   });
 
+  test('the council convenes on schedule and decisions shift approval', () {
+    final base = StarterGameData.create();
+    final controller = GameController(
+      base.copyWith(
+        day: const GameDay(day: 9, season: Season.spring),
+        resources: {...base.resources, ResourceType.food: 400},
+      ),
+      random: _FixedRandom(0),
+    );
+
+    controller.endDay(); // day 10 -> a kurultay convenes
+    expect(controller.state.currentKurultay, isNotNull);
+
+    // _FixedRandom(0) picks the first decision ('tax'); choice 0 raises the
+    // council and lowers the people.
+    controller.resolveKurultay(0);
+    expect(controller.state.currentKurultay, isNull);
+    expect(controller.state.peopleApproval, 60 - 12);
+    expect(controller.state.councilApproval, 60 + 10);
+  });
+
   test('onboarding names the oba and opens play', () {
     final controller = GameController(StarterGameData.create());
     expect(controller.state.onboarded, isFalse);

@@ -63,6 +63,10 @@ class GameState {
     this.regionRelations = const {},
     this.conqueredRegions = const [],
     this.onboarded = false,
+    this.peopleApproval = 60,
+    this.councilApproval = 60,
+    this.currentKurultay,
+    this.lastKurultayDay = 0,
   });
 
   static const baseDailyActionPoints = 4;
@@ -137,6 +141,16 @@ class GameState {
 
   /// False until the player has named the oba and seen the opening.
   final bool onboarded;
+
+  /// Approval of the common folk and of the council beys (0–100).
+  final int peopleApproval;
+  final int councilApproval;
+
+  /// Id of the kurultay decision awaiting a verdict, or null when none.
+  final String? currentKurultay;
+
+  /// Day the last council convened, to space them out.
+  final int lastKurultayDay;
 
   int resource(ResourceType type) => resources[type] ?? 0;
 
@@ -229,6 +243,11 @@ class GameState {
     Map<String, int>? regionRelations,
     List<String>? conqueredRegions,
     bool? onboarded,
+    int? peopleApproval,
+    int? councilApproval,
+    String? currentKurultay,
+    bool clearKurultay = false,
+    int? lastKurultayDay,
   }) {
     final nextMax = maxDailyActionPoints ?? this.maxDailyActionPoints;
     final nextAp = (dailyActionPoints ?? energy ?? this.dailyActionPoints)
@@ -276,6 +295,13 @@ class GameState {
       regionRelations: regionRelations ?? this.regionRelations,
       conqueredRegions: conqueredRegions ?? this.conqueredRegions,
       onboarded: onboarded ?? this.onboarded,
+      peopleApproval:
+          (peopleApproval ?? this.peopleApproval).clamp(0, 100).toInt(),
+      councilApproval:
+          (councilApproval ?? this.councilApproval).clamp(0, 100).toInt(),
+      currentKurultay:
+          clearKurultay ? null : currentKurultay ?? this.currentKurultay,
+      lastKurultayDay: lastKurultayDay ?? this.lastKurultayDay,
     );
   }
 }

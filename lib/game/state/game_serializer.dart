@@ -127,6 +127,10 @@ class GameSerializer {
         'regionRelations': state.regionRelations,
         'conqueredRegions': state.conqueredRegions,
         'onboarded': state.onboarded,
+        'peopleApproval': state.peopleApproval,
+        'councilApproval': state.councilApproval,
+        'currentKurultay': state.currentKurultay,
+        'lastKurultayDay': state.lastKurultayDay,
       });
 
   static GameState? decode(String raw) {
@@ -240,6 +244,10 @@ class GameSerializer {
             (json['conqueredRegions'] as List<dynamic>? ?? []).cast<String>(),
         // Existing saves predate onboarding, so treat them as done.
         onboarded: json['onboarded'] as bool? ?? true,
+        peopleApproval: json['peopleApproval'] as int? ?? 60,
+        councilApproval: json['councilApproval'] as int? ?? 60,
+        currentKurultay: json['currentKurultay'] as String?,
+        lastKurultayDay: json['lastKurultayDay'] as int? ?? 0,
       );
     } catch (_) {
       return null;

@@ -8,6 +8,7 @@ import '../data/craft_recipes.dart';
 import '../data/equipment.dart';
 import '../data/expedition_sites.dart';
 import '../data/faith_paths.dart';
+import '../data/kurultay_decisions.dart';
 import '../data/market_goods.dart';
 import '../data/recruitment.dart';
 import '../data/starter_game_data.dart';
@@ -411,6 +412,29 @@ class GameController extends ChangeNotifier {
       }
     }
 
+    // Discontent at the bottom or top of the camp gnaws at it daily.
+    if (_state.peopleApproval < 30) {
+      resources = ResourceLogic.apply(resources, const {
+        ResourceType.morale: -3,
+      });
+    }
+
+    // The council convenes on a fixed cadence when one is not already due.
+    var kurultayId = _state.currentKurultay;
+    var lastKurultay = _state.lastKurultayDay;
+    if (kurultayId == null &&
+        !pendingSuccession &&
+        nextDay.day - lastKurultay >= KurultayDecisions.period) {
+      final pool = [
+        for (final d in KurultayDecisions.all)
+          if (!d.khanate || _state.isKhan) d,
+      ];
+      kurultayId = pool[_random.nextInt(pool.length)].id;
+      lastKurultay = nextDay.day;
+      log =
+          ['Kurultay toplandı; bir karar bekleniyor.', ...log].take(6).toList();
+    }
+
     final eventIndex = _state.eventIndex + 1;
     final omenState = _rollOmen(resources);
     _commit(_state.copyWith(
@@ -427,6 +451,8 @@ class GameController extends ChangeNotifier {
               'başka beyliklere göçtü.'
           : null,
       pendingSuccession: pendingSuccession,
+      currentKurultay: kurultayId,
+      lastKurultayDay: lastKurultay,
       quests: quests,
       craftQueue: queue,
       craftedItems: crafted,
@@ -1166,6 +1192,24 @@ class GameController extends ChangeNotifier {
           ? _state.profile
           : _state.profile.copyWith(name: leader),
       log: _prependLog('İsimler güncellendi.'),
+    ));
+  }
+
+  /// Records the council's verdict, shifting the favour of people and beys.
+  void resolveKurultay(int choiceIndex) {
+    final decision = KurultayDecisions.byId(_state.currentKurultay ?? '');
+    if (decision == null ||
+        choiceIndex < 0 ||
+        choiceIndex >= decision.choices.length) {
+      return;
+    }
+    final choice = decision.choices[choiceIndex];
+    _commit(_state.copyWith(
+      peopleApproval: _state.peopleApproval + choice.peopleEffect,
+      councilApproval: _state.councilApproval + choice.councilEffect,
+      resources: ResourceLogic.apply(_state.resources, choice.resourceEffects),
+      clearKurultay: true,
+      log: _prependLog('Kurultay kararı: ${choice.label}.'),
     ));
   }
 

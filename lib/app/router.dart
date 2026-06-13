@@ -7,6 +7,7 @@ import '../features/character/character_screen.dart';
 import '../features/expeditions/expeditions_screen.dart';
 import '../features/game_over/game_over_screen.dart';
 import '../features/home/home_screen.dart';
+import '../features/kurultay/kurultay_screen.dart';
 import '../features/onboarding/onboarding_screen.dart';
 import '../features/succession/succession_screen.dart';
 import '../game/state/game_scope.dart';
@@ -40,6 +41,9 @@ class _AshinaRouterState extends State<AshinaRouter> {
     }
     if (state.pendingSuccession) {
       return const Scaffold(body: SuccessionScreen());
+    }
+    if (state.currentKurultay != null) {
+      return const Scaffold(body: KurultayScreen());
     }
     return Scaffold(
       body: IndexedStack(index: _index, children: _screens),
