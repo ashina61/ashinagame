@@ -131,6 +131,8 @@ class GameSerializer {
         'councilApproval': state.councilApproval,
         'currentKurultay': state.currentKurultay,
         'lastKurultayDay': state.lastKurultayDay,
+        'army': state.army,
+        'wounded': state.wounded,
       });
 
   static GameState? decode(String raw) {
@@ -248,6 +250,9 @@ class GameSerializer {
         councilApproval: json['councilApproval'] as int? ?? 60,
         currentKurultay: json['currentKurultay'] as String?,
         lastKurultayDay: json['lastKurultayDay'] as int? ?? 0,
+        army: (json['army'] as Map<String, dynamic>? ?? {}).cast<String, int>(),
+        wounded: (json['wounded'] as Map<String, dynamic>? ?? {})
+            .cast<String, int>(),
       );
     } catch (_) {
       return null;

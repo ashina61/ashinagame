@@ -27,6 +27,7 @@ import '../models/faith.dart';
 import '../models/expedition.dart';
 import '../models/quest.dart';
 import '../models/resource.dart';
+import '../models/unit_type.dart';
 import 'game_state.dart';
 import 'game_storage.dart';
 
@@ -443,6 +444,26 @@ class GameController extends ChangeNotifier {
       });
     }
 
+    // The healer's çadırı mends the wounded back into the ranks.
+    var army = _state.army;
+    var wounded = _state.wounded;
+    if (_state.totalWounded > 0) {
+      var cap = healCapacity;
+      final a = Map<String, int>.from(army);
+      final w = Map<String, int>.from(wounded);
+      for (final id in w.keys.toList()) {
+        if (cap <= 0) break;
+        final heal = w[id]!.clamp(0, cap).toInt();
+        w[id] = w[id]! - heal;
+        if (w[id]! <= 0) w.remove(id);
+        a[id] = (a[id] ?? 0) + heal;
+        cap -= heal;
+      }
+      army = a;
+      wounded = w;
+      log = ['Şifacı çadırında yaralılar iyileşiyor.', ...log].take(6).toList();
+    }
+
     // The council convenes on a fixed cadence when one is not already due.
     var kurultayId = _state.currentKurultay;
     var lastKurultay = _state.lastKurultayDay;
@@ -477,6 +498,8 @@ class GameController extends ChangeNotifier {
       pendingSuccession: pendingSuccession,
       currentKurultay: kurultayId,
       lastKurultayDay: lastKurultay,
+      army: army,
+      wounded: wounded,
       quests: quests,
       craftQueue: queue,
       craftedItems: crafted,
@@ -1041,8 +1064,62 @@ class GameController extends ChangeNotifier {
     return success;
   }
 
+  /// Combined attack of every battle-ready unit.
+  int get armyStrength {
+    var total = 0;
+    for (final entry in _state.army.entries) {
+      total += (UnitTypes.byId(entry.key)?.attack ?? 0) * entry.value;
+    }
+    return total;
+  }
+
+  /// How many wounded the healer's çadırı mends each day.
+  int get healCapacity => 2 + ((_state.building('healer')?.level ?? 1) - 1) * 2;
+
+  /// Raises [qty] soldiers of a type, paying gold (and horses for riders).
+  bool recruitUnit(String unitId, int qty) {
+    final unit = UnitTypes.byId(unitId);
+    if (unit == null || qty <= 0 || _state.dailyActionPoints < 1) {
+      return false;
+    }
+    final cost = UnitTypes.recruitCost(unit, qty);
+    for (final entry in cost.entries) {
+      if (_state.resource(entry.key) < entry.value) {
+        return false;
+      }
+    }
+    _commit(_state.copyWith(
+      dailyActionPoints: _state.dailyActionPoints - 1,
+      resources: ResourceLogic.apply(_state.resources, {
+        for (final entry in cost.entries) entry.key: -entry.value,
+      }),
+      army: {..._state.army, unitId: _state.unitCount(unitId) + qty},
+      log: _prependLog('$qty ${unit.name} saflara katıldı.'),
+    ));
+    return true;
+  }
+
+  /// Moves a fraction of each unit type to the wounded pool, losing a
+  /// smaller fraction outright. Returns the new army and wounded maps.
+  (Map<String, int>, Map<String, int>) _battleCasualties(
+    double woundFrac,
+    double lostFrac,
+  ) {
+    final army = <String, int>{};
+    final wounded = Map<String, int>.from(_state.wounded);
+    for (final entry in _state.army.entries) {
+      final hurt = (entry.value * woundFrac).round();
+      final lost = (entry.value * lostFrac).round();
+      final left = (entry.value - hurt - lost).clamp(0, entry.value).toInt();
+      if (left > 0) army[entry.key] = left;
+      if (hurt > 0) wounded[entry.key] = (wounded[entry.key] ?? 0) + hurt;
+    }
+    return (army, wounded);
+  }
+
   /// Military weight thrown behind a regional war.
   int get warStrength =>
+      armyStrength * 4 +
       _state.resource(ResourceType.population) +
       _state.profile.warfare * 8 +
       _state.profile.courage * 3 +
@@ -1113,11 +1190,16 @@ class GameController extends ChangeNotifier {
       return false;
     }
     final success = _random.nextInt(100) < warChanceFor(region);
+    // Winning costs fewer soldiers; a rout wounds and kills many more.
+    final (army, wounded) =
+        _battleCasualties(success ? 0.10 : 0.25, success ? 0.04 : 0.12);
     if (success) {
       _commit(_state.copyWith(
         dailyActionPoints: _state.dailyActionPoints - 1,
         conqueredRegions: [..._state.conqueredRegions, regionId],
         vassalObas: _state.vassalObas + 1,
+        army: army,
+        wounded: wounded,
         resources: ResourceLogic.apply(_state.resources, {
           ResourceType.gold: region.rewardGold,
           ResourceType.reputation: region.rewardReputation,
@@ -1129,6 +1211,8 @@ class GameController extends ChangeNotifier {
     } else {
       _commit(_state.copyWith(
         dailyActionPoints: _state.dailyActionPoints - 1,
+        army: army,
+        wounded: wounded,
         resources: ResourceLogic.apply(_state.resources, const {
           ResourceType.morale: -10,
           ResourceType.population: -5,

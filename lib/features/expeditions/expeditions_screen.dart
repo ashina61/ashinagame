@@ -12,6 +12,7 @@ import '../../game/models/expedition.dart';
 import '../../game/models/resource.dart';
 import '../../game/state/game_controller.dart';
 import '../../game/state/game_scope.dart';
+import '../army/army_screen.dart';
 import '../conquest/conquest_screen.dart';
 import 'expedition_result_screen.dart';
 
@@ -124,29 +125,51 @@ class _ExpeditionsScreenState extends State<ExpeditionsScreen> {
       child: Column(
         children: [
           const OrnateHeader(title: 'Seferler'),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(12, 0, 12, 2),
-            child: Row(
+          OrnatePanel(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            child: Column(
               children: [
-                Image.asset(GameAssets.iconEnergyBolt, width: 16, height: 16),
-                const SizedBox(width: 4),
-                Expanded(
-                  child: Text(
-                    'Aksiyon $energy/${controller.state.maxDailyActionPoints}',
-                    style: AppTextStyles.meta.copyWith(fontSize: 11),
-                  ),
-                ),
-                SizedBox(
-                  height: 30,
-                  child: GoldButton(
-                    label: 'FETİH HARİTASI',
-                    height: 30,
-                    onPressed: () => Navigator.of(context).push(
-                      MaterialPageRoute<void>(
-                        builder: (_) => const ConquestScreen(),
+                Row(
+                  children: [
+                    Image.asset(GameAssets.iconEnergyBolt,
+                        width: 18, height: 18),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        'Aksiyon $energy/${controller.state.maxDailyActionPoints}'
+                        '  •  Ordu Gücü ${controller.armyStrength}',
+                        style: AppTextStyles.body.copyWith(fontSize: 13),
                       ),
                     ),
-                  ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Expanded(
+                      child: DarkButton(
+                        label: 'ORDU',
+                        height: 36,
+                        onPressed: () => Navigator.of(context).push(
+                          MaterialPageRoute<void>(
+                            builder: (_) => const ArmyScreen(),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: GoldButton(
+                        label: 'FETİH HARİTASI',
+                        height: 36,
+                        onPressed: () => Navigator.of(context).push(
+                          MaterialPageRoute<void>(
+                            builder: (_) => const ConquestScreen(),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),

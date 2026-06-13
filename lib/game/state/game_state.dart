@@ -67,6 +67,8 @@ class GameState {
     this.councilApproval = 60,
     this.currentKurultay,
     this.lastKurultayDay = 0,
+    this.army = const {},
+    this.wounded = const {},
   });
 
   static const baseDailyActionPoints = 4;
@@ -152,7 +154,16 @@ class GameState {
   /// Day the last council convened, to space them out.
   final int lastKurultayDay;
 
+  /// Battle-ready soldiers and those recovering from wounds, by unit id.
+  final Map<String, int> army;
+  final Map<String, int> wounded;
+
   int resource(ResourceType type) => resources[type] ?? 0;
+
+  int unitCount(String id) => army[id] ?? 0;
+  int woundedCount(String id) => wounded[id] ?? 0;
+  int get totalSoldiers => army.values.fold(0, (s, n) => s + n);
+  int get totalWounded => wounded.values.fold(0, (s, n) => s + n);
 
   String? equippedIn(String slotId) => equipped[slotId];
 
@@ -248,6 +259,8 @@ class GameState {
     String? currentKurultay,
     bool clearKurultay = false,
     int? lastKurultayDay,
+    Map<String, int>? army,
+    Map<String, int>? wounded,
   }) {
     final nextMax = maxDailyActionPoints ?? this.maxDailyActionPoints;
     final nextAp = (dailyActionPoints ?? energy ?? this.dailyActionPoints)
@@ -302,6 +315,8 @@ class GameState {
       currentKurultay:
           clearKurultay ? null : currentKurultay ?? this.currentKurultay,
       lastKurultayDay: lastKurultayDay ?? this.lastKurultayDay,
+      army: army ?? this.army,
+      wounded: wounded ?? this.wounded,
     );
   }
 }

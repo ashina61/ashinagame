@@ -340,6 +340,50 @@ void main() {
     expect(ready.canFoundNewOba, isTrue);
   });
 
+  test('recruiting units builds army strength and costs resources', () {
+    final base = StarterGameData.create();
+    final controller = GameController(
+      base.copyWith(
+        resources: {
+          ...base.resources,
+          ResourceType.gold: 1000,
+          ResourceType.horse: 20,
+        },
+      ),
+    );
+    expect(controller.armyStrength, 0);
+    expect(controller.recruitUnit('foot_sword', 3), isTrue);
+    expect(controller.state.unitCount('foot_sword'), 3);
+    expect(controller.armyStrength, 18); // 3 x attack 6
+    expect(controller.recruitUnit('horse_archer', 2), isTrue);
+    expect(controller.armyStrength, 18 + 16); // +2 x attack 8
+    expect(controller.state.resource(ResourceType.horse), 18); // 2 spent
+  });
+
+  test('war wounds soldiers and the healer mends them over time', () {
+    final base = StarterGameData.create();
+    final controller = GameController(
+      base.copyWith(
+        army: const {'foot_sword': 10},
+        resources: {
+          ...base.resources,
+          ResourceType.food: 400,
+          ResourceType.population: 300,
+        },
+      ),
+      random: _FixedRandom(0),
+    );
+
+    expect(controller.attackRegion('otuken'), isTrue);
+    // A win wounds about a tenth of the force.
+    expect(controller.state.totalWounded, 1);
+    expect(controller.state.unitCount('foot_sword'), 9);
+
+    controller.endDay(); // healer mends the wounded back in
+    expect(controller.state.totalWounded, 0);
+    expect(controller.state.unitCount('foot_sword'), 10);
+  });
+
   test('the market sells finished gear into the inventory', () {
     final base = StarterGameData.create();
     final controller = GameController(
