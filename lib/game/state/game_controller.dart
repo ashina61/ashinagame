@@ -668,7 +668,9 @@ class GameController extends ChangeNotifier {
     if (candidate == null ||
         !candidate.isAvailable ||
         _state.household.isMarried ||
-        _state.dailyActionPoints < 1) return false;
+        _state.dailyActionPoints < 1) {
+      return false;
+    }
     final tribe = _state.tribeByName(candidate.tribeName);
     if (_state.resource(ResourceType.reputation) < 20 ||
         _state.resource(ResourceType.gold) < 300 ||
@@ -717,9 +719,13 @@ class GameController extends ChangeNotifier {
     final main = _buildingById(source, 'main_tent');
     var max =
         GameState.baseDailyActionPoints + ((main?.level ?? 1) >= 3 ? 1 : 0);
-    if (_state.profile.fatigue >= 75) max -= 1;
+    if (_state.profile.fatigue >= 75) {
+      max -= 1;
+    }
     if ((resources[ResourceType.morale] ?? 0) >= 80 &&
-        _state.profile.leadership >= 8) max += 1;
+        _state.profile.leadership >= 8) {
+      max += 1;
+    }
     return max.clamp(2, 6).toInt();
   }
 

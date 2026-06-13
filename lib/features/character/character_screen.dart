@@ -158,7 +158,7 @@ class _SpiritualCharacterPanel extends StatelessWidget {
               'İnanç ${faith.faith}/100 • Atalara Saygı ${faith.ancestorHonor}/100',
               style: AppTextStyles.body),
           const SizedBox(height: 6),
-          Text(
+          const Text(
               'Kut diplomasi ve evlilik görüşmelerine küçük güven etkisi verir; töre oba düzenini korur.',
               style: AppTextStyles.meta),
           if (faith.activeBlessings.isNotEmpty) ...[

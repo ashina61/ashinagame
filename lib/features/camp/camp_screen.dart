@@ -26,7 +26,8 @@ class CampScreen extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Çadır ve Oba Yönetimi', style: AppTextStyles.title),
+                      const Text('Çadır ve Oba Yönetimi',
+                          style: AppTextStyles.title),
                       const SizedBox(height: 6),
                       Text(
                         'Aksiyon ${state.dailyActionPoints}/${state.maxDailyActionPoints} • Nüfus ${state.resource(ResourceType.population)} • Moral ${state.resource(ResourceType.morale)}/100',
@@ -69,7 +70,7 @@ class _AdvisorPanel extends StatelessWidget {
           Text(advisor.effect,
               style: AppTextStyles.meta.copyWith(color: AppColors.goldBright)),
           const SizedBox(height: 8),
-          Wrap(
+          const Wrap(
             spacing: 8,
             runSpacing: 6,
             children: [
