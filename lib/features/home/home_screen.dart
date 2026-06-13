@@ -10,6 +10,7 @@ import '../../core/widgets/ornate.dart';
 import '../../game/data/achievements.dart';
 import '../../game/data/expedition_sites.dart';
 import '../../game/data/starter_game_data.dart';
+import '../../game/logic/unlock_logic.dart';
 import '../../game/models/event_choice.dart';
 import '../../game/models/resource.dart';
 import '../../game/state/game_controller.dart';
@@ -396,6 +397,13 @@ class _TodoPanel extends StatelessWidget {
   Widget build(BuildContext context) {
     final state = GameScope.of(context).state;
     final items = <(IconData, String, Widget?)>[];
+
+    // The ordered progression hint comes first, so a new player always knows
+    // the next milestone to chase.
+    final objective = UnlockLogic.nextObjective(state);
+    if (objective != null) {
+      items.add((Icons.flag_circle, objective, null));
+    }
 
     final readyQuests = state.quests.where(state.questReady).length;
     if (readyQuests > 0) {

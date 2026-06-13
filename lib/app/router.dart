@@ -7,6 +7,7 @@ import '../features/character/character_screen.dart';
 import '../features/expeditions/expeditions_screen.dart';
 import '../features/game_over/game_over_screen.dart';
 import '../features/home/home_screen.dart';
+import '../features/onboarding/onboarding_screen.dart';
 import '../features/succession/succession_screen.dart';
 import '../game/state/game_scope.dart';
 
@@ -31,6 +32,9 @@ class _AshinaRouterState extends State<AshinaRouter> {
   @override
   Widget build(BuildContext context) {
     final state = GameScope.of(context).state;
+    if (!state.onboarded) {
+      return const Scaffold(body: OnboardingScreen());
+    }
     if (state.gameOver) {
       return const Scaffold(body: GameOverScreen());
     }

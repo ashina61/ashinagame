@@ -7,6 +7,7 @@ import '../../core/audio/audio_service.dart';
 import '../../core/utils/formatters.dart';
 import '../../core/widgets/ornate.dart';
 import '../../game/data/expedition_sites.dart';
+import '../../game/logic/unlock_logic.dart';
 import '../../game/models/expedition.dart';
 import '../../game/models/resource.dart';
 import '../../game/state/game_controller.dart';
@@ -97,6 +98,28 @@ class _ExpeditionsScreenState extends State<ExpeditionsScreen> {
   Widget build(BuildContext context) {
     final controller = GameScope.of(context);
     final energy = controller.state.dailyActionPoints;
+    if (!UnlockLogic.expeditions(controller.state)) {
+      return const OrnateScaffold(
+        child: Column(
+          children: [
+            OrnateHeader(title: 'Seferler'),
+            Expanded(
+              child: Center(
+                child: OrnatePanel(
+                  child: Text(
+                    'Sefer henüz kapalı.\n\nAtölyede bir silah ve bir kalkan '
+                    'üret, Karakter → Kuşam’dan kuşan; ondan sonra bozkıra '
+                    'sefere çıkabilirsin.',
+                    style: AppTextStyles.body,
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
     return OrnateScaffold(
       child: Column(
         children: [

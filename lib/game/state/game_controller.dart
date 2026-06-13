@@ -1169,6 +1169,24 @@ class GameController extends ChangeNotifier {
     ));
   }
 
+  /// Finishes first-run onboarding: names the oba and leader and opens play.
+  void completeOnboarding({
+    required String obaName,
+    required String leaderName,
+  }) {
+    final oba = obaName.trim();
+    final leader = leaderName.trim();
+    _commit(_state.copyWith(
+      onboarded: true,
+      clan:
+          oba.isEmpty ? _state.clan : Clan(name: oba, motto: _state.clan.motto),
+      profile: leader.isEmpty
+          ? _state.profile
+          : _state.profile.copyWith(name: leader),
+      log: _prependLog('$oba obasının ocağı yakıldı. Yeni bir ömür başladı.'),
+    ));
+  }
+
   void resetGame() {
     _commit(StarterGameData.create());
   }

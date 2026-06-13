@@ -5,6 +5,7 @@ import 'package:ashinagame/game/data/achievements.dart';
 import 'package:ashinagame/game/data/market_goods.dart';
 import 'package:ashinagame/game/data/starter_game_data.dart';
 import 'package:ashinagame/game/logic/market_logic.dart';
+import 'package:ashinagame/game/logic/unlock_logic.dart';
 import 'package:ashinagame/game/models/faith.dart';
 import 'package:ashinagame/game/models/game_day.dart';
 import 'package:ashinagame/game/models/household.dart';
@@ -337,6 +338,35 @@ void main() {
       ),
     );
     expect(ready.canFoundNewOba, isTrue);
+  });
+
+  test('onboarding names the oba and opens play', () {
+    final controller = GameController(StarterGameData.create());
+    expect(controller.state.onboarded, isFalse);
+
+    controller.completeOnboarding(obaName: 'Gökböri', leaderName: 'Alp');
+    expect(controller.state.onboarded, isTrue);
+    expect(controller.state.clan.name, 'Gökböri');
+    expect(controller.state.profile.name, 'Alp');
+  });
+
+  test('feature unlocks follow the intended progression', () {
+    final base = StarterGameData.create();
+    // Fresh leader: nothing past camp work is open yet.
+    expect(UnlockLogic.tentUpgrade(base), isFalse);
+    expect(UnlockLogic.expeditions(base), isFalse);
+    expect(UnlockLogic.recruitment(base), isFalse);
+
+    // Equipping a weapon and shield opens expeditions.
+    final armed = base.copyWith(
+      equipped: const {'weapon': 'iron_sword', 'shield': 'wood_shield'},
+    );
+    expect(UnlockLogic.expeditions(armed), isTrue);
+
+    // A first campaign opens recruitment.
+    final veteran =
+        armed.copyWith(completedExpeditions: const ['border_outpost']);
+    expect(UnlockLogic.recruitment(veteran), isTrue);
   });
 
   test('rename updates oba and leader, ignoring blanks', () {

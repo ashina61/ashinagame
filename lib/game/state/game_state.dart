@@ -62,6 +62,7 @@ class GameState {
     this.equipped = const {},
     this.regionRelations = const {},
     this.conqueredRegions = const [],
+    this.onboarded = false,
   });
 
   static const baseDailyActionPoints = 4;
@@ -133,6 +134,9 @@ class GameState {
 
   /// Ids of conquest regions now under your banner.
   final List<String> conqueredRegions;
+
+  /// False until the player has named the oba and seen the opening.
+  final bool onboarded;
 
   int resource(ResourceType type) => resources[type] ?? 0;
 
@@ -224,6 +228,7 @@ class GameState {
     Map<String, String>? equipped,
     Map<String, int>? regionRelations,
     List<String>? conqueredRegions,
+    bool? onboarded,
   }) {
     final nextMax = maxDailyActionPoints ?? this.maxDailyActionPoints;
     final nextAp = (dailyActionPoints ?? energy ?? this.dailyActionPoints)
@@ -270,6 +275,7 @@ class GameState {
       equipped: equipped ?? this.equipped,
       regionRelations: regionRelations ?? this.regionRelations,
       conqueredRegions: conqueredRegions ?? this.conqueredRegions,
+      onboarded: onboarded ?? this.onboarded,
     );
   }
 }

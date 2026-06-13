@@ -126,6 +126,7 @@ class GameSerializer {
         'equipped': state.equipped,
         'regionRelations': state.regionRelations,
         'conqueredRegions': state.conqueredRegions,
+        'onboarded': state.onboarded,
       });
 
   static GameState? decode(String raw) {
@@ -237,6 +238,8 @@ class GameSerializer {
                 .cast<String, int>(),
         conqueredRegions:
             (json['conqueredRegions'] as List<dynamic>? ?? []).cast<String>(),
+        // Existing saves predate onboarding, so treat them as done.
+        onboarded: json['onboarded'] as bool? ?? true,
       );
     } catch (_) {
       return null;

@@ -6,6 +6,7 @@ import '../../core/assets/game_assets.dart';
 import '../../core/widgets/ornate.dart';
 import '../../game/data/recruitment.dart';
 import '../../game/data/tamgas.dart';
+import '../../game/logic/unlock_logic.dart';
 import '../../game/models/resource.dart';
 import '../../game/models/tribe_relation.dart';
 import '../../game/state/game_scope.dart';
@@ -66,16 +67,26 @@ class BoyScreen extends StatelessWidget {
                   ),
                 ),
                 const SectionPlaque('OBAYA İNSAN TOPLA'),
-                OrnatePanel(
-                  child: Text(
-                    'Tek başına oba olmaz. Nüfus '
-                    '${state.resource(ResourceType.population)} • Saygınlık '
-                    'arttıkça her çağrıya daha çok kişi gelir.',
-                    style: AppTextStyles.meta,
+                if (!UnlockLogic.recruitment(state))
+                  const OrnatePanel(
+                    child: Text(
+                      'Adam toplama henüz kapalı. İlk seferini tamamla; '
+                      'adın duyulunca çevreden insanlar obana akmaya başlar.',
+                      style: AppTextStyles.meta,
+                    ),
+                  )
+                else ...[
+                  OrnatePanel(
+                    child: Text(
+                      'Tek başına oba olmaz. Nüfus '
+                      '${state.resource(ResourceType.population)} • Saygınlık '
+                      'arttıkça her çağrıya daha çok kişi gelir.',
+                      style: AppTextStyles.meta,
+                    ),
                   ),
-                ),
-                for (final source in Recruitment.sources)
-                  _RecruitPanel(source: source),
+                  for (final source in Recruitment.sources)
+                    _RecruitPanel(source: source),
+                ],
                 const SectionPlaque('BOY DURUMU / DİPLOMASİ'),
                 for (final tribe in state.tribes) _TribePanel(tribe: tribe),
               ],
