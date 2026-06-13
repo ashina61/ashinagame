@@ -4,6 +4,7 @@ import '../../app/theme/app_colors.dart';
 import '../../app/theme/app_text_styles.dart';
 import '../../core/assets/game_assets.dart';
 import '../../core/widgets/ornate.dart';
+import '../../game/data/recruitment.dart';
 import '../../game/data/tamgas.dart';
 import '../../game/models/resource.dart';
 import '../../game/models/tribe_relation.dart';
@@ -64,10 +65,86 @@ class BoyScreen extends StatelessWidget {
                     ),
                   ),
                 ),
+                const SectionPlaque('OBAYA İNSAN TOPLA'),
+                OrnatePanel(
+                  child: Text(
+                    'Tek başına oba olmaz. Nüfus '
+                    '${state.resource(ResourceType.population)} • Saygınlık '
+                    'arttıkça her çağrıya daha çok kişi gelir.',
+                    style: AppTextStyles.meta,
+                  ),
+                ),
+                for (final source in Recruitment.sources)
+                  _RecruitPanel(source: source),
                 const SectionPlaque('BOY DURUMU / DİPLOMASİ'),
                 for (final tribe in state.tribes) _TribePanel(tribe: tribe),
               ],
             ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _RecruitPanel extends StatelessWidget {
+  const _RecruitPanel({required this.source});
+
+  final RecruitSource source;
+
+  @override
+  Widget build(BuildContext context) {
+    final controller = GameScope.of(context);
+    final state = controller.state;
+    final affordable =
+        source.cost.entries.every((e) => state.resource(e.key) >= e.value);
+    final hasAp = state.dailyActionPoints > 0;
+    final costText =
+        source.cost.entries.map((e) => '${e.value} ${e.key.label}').join(', ');
+    final bonus = state.profile.reputation ~/ 20;
+    return OrnatePanel(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(source.name,
+                    style: AppTextStyles.bodyStrong.copyWith(fontSize: 16)),
+              ),
+              Text('+${source.basePeople + bonus} kişi',
+                  style: AppTextStyles.value
+                      .copyWith(fontSize: 14, color: AppColors.goldBright)),
+            ],
+          ),
+          Text(source.description, style: AppTextStyles.meta),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(
+                child: Text('Bedel: $costText', style: AppTextStyles.meta),
+              ),
+              SizedBox(
+                width: 110,
+                child: DarkButton(
+                  label: 'TOPLA',
+                  height: 34,
+                  onPressed: hasAp && affordable
+                      ? () {
+                          final ok = controller.recruit(source.id);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(ok
+                                  ? '${source.name} obana katıldı.'
+                                  : 'Aksiyon ya da kaynak yetersiz.'),
+                              duration: const Duration(seconds: 2),
+                            ),
+                          );
+                        }
+                      : null,
+                ),
+              ),
+            ],
           ),
         ],
       ),

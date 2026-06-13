@@ -9,6 +9,7 @@ import '../data/equipment.dart';
 import '../data/expedition_sites.dart';
 import '../data/faith_paths.dart';
 import '../data/market_goods.dart';
+import '../data/recruitment.dart';
 import '../data/starter_game_data.dart';
 import '../logic/event_logic.dart';
 import '../logic/life_logic.dart';
@@ -389,6 +390,27 @@ class GameController extends ChangeNotifier {
       }
     }
 
+    // A married leader's household steadies the camp and, in time, grows
+    // the line — each child adds a mouth and a hand to the oba.
+    var household = _state.household;
+    if (household.isMarried) {
+      resources = ResourceLogic.apply(resources, const {
+        ResourceType.morale: 1,
+      });
+      if (nextDay.day % 20 == 0 &&
+          household.childrenCount < 8 &&
+          (resources[ResourceType.food] ?? 0) >= 30) {
+        household = household.copyWith(
+          childrenCount: household.childrenCount + 1,
+          familyPrestige: household.familyPrestige + 2,
+        );
+        resources = ResourceLogic.apply(resources, const {
+          ResourceType.population: 1,
+        });
+        log = ['Obaya bir çocuk doğdu; soy büyüyor.', ...log].take(6).toList();
+      }
+    }
+
     final eventIndex = _state.eventIndex + 1;
     final omenState = _rollOmen(resources);
     _commit(_state.copyWith(
@@ -396,6 +418,7 @@ class GameController extends ChangeNotifier {
       resources: resources,
       dailyActionPoints: _dailyActionLimit(resources),
       profile: profile,
+      household: household,
       faithState: omenState,
       collapseDays: collapseDays,
       gameOver: gameOver,
@@ -1077,6 +1100,33 @@ class GameController extends ChangeNotifier {
   bool get canFoundNewOba =>
       (_state.building('main_tent')?.level ?? 1) >= foundObaTentLevel &&
       _state.profile.reputation >= foundObaReputation;
+
+  /// Gathers new people into the oba from a recruitment source. A respected
+  /// bey (reputation) draws extra followers. Returns false without an action
+  /// point or the resources to pay.
+  bool recruit(String sourceId) {
+    final source = Recruitment.byId(sourceId);
+    if (source == null || _state.dailyActionPoints < 1) {
+      return false;
+    }
+    for (final entry in source.cost.entries) {
+      if (_state.resource(entry.key) < entry.value) {
+        return false;
+      }
+    }
+    final bonus = _state.profile.reputation ~/ 20;
+    final people = source.basePeople + bonus;
+    _commit(_state.copyWith(
+      dailyActionPoints: _state.dailyActionPoints - 1,
+      resources: ResourceLogic.apply(_state.resources, {
+        for (final entry in source.cost.entries) entry.key: -entry.value,
+        ...source.extraEffects,
+        ResourceType.population: people,
+      }),
+      log: _prependLog('${source.name}: obaya $people kişi katıldı.'),
+    ));
+    return true;
+  }
 
   /// Founds a brand-new oba under a chosen name and tamga, bound to the
   /// khanate. A fresh young founder takes over; a small share of the old

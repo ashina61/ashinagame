@@ -7,6 +7,7 @@ import 'package:ashinagame/game/data/starter_game_data.dart';
 import 'package:ashinagame/game/logic/market_logic.dart';
 import 'package:ashinagame/game/models/faith.dart';
 import 'package:ashinagame/game/models/game_day.dart';
+import 'package:ashinagame/game/models/household.dart';
 import 'package:ashinagame/game/models/resource.dart';
 import 'package:ashinagame/game/models/season.dart';
 import 'package:ashinagame/game/state/game_controller.dart';
@@ -226,6 +227,41 @@ void main() {
     final quest =
         controller.state.quests.firstWhere((item) => item.id == 's_tore_case');
     expect(quest.progress, 1);
+  });
+
+  test('recruitment adds people, scaled by reputation, for a cost', () {
+    final base = StarterGameData.create();
+    final controller = GameController(
+      base.copyWith(
+        resources: {...base.resources, ResourceType.gold: 500},
+        profile: base.profile.copyWith(reputation: 40), // +2 bonus people
+      ),
+    );
+    final pop = controller.state.resource(ResourceType.population);
+    expect(controller.recruit('nomads'), isTrue); // base 5 + 2
+    expect(controller.state.resource(ResourceType.population), pop + 7);
+    expect(controller.state.resource(ResourceType.gold), 500 - 100);
+
+    // No action points left -> recruiting fails.
+    final drained = GameController(base.copyWith(dailyActionPoints: 0));
+    expect(drained.recruit('refugees'), isFalse);
+  });
+
+  test('a married household grows the line over time', () {
+    final base = StarterGameData.create();
+    final married = base.copyWith(
+      day: const GameDay(day: 19, season: Season.spring),
+      household: const Household(spouseName: 'Aybüke'),
+      resources: {...base.resources, ResourceType.food: 400},
+    );
+    final controller = GameController(married);
+    final children = controller.state.household.childrenCount;
+    final pop = controller.state.resource(ResourceType.population);
+
+    controller.endDay(); // day 20 -> a child is born
+
+    expect(controller.state.household.childrenCount, children + 1);
+    expect(controller.state.resource(ResourceType.population), pop + 1);
   });
 
   test('conquest: diplomacy then peaceful annexation', () {
