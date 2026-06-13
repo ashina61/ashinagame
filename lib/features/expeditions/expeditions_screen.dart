@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../app/theme/app_colors.dart';
 import '../../app/theme/app_text_styles.dart';
 import '../../core/assets/game_assets.dart';
+import '../../core/audio/audio_service.dart';
 import '../../core/utils/formatters.dart';
 import '../../core/widgets/ornate.dart';
 import '../../game/data/expedition_sites.dart';
@@ -338,6 +339,7 @@ class _ExpeditionsScreenState extends State<ExpeditionsScreen> {
     if (outcome == null) {
       return;
     }
+    AudioService.instance.playSfx(outcome.success ? 'victory' : 'defeat');
     Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (context) => ExpeditionResultScreen(outcome: outcome),

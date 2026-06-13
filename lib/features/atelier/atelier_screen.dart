@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../app/theme/app_text_styles.dart';
 import '../../core/assets/game_assets.dart';
+import '../../core/audio/audio_service.dart';
 import '../../core/widgets/ornate.dart';
 import '../../game/data/craft_recipes.dart';
 import '../../game/models/craft.dart';
@@ -246,6 +247,9 @@ class _RecipeDetail extends StatelessWidget {
                   height: 38,
                   onPressed: () {
                     final result = controller.startCraft(recipe.id);
+                    if (result == CraftStart.started) {
+                      AudioService.instance.playSfx('craft');
+                    }
                     final message = switch (result) {
                       CraftStart.started =>
                         '${recipe.name} üretimi başladı (${recipe.days} gün).',

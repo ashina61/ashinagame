@@ -5,6 +5,7 @@ import '../../app/theme/app_text_styles.dart';
 import '../../core/assets/game_assets.dart';
 import '../../core/utils/formatters.dart';
 import '../../core/utils/resource_visuals.dart';
+import '../../core/audio/audio_service.dart';
 import '../../core/widgets/ornate.dart';
 import '../../game/data/achievements.dart';
 import '../../game/data/expedition_sites.dart';
@@ -226,6 +227,7 @@ class _DayStrip extends StatelessWidget {
             height: 36,
             onPressed: () {
               controller.endDay();
+              AudioService.instance.playSfx('end_day');
               final next = controller.state.day;
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(

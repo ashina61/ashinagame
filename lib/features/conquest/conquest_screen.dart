@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../app/theme/app_colors.dart';
 import '../../app/theme/app_text_styles.dart';
 import '../../core/assets/game_assets.dart';
+import '../../core/audio/audio_service.dart';
 import '../../core/widgets/ornate.dart';
 import '../../game/data/conquest_regions.dart';
 import '../../game/models/conquest_region.dart';
@@ -152,6 +153,8 @@ class _RegionPanel extends StatelessWidget {
                     onPressed: hasAp
                         ? () {
                             final won = controller.attackRegion(region.id);
+                            AudioService.instance
+                                .playSfx(won ? 'victory' : 'defeat');
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                 content: Text(won

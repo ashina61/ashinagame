@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../app/theme/app_colors.dart';
 import '../../app/theme/app_text_styles.dart';
 import '../../core/assets/game_assets.dart';
+import '../../core/audio/audio_service.dart';
 import '../../core/widgets/ornate.dart';
 import '../../game/data/market_goods.dart';
 import '../../game/logic/market_logic.dart';
@@ -280,6 +281,7 @@ class _MarketScreenState extends State<MarketScreen> {
                       '$amount ${type.label} satışı',
                       {type: -amount, ResourceType.gold: price},
                     );
+                    if (done) AudioService.instance.playSfx('coin');
                     _notify(
                       context,
                       done
@@ -436,6 +438,7 @@ class _BuyRow extends StatelessWidget {
                 return;
               }
               final done = controller.buyGood(good.id);
+              if (done) AudioService.instance.playSfx('coin');
               _MarketScreenState._notify(
                 context,
                 done

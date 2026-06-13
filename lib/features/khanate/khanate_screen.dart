@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../app/theme/app_text_styles.dart';
+import '../../core/audio/audio_service.dart';
 import '../../core/assets/game_assets.dart';
 import '../../core/widgets/ornate.dart';
 import '../../game/state/game_controller.dart';
@@ -111,6 +112,8 @@ class KhanateScreen extends StatelessWidget {
                             onPressed: canRebel
                                 ? () {
                                     final won = controller.attemptRebellion();
+                                    AudioService.instance
+                                        .playSfx(won ? 'victory' : 'defeat');
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(
                                         content: Text(won

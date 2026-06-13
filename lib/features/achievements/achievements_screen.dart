@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../app/theme/app_colors.dart';
 import '../../app/theme/app_text_styles.dart';
+import '../../core/audio/audio_service.dart';
 import '../../core/utils/formatters.dart';
 import '../../core/widgets/ornate.dart';
 import '../../game/data/achievements.dart';
@@ -107,6 +108,7 @@ class _AchievementPanel extends StatelessWidget {
                     height: 34,
                     onPressed: () {
                       controller.claimAchievement(achievement.id);
+                      AudioService.instance.playSfx('reward');
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                           content: Text('${achievement.title} ödülü alındı.'),

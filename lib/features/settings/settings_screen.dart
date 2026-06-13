@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../app/theme/app_colors.dart';
 import '../../app/theme/app_text_styles.dart';
 import '../../core/assets/game_assets.dart';
+import '../../core/audio/audio_service.dart';
 import '../../core/widgets/ornate.dart';
 import '../../game/state/game_scope.dart';
 import '../found_oba/found_oba_screen.dart';
@@ -15,8 +16,8 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-  bool _music = true;
-  bool _sfx = true;
+  bool _music = AudioService.instance.musicOn;
+  bool _sfx = AudioService.instance.sfxOn;
   bool _notifications = true;
   bool _powerSave = false;
 
@@ -86,12 +87,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       _Toggle(
                         label: 'Müzik',
                         value: _music,
-                        onChanged: (v) => setState(() => _music = v),
+                        onChanged: (v) {
+                          setState(() => _music = v);
+                          AudioService.instance.setMusicOn(v);
+                        },
                       ),
                       _Toggle(
                         label: 'Ses Efektleri',
                         value: _sfx,
-                        onChanged: (v) => setState(() => _sfx = v),
+                        onChanged: (v) {
+                          setState(() => _sfx = v);
+                          AudioService.instance.setSfxOn(v);
+                        },
                       ),
                       _Toggle(
                         label: 'Bildirimler',
