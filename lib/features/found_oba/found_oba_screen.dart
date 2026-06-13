@@ -4,6 +4,7 @@ import '../../app/theme/app_colors.dart';
 import '../../app/theme/app_text_styles.dart';
 import '../../core/widgets/ornate.dart';
 import '../../game/data/tamgas.dart';
+import '../../game/state/game_controller.dart';
 import '../../game/state/game_scope.dart';
 
 class FoundObaScreen extends StatefulWidget {
@@ -26,6 +27,7 @@ class _FoundObaScreenState extends State<FoundObaScreen> {
   @override
   Widget build(BuildContext context) {
     final controller = GameScope.of(context);
+    final canFound = controller.canFoundNewOba;
     return Scaffold(
       body: OrnateScaffold(
         child: Column(
@@ -43,6 +45,21 @@ class _FoundObaScreenState extends State<FoundObaScreen> {
                       style: AppTextStyles.body,
                     ),
                   ),
+                  if (!canFound)
+                    OrnatePanel(
+                      child: Text(
+                        'Kendi obanı kurmak için önce ana çadırını '
+                        '${GameController.foundObaTentLevel}. seviyeye '
+                        'yükselt ve itibarını '
+                        '${GameController.foundObaReputation}’a çıkar. '
+                        '(Şu an çadır '
+                        '${controller.state.building('main_tent')?.level ?? 1}, '
+                        'itibar ${controller.state.profile.reputation}.)',
+                        style: AppTextStyles.meta.copyWith(
+                          color: AppColors.danger,
+                        ),
+                      ),
+                    ),
                   const SectionPlaque('OBA ADI'),
                   OrnatePanel(
                     child: TextField(
@@ -119,19 +136,21 @@ class _FoundObaScreenState extends State<FoundObaScreen> {
                     padding: const EdgeInsets.fromLTRB(40, 12, 40, 0),
                     child: GoldButton(
                       label: 'OBANI KUR',
-                      onPressed: () {
-                        controller.foundNewOba(_name.text, _tamga);
-                        Navigator.of(context)
-                            .popUntil((route) => route.isFirst);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              '${controller.state.clan.name} kuruldu. '
-                              'Yeni bir ömür başladı.',
-                            ),
-                          ),
-                        );
-                      },
+                      onPressed: canFound
+                          ? () {
+                              controller.foundNewOba(_name.text, _tamga);
+                              Navigator.of(context)
+                                  .popUntil((route) => route.isFirst);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    '${controller.state.clan.name} kuruldu. '
+                                    'Yeni bir ömür başladı.',
+                                  ),
+                                ),
+                              );
+                            }
+                          : null,
                     ),
                   ),
                 ],

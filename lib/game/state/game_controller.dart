@@ -942,6 +942,16 @@ class GameController extends ChangeNotifier {
     return success;
   }
 
+  /// Reputation and tent level required before a new oba may be founded.
+  static const foundObaReputation = 30;
+  static const foundObaTentLevel = 2;
+
+  /// You may only strike out on your own once your tent and name carry
+  /// weight: a raised main tent and enough reputation.
+  bool get canFoundNewOba =>
+      (_state.building('main_tent')?.level ?? 1) >= foundObaTentLevel &&
+      _state.profile.reputation >= foundObaReputation;
+
   /// Founds a brand-new oba under a chosen name and tamga, bound to the
   /// khanate. A fresh young founder takes over; a small share of the old
   /// treasury carries forward as a founding legacy.
@@ -963,6 +973,23 @@ class GameController extends ChangeNotifier {
         '${trimmed.isEmpty ? fresh.clan.name : trimmed} obası kuruldu, '
             'kağanlığa bağlandı.',
       ],
+    ));
+  }
+
+  /// Renames the oba and/or its leader; blank fields are left unchanged.
+  void rename({String? obaName, String? leaderName}) {
+    final oba = obaName?.trim() ?? '';
+    final leader = leaderName?.trim() ?? '';
+    if (oba.isEmpty && leader.isEmpty) {
+      return;
+    }
+    _commit(_state.copyWith(
+      clan:
+          oba.isEmpty ? _state.clan : Clan(name: oba, motto: _state.clan.motto),
+      profile: leader.isEmpty
+          ? _state.profile
+          : _state.profile.copyWith(name: leader),
+      log: _prependLog('İsimler güncellendi.'),
     ));
   }
 

@@ -47,6 +47,34 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ],
                   ),
                 ),
+                const SectionPlaque('OBA & LİDER'),
+                Builder(
+                  builder: (context) {
+                    final state = GameScope.of(context).state;
+                    return OrnatePanel(
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('Oba: ${state.clan.name}',
+                                    style: AppTextStyles.bodyStrong),
+                                Text('Lider: ${state.profile.name}',
+                                    style: AppTextStyles.meta),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          DarkButton(
+                            label: 'İSİM DEĞİŞTİR',
+                            onPressed: () => _renameDialog(context),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
                 const SectionPlaque('OYUN'),
                 OrnatePanel(
                   padding: const EdgeInsets.symmetric(
@@ -170,6 +198,67 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
               ],
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _renameDialog(BuildContext context) {
+    final controller = GameScope.of(context);
+    final obaCtrl = TextEditingController(text: controller.state.clan.name);
+    final leaderCtrl =
+        TextEditingController(text: controller.state.profile.name);
+    showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: AppColors.leatherDark,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: BorderSide(color: AppColors.gold.withValues(alpha: 0.5)),
+        ),
+        title: const Text('İsim Değiştir', style: AppTextStyles.title),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: obaCtrl,
+              maxLength: 20,
+              style: AppTextStyles.bodyStrong,
+              cursorColor: AppColors.gold,
+              decoration: const InputDecoration(
+                labelText: 'Oba adı',
+                labelStyle: AppTextStyles.meta,
+              ),
+            ),
+            TextField(
+              controller: leaderCtrl,
+              maxLength: 16,
+              style: AppTextStyles.bodyStrong,
+              cursorColor: AppColors.gold,
+              decoration: const InputDecoration(
+                labelText: 'Lider adı',
+                labelStyle: AppTextStyles.meta,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text('Vazgeç', style: AppTextStyles.bodyStrong),
+          ),
+          TextButton(
+            onPressed: () {
+              controller.rename(
+                obaName: obaCtrl.text,
+                leaderName: leaderCtrl.text,
+              );
+              Navigator.of(dialogContext).pop();
+            },
+            child: Text('Kaydet',
+                style: AppTextStyles.bodyStrong
+                    .copyWith(color: AppColors.goldBright)),
           ),
         ],
       ),

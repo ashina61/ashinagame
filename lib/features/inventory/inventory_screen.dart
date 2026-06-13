@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../app/theme/app_colors.dart';
 import '../../app/theme/app_text_styles.dart';
 import '../../core/assets/game_assets.dart';
 import '../../core/utils/resource_visuals.dart';
@@ -67,6 +68,8 @@ class _InventoryScreenState extends State<InventoryScreen> {
     };
 
     final carried = entries.fold(0, (sum, e) => sum + e.count);
+    final storageLevel = state.building('storage')?.level ?? 1;
+    final capacity = 400 + (storageLevel - 1) * 200;
 
     return Scaffold(
       body: OrnateScaffold(
@@ -104,6 +107,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
                             label: entry.label,
                             labelAbove: true,
                             count: '${entry.count}',
+                            onTap: () => _showItem(context, entry),
                           ),
                       ],
                     ),
@@ -120,9 +124,17 @@ class _InventoryScreenState extends State<InventoryScreen> {
               ),
               child: Row(
                 children: [
-                  const Text('Taşınan', style: AppTextStyles.section),
-                  const Spacer(),
-                  Text('$carried birim', style: AppTextStyles.value),
+                  const Text('Kapasite', style: AppTextStyles.section),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: StatBar(
+                      fraction: carried / capacity,
+                      height: 12,
+                      fill: carried > capacity ? AppColors.danger : null,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Text('$carried/$capacity', style: AppTextStyles.value),
                 ],
               ),
             ),
@@ -131,4 +143,40 @@ class _InventoryScreenState extends State<InventoryScreen> {
       ),
     );
   }
+
+  void _showItem(BuildContext context, _Entry entry) {
+    showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: AppColors.leatherDark,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: BorderSide(color: AppColors.gold.withValues(alpha: 0.5)),
+        ),
+        title: Row(
+          children: [
+            Image.asset(entry.asset, width: 32, height: 32),
+            const SizedBox(width: 10),
+            Expanded(child: Text(entry.label, style: AppTextStyles.title)),
+          ],
+        ),
+        content: Text(
+          '${_kindLabel(entry.kind)}\nElde: ${entry.count} birim',
+          style: AppTextStyles.body,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text('Kapat', style: AppTextStyles.bodyStrong),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _kindLabel(CraftKind? kind) => switch (kind) {
+        CraftKind.equipment => 'Ekipman — sefer başarısını artırır.',
+        CraftKind.other => 'Üretilmiş eşya.',
+        _ => 'Ham kaynak — üretim ve takasta kullanılır.',
+      };
 }

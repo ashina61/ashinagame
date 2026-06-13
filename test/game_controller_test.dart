@@ -228,6 +228,33 @@ void main() {
     expect(quest.progress, 1);
   });
 
+  test('founding a new oba is gated behind tent level and reputation', () {
+    final base = StarterGameData.create();
+    final weak = GameController(base);
+    expect(weak.canFoundNewOba, isFalse);
+
+    final ready = GameController(
+      base.copyWith(
+        buildings: [
+          for (final b in base.buildings)
+            if (b.id == 'main_tent') b.copyWith(level: 2) else b,
+        ],
+        profile: base.profile.copyWith(reputation: 40),
+      ),
+    );
+    expect(ready.canFoundNewOba, isTrue);
+  });
+
+  test('rename updates oba and leader, ignoring blanks', () {
+    final controller = GameController.starter();
+    controller.rename(obaName: 'Gökböri Obası', leaderName: '  ');
+    expect(controller.state.clan.name, 'Gökböri Obası');
+    expect(controller.state.profile.name, 'Bumin');
+
+    controller.rename(leaderName: 'Tarkan');
+    expect(controller.state.profile.name, 'Tarkan');
+  });
+
   test('khanate duties shift standing and resources', () {
     final controller = GameController.starter();
     final standing = controller.state.khanateStanding;
