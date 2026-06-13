@@ -228,6 +228,19 @@ void main() {
     expect(quest.progress, 1);
   });
 
+  test('choosing a faith path applies its lean once', () {
+    final controller = GameController.starter();
+    expect(controller.state.faithPath, '');
+    final beforeKut = controller.state.faithState.kut;
+
+    expect(controller.chooseFaithPath('gok_tengri'), isTrue);
+    expect(controller.state.faithPath, 'gok_tengri');
+    expect(controller.state.faithState.kut, beforeKut + 10);
+
+    // Re-choosing the same path is a no-op.
+    expect(controller.chooseFaithPath('gok_tengri'), isFalse);
+  });
+
   test('achievements pay out once when their goal is met', () {
     final base = StarterGameData.create();
     final controller = GameController(base.copyWith(generation: 2));
@@ -248,15 +261,15 @@ void main() {
     final controller = GameController(
       base.copyWith(
         day: const GameDay(day: 40, season: Season.winter),
+        profile: base.profile.copyWith(age: 24),
         resources: {...base.resources, ResourceType.food: 400},
       ),
     );
 
-    final ageBefore = controller.state.profile.age;
     controller.endDay();
 
     expect(controller.state.day.day, 41);
-    expect(controller.state.profile.age, ageBefore + 1);
+    expect(controller.state.profile.age, 25);
     expect(controller.state.profile.title, 'Genç Bey');
   });
 

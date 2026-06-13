@@ -54,6 +54,7 @@ class GameState {
     this.pendingSuccession = false,
     this.leaderLifespan = 64,
     this.claimedAchievements = const [],
+    this.faithPath = '',
   });
 
   static const baseDailyActionPoints = 4;
@@ -101,6 +102,9 @@ class GameState {
 
   /// Ids of achievements whose reward has been collected.
   final List<String> claimedAchievements;
+
+  /// Chosen belief path id, empty until the leader commits to one.
+  final String faithPath;
 
   int resource(ResourceType type) => resources[type] ?? 0;
 
@@ -180,6 +184,7 @@ class GameState {
     bool? pendingSuccession,
     int? leaderLifespan,
     List<String>? claimedAchievements,
+    String? faithPath,
   }) {
     final nextMax = maxDailyActionPoints ?? this.maxDailyActionPoints;
     final nextAp = (dailyActionPoints ?? energy ?? this.dailyActionPoints)
@@ -217,6 +222,7 @@ class GameState {
       pendingSuccession: pendingSuccession ?? this.pendingSuccession,
       leaderLifespan: leaderLifespan ?? this.leaderLifespan,
       claimedAchievements: claimedAchievements ?? this.claimedAchievements,
+      faithPath: faithPath ?? this.faithPath,
     );
   }
 }

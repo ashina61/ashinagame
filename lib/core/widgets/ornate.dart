@@ -213,6 +213,7 @@ class SectionPlaque extends StatelessWidget {
             child: Text(
               label,
               style: AppTextStyles.section,
+              textAlign: TextAlign.center,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),

@@ -4,6 +4,7 @@ import '../../app/theme/app_colors.dart';
 import '../../app/theme/app_text_styles.dart';
 import '../../core/utils/formatters.dart';
 import '../../core/widgets/ornate.dart';
+import '../../game/data/faith_paths.dart';
 import '../../game/models/camp_building.dart';
 import '../../game/models/resource.dart';
 import '../../game/state/game_scope.dart';
@@ -36,6 +37,8 @@ class CampScreen extends StatelessWidget {
                     ],
                   ),
                 ),
+                const SectionPlaque('İNANÇ YOLU'),
+                const _FaithPathPanel(),
                 const SectionPlaque('KAM VE RİTÜELLER'),
                 const _AdvisorPanel(),
                 for (final ritual in state.rituals)
@@ -45,6 +48,61 @@ class CampScreen extends StatelessWidget {
                   _BuildingCard(building: building),
               ],
             ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _FaithPathPanel extends StatelessWidget {
+  const _FaithPathPanel();
+
+  @override
+  Widget build(BuildContext context) {
+    final controller = GameScope.of(context);
+    final current = FaithPaths.byId(controller.state.faithPath);
+    return OrnatePanel(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            current == null ? 'Henüz bir yol seçilmedi' : current.name,
+            style: AppTextStyles.bodyStrong.copyWith(fontSize: 16),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            current?.description ??
+                'Obanı bir inanç yoluna adamak faith dengeni güçlendirir.',
+            style: AppTextStyles.body,
+          ),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 6,
+            children: [
+              for (final path in FaithPaths.all)
+                SizedBox(
+                  width: 150,
+                  child: DarkButton(
+                    label: path.id == controller.state.faithPath
+                        ? '✓ ${path.name}'
+                        : path.name,
+                    height: 34,
+                    onPressed: () {
+                      final ok = controller.chooseFaithPath(path.id);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(ok
+                              ? '${path.name} yoluna girildi.'
+                              : 'Bu yol zaten seçili.'),
+                          duration: const Duration(seconds: 2),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+            ],
           ),
         ],
       ),

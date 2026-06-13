@@ -15,8 +15,11 @@ class LifeLogic {
   static bool isYearBoundary(int day) =>
       day > 1 && (day - 1) % daysPerYear == 0;
 
-  /// Honorific that grows with the leader's age.
+  /// Honorific that grows with the leader's age, from a green youth chasing
+  /// chores up to a grey-bearded khan.
   static String titleForAge(int age) {
+    if (age < 16) return 'Çırak';
+    if (age < 20) return 'Yiğit';
     if (age < 28) return 'Genç Bey';
     if (age < 36) return 'Boy Beyi';
     if (age < 46) return 'Kağan';

@@ -40,12 +40,12 @@ class StarterGameData {
   static GameState create() => GameState(
         profile: const PlayerProfile(
           name: 'Bumin',
-          title: 'Genç Kağan Adayı',
-          age: 24,
-          courage: 6,
-          wisdom: 5,
-          leadership: 6,
-          endurance: 5,
+          title: 'Çırak',
+          age: 14,
+          courage: 3,
+          wisdom: 3,
+          leadership: 3,
+          endurance: 3,
         ),
         clan: const Clan(
           name: 'Ashina Obası',

@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import '../data/achievements.dart';
 import '../data/craft_recipes.dart';
 import '../data/expedition_sites.dart';
+import '../data/faith_paths.dart';
 import '../data/market_goods.dart';
 import '../data/starter_game_data.dart';
 import '../logic/event_logic.dart';
@@ -785,6 +786,21 @@ class GameController extends ChangeNotifier {
         'başladı.',
       ),
     ));
+  }
+
+  /// Commits the oba to a belief path, applying its one-time faith lean.
+  /// Re-choosing the same path does nothing; switching applies the new lean.
+  bool chooseFaithPath(String pathId) {
+    final path = FaithPaths.byId(pathId);
+    if (path == null || _state.faithPath == pathId) {
+      return false;
+    }
+    _commit(_state.copyWith(
+      faithPath: pathId,
+      faithState: _state.faithState.apply(path.lean),
+      log: _prependLog('İnanç yolu seçildi: ${path.name}.'),
+    ));
+    return true;
   }
 
   void resetGame() {
