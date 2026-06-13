@@ -119,6 +119,8 @@ class GameSerializer {
         'leaderLifespan': state.leaderLifespan,
         'claimedAchievements': state.claimedAchievements,
         'faithPath': state.faithPath,
+        'tamga': state.tamga,
+        'khanateStanding': state.khanateStanding,
       });
 
   static GameState? decode(String raw) {
@@ -219,6 +221,8 @@ class GameSerializer {
             (json['claimedAchievements'] as List<dynamic>? ?? [])
                 .cast<String>(),
         faithPath: json['faithPath'] as String? ?? '',
+        tamga: json['tamga'] as String? ?? 'wolf',
+        khanateStanding: json['khanateStanding'] as int? ?? 20,
       );
     } catch (_) {
       return null;

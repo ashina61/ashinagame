@@ -228,6 +228,37 @@ void main() {
     expect(quest.progress, 1);
   });
 
+  test('founding a new oba resets the run with chosen name and tamga', () {
+    final controller = GameController.starter();
+    controller.endDay();
+    controller.endDay();
+
+    controller.foundNewOba('Gökböri Obası', 'war');
+
+    expect(controller.state.clan.name, 'Gökböri Obası');
+    expect(controller.state.tamga, 'war');
+    expect(controller.state.generation, 1);
+    expect(controller.state.day.day, 1);
+    expect(controller.state.profile.age, 14);
+    // Falls back to the default name when given blank input.
+    controller.foundNewOba('   ', 'wolf');
+    expect(controller.state.clan.name, isNotEmpty);
+    expect(controller.state.tamga, 'wolf');
+  });
+
+  test('new meta fields survive a serializer round-trip', () {
+    final controller = GameController.starter();
+    controller.foundNewOba('Test Obası', 'yurt');
+    controller.chooseFaithPath('atalar_kultu');
+
+    final decoded =
+        GameSerializer.decode(GameSerializer.encode(controller.state));
+    expect(decoded, isNotNull);
+    expect(decoded!.tamga, 'yurt');
+    expect(decoded.faithPath, 'atalar_kultu');
+    expect(decoded.khanateStanding, controller.state.khanateStanding);
+  });
+
   test('choosing a faith path applies its lean once', () {
     final controller = GameController.starter();
     expect(controller.state.faithPath, '');

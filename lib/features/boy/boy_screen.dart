@@ -4,6 +4,7 @@ import '../../app/theme/app_colors.dart';
 import '../../app/theme/app_text_styles.dart';
 import '../../core/assets/game_assets.dart';
 import '../../core/widgets/ornate.dart';
+import '../../game/data/tamgas.dart';
 import '../../game/models/resource.dart';
 import '../../game/models/tribe_relation.dart';
 import '../../game/state/game_scope.dart';
@@ -26,7 +27,7 @@ class BoyScreen extends StatelessWidget {
                   backgroundAsset: GameAssets.bgSceneCampNight,
                   child: Row(
                     children: [
-                      Image.asset(GameAssets.uiBannerWolf, height: 120),
+                      Image.asset(Tamgas.byId(state.tamga).asset, height: 110),
                       const SizedBox(width: 14),
                       Expanded(
                         child: Column(
@@ -34,13 +35,15 @@ class BoyScreen extends StatelessWidget {
                           children: [
                             Text(state.clan.name.toUpperCase(),
                                 style: AppTextStyles.title),
+                            Text('Tamga: ${Tamgas.byId(state.tamga).name}',
+                                style: AppTextStyles.meta),
                             const SizedBox(height: 8),
                             _InfoRow('Nüfus',
                                 '${state.resource(ResourceType.population)}'),
                             _InfoRow('İtibar',
                                 '${state.resource(ResourceType.reputation)}'),
-                            _InfoRow('Aksiyon',
-                                '${state.dailyActionPoints}/${state.maxDailyActionPoints}'),
+                            _InfoRow('Kağanlık',
+                                '${state.khanateStanding}/100 bağlılık'),
                             _InfoRow('Boy sayısı', '${state.tribes.length}'),
                           ],
                         ),

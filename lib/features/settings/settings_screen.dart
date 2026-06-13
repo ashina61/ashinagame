@@ -5,6 +5,7 @@ import '../../app/theme/app_text_styles.dart';
 import '../../core/assets/game_assets.dart';
 import '../../core/widgets/ornate.dart';
 import '../../game/state/game_scope.dart';
+import '../found_oba/found_oba_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -90,18 +91,43 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
                 const SectionPlaque('OYUN VERİSİ'),
                 OrnatePanel(
-                  child: Row(
+                  child: Column(
                     children: [
-                      const Expanded(
-                        child: Text(
-                          'Obayı baştan kur. Tüm ilerleme silinir.',
-                          style: AppTextStyles.body,
-                        ),
+                      Row(
+                        children: [
+                          const Expanded(
+                            child: Text(
+                              'Kendi tamga ve adınla kağanlığa bağlı yeni bir '
+                              'oba kur.',
+                              style: AppTextStyles.body,
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          DarkButton(
+                            label: 'YENİ OBA KUR',
+                            onPressed: () => Navigator.of(context).push(
+                              MaterialPageRoute<void>(
+                                builder: (_) => const FoundObaScreen(),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(width: 10),
-                      DarkButton(
-                        label: 'OYUNU SIFIRLA',
-                        onPressed: () => _confirmReset(context),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          const Expanded(
+                            child: Text(
+                              'Obayı baştan kur. Tüm ilerleme silinir.',
+                              style: AppTextStyles.body,
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          DarkButton(
+                            label: 'OYUNU SIFIRLA',
+                            onPressed: () => _confirmReset(context),
+                          ),
+                        ],
                       ),
                     ],
                   ),

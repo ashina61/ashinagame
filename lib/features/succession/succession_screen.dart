@@ -6,6 +6,7 @@ import '../../core/assets/game_assets.dart';
 import '../../core/widgets/ornate.dart';
 import '../../game/models/resource.dart';
 import '../../game/state/game_scope.dart';
+import '../found_oba/found_oba_screen.dart';
 
 /// Shown when the leader dies of old age; the realm passes to an heir
 /// instead of ending, carrying the clan into the next generation.
@@ -79,7 +80,7 @@ class SuccessionScreen extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.fromLTRB(48, 8, 48, 0),
               child: GoldButton(
-                label: 'MİRASI DEVRAL',
+                label: 'SOYUNLA DEVAM ET',
                 onPressed: () {
                   controller.succeedWithHeir();
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -90,6 +91,17 @@ class SuccessionScreen extends StatelessWidget {
                     ),
                   );
                 },
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(48, 10, 48, 0),
+              child: DarkButton(
+                label: 'YENİ OBA KUR',
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => const FoundObaScreen(),
+                  ),
+                ),
               ),
             ),
           ],

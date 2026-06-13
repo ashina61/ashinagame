@@ -55,6 +55,8 @@ class GameState {
     this.leaderLifespan = 64,
     this.claimedAchievements = const [],
     this.faithPath = '',
+    this.tamga = 'wolf',
+    this.khanateStanding = 20,
   });
 
   static const baseDailyActionPoints = 4;
@@ -105,6 +107,12 @@ class GameState {
 
   /// Chosen belief path id, empty until the leader commits to one.
   final String faithPath;
+
+  /// Seal/banner id marking the oba (see [Tamgas]).
+  final String tamga;
+
+  /// Standing within the khanate the oba is bound to (0–100).
+  final int khanateStanding;
 
   int resource(ResourceType type) => resources[type] ?? 0;
 
@@ -185,6 +193,8 @@ class GameState {
     int? leaderLifespan,
     List<String>? claimedAchievements,
     String? faithPath,
+    String? tamga,
+    int? khanateStanding,
   }) {
     final nextMax = maxDailyActionPoints ?? this.maxDailyActionPoints;
     final nextAp = (dailyActionPoints ?? energy ?? this.dailyActionPoints)
@@ -223,6 +233,9 @@ class GameState {
       leaderLifespan: leaderLifespan ?? this.leaderLifespan,
       claimedAchievements: claimedAchievements ?? this.claimedAchievements,
       faithPath: faithPath ?? this.faithPath,
+      tamga: tamga ?? this.tamga,
+      khanateStanding:
+          (khanateStanding ?? this.khanateStanding).clamp(0, 100).toInt(),
     );
   }
 }

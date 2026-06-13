@@ -15,6 +15,7 @@ import '../logic/progression_logic.dart';
 import '../logic/resource_logic.dart';
 import '../logic/season_logic.dart';
 import '../models/achievement.dart';
+import '../models/clan.dart';
 import '../models/craft.dart';
 import '../models/event_choice.dart';
 import '../models/faith.dart';
@@ -801,6 +802,30 @@ class GameController extends ChangeNotifier {
       log: _prependLog('İnanç yolu seçildi: ${path.name}.'),
     ));
     return true;
+  }
+
+  /// Founds a brand-new oba under a chosen name and tamga, bound to the
+  /// khanate. A fresh young founder takes over; a small share of the old
+  /// treasury carries forward as a founding legacy.
+  void foundNewOba(String name, String tamgaId) {
+    final fresh = StarterGameData.create();
+    final trimmed = name.trim();
+    final legacyGold = _state.resource(ResourceType.gold) ~/ 10;
+    _commit(fresh.copyWith(
+      clan: Clan(
+        name: trimmed.isEmpty ? fresh.clan.name : trimmed,
+        motto: fresh.clan.motto,
+      ),
+      tamga: tamgaId,
+      resources: ResourceLogic.apply(
+        fresh.resources,
+        {ResourceType.gold: legacyGold},
+      ),
+      log: [
+        '${trimmed.isEmpty ? fresh.clan.name : trimmed} obası kuruldu, '
+            'kağanlığa bağlandı.',
+      ],
+    ));
   }
 
   void resetGame() {
