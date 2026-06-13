@@ -216,6 +216,7 @@ class _RecipeDetail extends StatelessWidget {
                   switch (entry.key) {
                     ResourceType.wood => GameAssets.iconItemWood,
                     ResourceType.leather => GameAssets.iconItemLeather,
+                    ResourceType.stone || ResourceType.iron => GameAssets.iconItemStone,
                     _ => GameAssets.iconCoinGold,
                   },
                   width: 18,

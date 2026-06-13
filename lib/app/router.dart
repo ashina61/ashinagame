@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../core/widgets/ornate.dart';
-import '../features/atelier/atelier_screen.dart';
+import '../features/camp/camp_screen.dart';
 import '../features/boy/boy_screen.dart';
 import '../features/expeditions/expeditions_screen.dart';
 import '../features/game_over/game_over_screen.dart';
@@ -22,7 +22,7 @@ class _AshinaRouterState extends State<AshinaRouter> {
   static const _screens = [
     HomeScreen(),
     BoyScreen(),
-    AtelierScreen(),
+    CampScreen(),
     ExpeditionsScreen(),
     SettingsScreen(),
   ];

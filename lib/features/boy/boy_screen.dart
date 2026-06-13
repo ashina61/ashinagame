@@ -5,17 +5,11 @@ import '../../app/theme/app_text_styles.dart';
 import '../../core/assets/game_assets.dart';
 import '../../core/widgets/ornate.dart';
 import '../../game/models/resource.dart';
+import '../../game/models/tribe_relation.dart';
 import '../../game/state/game_scope.dart';
 
 class BoyScreen extends StatelessWidget {
   const BoyScreen({super.key});
-
-  static const _members = [
-    ('Togan', 'Lider', 92, GameAssets.portraitTogan),
-    ('Bori', 'Avcı', 78, GameAssets.portraitBori),
-    ('Kaya', 'Asker', 65, GameAssets.portraitKaya),
-    ('Alis', 'Tüccar', 58, GameAssets.portraitAlis),
-  ];
 
   @override
   Widget build(BuildContext context) {
@@ -32,131 +26,26 @@ class BoyScreen extends StatelessWidget {
                   backgroundAsset: GameAssets.bgSceneCampNight,
                   child: Row(
                     children: [
-                      Image.asset(GameAssets.uiBannerWolf, height: 130),
+                      Image.asset(GameAssets.uiBannerWolf, height: 120),
                       const SizedBox(width: 14),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              state.clan.name.toUpperCase(),
-                              style: AppTextStyles.title,
-                            ),
+                            Text(state.clan.name.toUpperCase(), style: AppTextStyles.title),
                             const SizedBox(height: 8),
-                            const _InfoRow('Lider', 'Togan'),
-                            const _InfoRow('Üyeler', '44/60'),
-                            _InfoRow(
-                              'Nüfus',
-                              '${state.resource(ResourceType.population)}',
-                            ),
-                            const _InfoRow('Bölge', 'Sınır Karakolu'),
+                            _InfoRow('Nüfus', '${state.resource(ResourceType.population)}'),
+                            _InfoRow('İtibar', '${state.resource(ResourceType.reputation)}'),
+                            _InfoRow('Aksiyon', '${state.dailyActionPoints}/${state.maxDailyActionPoints}'),
+                            _InfoRow('Boy sayısı', '${state.tribes.length}'),
                           ],
                         ),
                       ),
                     ],
                   ),
                 ),
-                const SectionPlaque('BOY ÜYELERİ'),
-                for (final (name, role, power, portrait) in _members)
-                  OrnatePanel(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 8,
-                    ),
-                    child: Row(
-                      children: [
-                        SizedBox(
-                          width: 52,
-                          height: 52,
-                          child: Stack(
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.all(6),
-                                child: ClipOval(
-                                  child: Image.asset(
-                                    portrait,
-                                    fit: BoxFit.cover,
-                                  ),
-                                ),
-                              ),
-                              Positioned.fill(
-                                child: Image.asset(
-                                  GameAssets.uiFramePortraitRound,
-                                  fit: BoxFit.contain,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Text(name, style: AppTextStyles.bodyStrong),
-                                  if (role == 'Lider')
-                                    Padding(
-                                      padding: const EdgeInsets.only(left: 6),
-                                      child: Text(
-                                        '♛',
-                                        style: AppTextStyles.value.copyWith(
-                                          fontSize: 14,
-                                        ),
-                                      ),
-                                    ),
-                                ],
-                              ),
-                              Text(role, style: AppTextStyles.meta),
-                            ],
-                          ),
-                        ),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            Text(
-                              'Güç  $power',
-                              style: AppTextStyles.value.copyWith(fontSize: 14),
-                            ),
-                            Text(
-                              'Sadık',
-                              style: AppTextStyles.meta.copyWith(
-                                color: AppColors.success,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(12, 4, 12, 0),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: DarkButton(
-                          label: 'DİPLOMASİ',
-                          onPressed: () => _soon(context),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: DarkButton(
-                          label: 'YARDIM GÖNDER',
-                          onPressed: () => _soon(context),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: DarkButton(
-                          label: 'BOY YÖNETİMİ',
-                          onPressed: () => _soon(context),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+                const SectionPlaque('BOY DURUMU / DİPLOMASİ'),
+                for (final tribe in state.tribes) _TribePanel(tribe: tribe),
               ],
             ),
           ),
@@ -164,17 +53,82 @@ class BoyScreen extends StatelessWidget {
       ),
     );
   }
+}
 
-  static void _soon(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Bu özellik yakında geliyor.')),
+class _TribePanel extends StatelessWidget {
+  const _TribePanel({required this.tribe});
+  final TribeRelation tribe;
+
+  @override
+  Widget build(BuildContext context) {
+    final controller = GameScope.of(context);
+    final state = controller.state;
+    final hasAp = state.dailyActionPoints > 0;
+    return OrnatePanel(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(child: Text(tribe.name, style: AppTextStyles.bodyStrong.copyWith(fontSize: 16))),
+              Text(tribe.status, style: AppTextStyles.value.copyWith(fontSize: 14, color: _statusColor(tribe.status))),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Text('Lider ${tribe.leader} • Güç ${tribe.power} • Nüfus ${tribe.population}', style: AppTextStyles.body),
+          Text('İlişki ${tribe.relation}/100 • Savaş riski %${tribe.warRisk} • Ticaret ${tribe.tradeOpen ? 'Açık' : 'Kapalı'} • Evlilik bağı ${tribe.marriageTie ? 'Var' : 'Yok'}', style: AppTextStyles.meta),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 6,
+            runSpacing: 6,
+            children: [
+              _Action(label: 'Hediye', enabled: hasAp && state.resource(ResourceType.gold) >= 100, onTap: () => controller.performDiplomacy(tribe.id, 'gift')),
+              _Action(label: 'Ticaret', enabled: hasAp && state.resource(ResourceType.gold) >= 60, onTap: () => controller.performDiplomacy(tribe.id, 'trade')),
+              _Action(label: 'Elçi', enabled: hasAp, onTap: () => controller.performDiplomacy(tribe.id, 'envoy')),
+              _Action(label: 'Yardım', enabled: hasAp && state.resource(ResourceType.food) >= 20, onTap: () => controller.performDiplomacy(tribe.id, 'aid')),
+              _Action(label: 'Savaş Haz.', enabled: hasAp && state.resource(ResourceType.gold) >= 40, onTap: () => controller.performDiplomacy(tribe.id, 'war')),
+              _Action(label: 'Evlilik Bağı', enabled: hasAp && state.resource(ResourceType.gold) >= 80, onTap: () => controller.performDiplomacy(tribe.id, 'marriage')),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Color _statusColor(String status) => switch (status) {
+        'Müttefik' || 'Dost' => AppColors.success,
+        'Gergin' || 'Düşman' => AppColors.danger,
+        _ => AppColors.goldBright,
+      };
+}
+
+class _Action extends StatelessWidget {
+  const _Action({required this.label, required this.enabled, required this.onTap});
+  final String label;
+  final bool enabled;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 106,
+      child: DarkButton(
+        label: label,
+        height: 32,
+        onPressed: enabled
+            ? () {
+                final ok = onTap;
+                ok();
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$label diplomasi aksiyonu işlendi.')));
+              }
+            : null,
+      ),
     );
   }
 }
 
 class _InfoRow extends StatelessWidget {
   const _InfoRow(this.label, this.value);
-
   final String label;
   final String value;
 
@@ -184,10 +138,7 @@ class _InfoRow extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 3),
       child: Row(
         children: [
-          SizedBox(
-            width: 64,
-            child: Text('$label:', style: AppTextStyles.meta),
-          ),
+          SizedBox(width: 70, child: Text('$label:', style: AppTextStyles.meta)),
           Expanded(child: Text(value, style: AppTextStyles.bodyStrong)),
         ],
       ),

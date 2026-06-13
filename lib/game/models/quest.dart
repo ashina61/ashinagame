@@ -15,6 +15,7 @@ class Quest {
     this.goalResource,
     this.resourceRewards = const {},
     this.statRewards = const {},
+    this.xpReward = 20,
     this.progress = 0,
     this.completed = false,
   });
@@ -34,6 +35,7 @@ class Quest {
   final int goalTarget;
   final Map<ResourceType, int> resourceRewards;
   final Map<String, int> statRewards;
+  final int xpReward;
   final int progress;
   final bool completed;
 
@@ -49,6 +51,7 @@ class Quest {
         goalResource: goalResource,
         resourceRewards: resourceRewards,
         statRewards: statRewards,
+        xpReward: xpReward,
         progress: progress ?? this.progress,
         completed: completed ?? this.completed,
       );

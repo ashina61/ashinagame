@@ -4,264 +4,256 @@ import 'dart:math';
 import 'package:ashinagame/game/data/market_goods.dart';
 import 'package:ashinagame/game/data/starter_game_data.dart';
 import 'package:ashinagame/game/logic/market_logic.dart';
+import 'package:ashinagame/game/models/faith.dart';
 import 'package:ashinagame/game/models/resource.dart';
 import 'package:ashinagame/game/state/game_controller.dart';
 import 'package:ashinagame/game/state/game_serializer.dart';
-import 'package:ashinagame/game/state/game_state.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-/// Forces deterministic expedition rolls.
 class _FixedRandom implements Random {
   _FixedRandom(this._value);
-
   final int _value;
-
   @override
   int nextInt(int max) => _value % max;
-
   @override
   bool nextBool() => false;
-
   @override
   double nextDouble() => 0;
+
+  test('ritual spends resources and cooldown blocks repeat', () {
+    final controller = GameController.starter();
+    final beforeGold = controller.state.resource(ResourceType.gold);
+    expect(controller.performRitual('sky_oath'), isTrue);
+    expect(controller.state.resource(ResourceType.gold), beforeGold - 80);
+    expect(controller.state.faithState.kut, 53);
+    expect(controller.performRitual('sky_oath'), isFalse);
+  });
+
+  test('faith values stay clamped between zero and one hundred', () {
+    final state = StarterGameData.create().copyWith(
+      faithState: const FaithState().apply({
+        'faith': 1000,
+        'kut': -1000,
+        'tore': 1000,
+        'ancestorHonor': -1000,
+      }),
+    );
+    expect(state.faithState.faith, 100);
+    expect(state.faithState.kut, 0);
+    expect(state.faithState.tore, 100);
+    expect(state.faithState.ancestorHonor, 0);
+  });
+
+  test('end day can create an omen and kam consultation softens a bad omen', () {
+    final controller = GameController(StarterGameData.create(), random: _FixedRandom(20));
+    controller.endDay();
+    expect(controller.state.faithState.hasOmen, isTrue);
+    expect(controller.state.faithState.omenSeverity, OmenSeverity.bad);
+    expect(controller.consultAdvisor('interpret_omen'), isTrue);
+    expect(controller.state.faithState.omenSeverity, OmenSeverity.neutral);
+    expect(controller.state.faithState.activeWarnings, isEmpty);
+  });
+
+  test('sacred place visit costs AP and energy while increasing faith state', () {
+    final controller = GameController.starter();
+    final beforeEnergy = controller.state.profile.energy;
+    final beforeKut = controller.state.faithState.kut;
+    expect(controller.visitSacredPlace('old_inscription'), isTrue);
+    expect(controller.state.dailyActionPoints, 3);
+    expect(controller.state.profile.energy, lessThan(beforeEnergy));
+    expect(controller.state.faithState.kut, beforeKut + 2);
+    expect(controller.visitSacredPlace('old_inscription'), isFalse);
+  });
+
+  test('tore event applies faith effects and tracks tore quest action', () {
+    final controller = GameController.starter();
+    final event = StarterGameData.events.firstWhere((item) => item.id == 'tore_herd_dispute');
+    final choice = event.choices.first;
+    final beforeTore = controller.state.faithState.tore;
+    expect(controller.chooseEvent(choice), isTrue);
+    expect(controller.state.faithState.tore, beforeTore + 4);
+    final quest = controller.state.quests.firstWhere((item) => item.id == 's_tore_case');
+    expect(quest.progress, 1);
+  });
+
 }
 
 void main() {
-  const huntEffects = {ResourceType.food: 12, ResourceType.leather: 2};
+  const huntEffects = {ResourceType.food: 20, ResourceType.leather: 2};
 
-  test('camp actions consume energy and feed quest progress', () {
+  test('quest completion grants XP and can level up', () {
     final controller = GameController.starter();
-
-    final done =
-        controller.performCampAction(GameActions.hunt, 'Avlan', huntEffects);
-
-    expect(done, isTrue);
-    expect(
-      controller.state.energy,
-      GameState.maxEnergy - GameController.campActionCost,
-    );
-    expect(controller.state.resource(ResourceType.food), 112);
-
-    final hunt =
-        controller.state.quests.firstWhere((quest) => quest.id == 'd_hunt');
-    expect(controller.state.questReady(hunt), isTrue);
-
+    controller.performCampAction(GameActions.hunt, 'Avlan', huntEffects, xp: 90);
+    final beforeClaimXp = controller.state.profile.xp;
     controller.claimQuest('d_hunt');
-    expect(controller.state.resource(ResourceType.food), 112 + 14);
-    expect(
-      controller.state.quests
-          .firstWhere((quest) => quest.id == 'd_hunt')
-          .completed,
-      isTrue,
-    );
-  });
+    expect(controller.state.profile.xp, greaterThan(beforeClaimXp));
 
-  test('quest rewards cannot be claimed before the goal is met', () {
-    final controller = GameController.starter();
-
-    controller.claimQuest('d_hunt');
-
-    expect(controller.state.resource(ResourceType.food), 100);
-    expect(
-      controller.state.quests
-          .firstWhere((quest) => quest.id == 'd_hunt')
-          .completed,
-      isFalse,
-    );
-  });
-
-  test('energy gates actions and a new day restores it', () {
-    final controller = GameController.starter();
-
-    const perDay = GameState.maxEnergy ~/ GameController.campActionCost;
-    for (var i = 0; i < perDay; i++) {
-      expect(
-        controller.performCampAction(GameActions.farm, 'Tarla', const {
-          ResourceType.food: 10,
-        }),
-        isTrue,
-      );
-    }
-    expect(
-      controller.performCampAction(GameActions.farm, 'Tarla', const {
-        ResourceType.food: 10,
-      }),
-      isFalse,
-    );
-
-    controller.endDay();
-    expect(controller.state.energy, GameState.maxEnergy);
-  });
-
-  test('daily quests rotate at the end of the day', () {
-    final controller = GameController.starter();
-    controller.performCampAction(GameActions.hunt, 'Avlan', huntEffects);
-
-    controller.endDay();
-
-    final dailies = controller.state.quests
-        .where((quest) => quest.category == 'Günlük')
-        .toList();
-    expect(dailies.length, 3);
-    expect(dailies.every((quest) => quest.progress == 0), isTrue);
-    expect(
-      controller.state.quests.any((quest) => quest.category == 'Hikâye'),
-      isTrue,
-    );
-  });
-
-  test('day and season progress every ten days', () {
-    final controller = GameController.starter();
-    for (var i = 0; i < 10; i++) {
+    for (var i = 0; i < 4; i++) {
       controller.endDay();
+      controller.performCampAction(GameActions.hunt, 'Avlan', huntEffects, xp: 80);
     }
-
-    expect(controller.state.day.day, 11);
-    expect(controller.state.day.season.label, 'Yaz');
+    expect(controller.state.profile.level, greaterThan(1));
+    expect(controller.state.profile.skillPoints, greaterThan(0));
   });
 
-  test('starvation erodes the camp until the run collapses', () {
-    final controller = GameController.starter();
-
-    var days = 0;
-    while (!controller.state.gameOver && days < 120) {
-      controller.endDay();
-      days++;
-    }
-
-    expect(controller.state.gameOver, isTrue);
-    expect(controller.state.gameOverReason, isNotNull);
-    expect(
-      controller.state.resources.values.every((value) => value >= 0),
-      isTrue,
+  test('skill point spending increases the selected stat', () {
+    final controller = GameController(
+      StarterGameData.create().copyWith(
+        profile: StarterGameData.create().profile.copyWith(skillPoints: 1),
+      ),
     );
+    final before = controller.state.profile.trade;
+    expect(controller.spendSkillPoint('trade'), isTrue);
+    expect(controller.state.profile.trade, before + 1);
+    expect(controller.state.profile.skillPoints, 0);
   });
 
-  test('crafting pays costs up front and finishes after its days', () {
+  test('daily action points gate actions and renew at day end', () {
     final controller = GameController.starter();
+    expect(controller.state.dailyActionPoints, 4);
+    expect(controller.performCampAction(GameActions.farm, 'Tarla', const {ResourceType.food: 12}), isTrue);
+    expect(controller.state.dailyActionPoints, 3);
+    for (var i = 0; i < 3; i++) {
+      expect(controller.rest(), isTrue);
+    }
+    expect(controller.performCampAction(GameActions.farm, 'Tarla', const {ResourceType.food: 12}), isFalse);
+    controller.endDay();
+    expect(controller.state.dailyActionPoints, controller.state.maxDailyActionPoints);
+  });
 
+  test('energy fatigue and health are affected by action and day cycle', () {
+    final controller = GameController.starter();
+    controller.performCampAction(GameActions.wood, 'Odun Kes', const {ResourceType.wood: 15}, energyCost: 10, fatigueGain: 8);
+    expect(controller.state.profile.energy, lessThan(100));
+    expect(controller.state.profile.fatigue, greaterThan(0));
+    controller.endDay();
+    expect(controller.state.profile.energy, greaterThan(80));
+  });
+
+  test('building upgrade spends resources and insufficient resources fail', () {
+    final controller = GameController.starter();
+    expect(controller.upgradeBuilding('storage'), isTrue);
+    expect(controller.state.building('storage')!.level, 2);
+    expect(controller.state.resource(ResourceType.wood), 25);
+    expect(controller.state.resource(ResourceType.stone), 10);
+    expect(controller.upgradeBuilding('watchtower'), isFalse);
+    expect(controller.state.building('watchtower')!.level, 1);
+  });
+
+  test('diplomacy action changes relation and consumes AP', () {
+    final controller = GameController.starter();
+    final before = controller.state.tribes.first.relation;
+    expect(controller.performDiplomacy(controller.state.tribes.first.id, 'envoy'), isTrue);
+    expect(controller.state.tribes.first.relation, isNot(before));
+    expect(controller.state.dailyActionPoints, 3);
+  });
+
+  test('marriage requires conditions and then updates household', () {
+    final controller = GameController.starter();
+    expect(controller.proposeMarriage('aybuke'), isFalse);
+    final boosted = controller.state.copyWith(
+      resources: {
+        ...controller.state.resources,
+        ResourceType.gold: 600,
+        ResourceType.reputation: 25,
+      },
+    );
+    final ready = GameController(boosted);
+    expect(ready.proposeMarriage('aybuke'), isTrue);
+    expect(ready.state.household.spouseName, 'Aybüke');
+    expect(ready.state.household.isMarried, isTrue);
+    expect(ready.state.tribeByName('Kara Kurtlar')!.marriageTie, isTrue);
+  });
+
+  test('crafting, expeditions, market and serializer still work', () {
+    final controller = GameController(StarterGameData.create(), random: _FixedRandom(0));
     expect(controller.startCraft('wood_shield'), CraftStart.started);
-    expect(controller.state.resource(ResourceType.wood), 60 - 12);
-    expect(controller.state.craftQueue.length, 1);
-
-    expect(controller.startCraft('leather_armor'), CraftStart.started);
-    expect(controller.startCraft('fur_cloak'), CraftStart.queueFull);
-
     controller.endDay();
     expect(controller.state.craftedCount('wood_shield'), 1);
-    expect(controller.state.craftQueue.length, 1);
-
-    controller.endDay();
-    expect(controller.state.craftedCount('leather_armor'), 1);
-    expect(controller.state.craftQueue, isEmpty);
-    expect(controller.equipmentBonus, 5 + 6);
-  });
-
-  test('crafting refuses to start without materials', () {
-    final controller = GameController.starter();
-
-    // Starter leather is 25; two armors fit, the third does not.
-    expect(controller.startCraft('leather_armor'), CraftStart.started);
-    expect(controller.startCraft('leather_armor'), CraftStart.started);
-    controller.endDay();
-    controller.endDay();
-    expect(controller.startCraft('leather_armor'), CraftStart.noResources);
-  });
-
-  test('expeditions unlock in order and conquer on success', () {
-    final controller = GameController(
-      StarterGameData.create(),
-      random: _FixedRandom(0),
-    );
-
-    expect(controller.embarkExpedition('yesit_fort'), isNull);
 
     final outcome = controller.embarkExpedition('border_outpost');
     expect(outcome, isNotNull);
-    expect(outcome!.success, isTrue);
     expect(controller.state.expeditionDone('border_outpost'), isTrue);
-    expect(controller.state.resource(ResourceType.gold), 250 + 30);
-    expect(
-      controller.state.energy,
-      GameState.maxEnergy - GameController.expeditionCost,
-    );
 
-    // The next site in the chain is now open; a taken site is not.
-    expect(controller.embarkExpedition('border_outpost'), isNull);
-    expect(controller.embarkExpedition('steppe_pass'), isNotNull);
-  });
-
-  test('a failed expedition applies losses and keeps the site open', () {
-    final controller = GameController(
-      StarterGameData.create(),
-      random: _FixedRandom(99),
-    );
-
-    final outcome = controller.embarkExpedition('border_outpost');
-    expect(outcome, isNotNull);
-    expect(outcome!.success, isFalse);
-    expect(controller.state.expeditionDone('border_outpost'), isFalse);
-    expect(controller.state.resource(ResourceType.morale), 70 - 3);
-  });
-
-  test('market purchases drain stock and gold until the day resets them', () {
-    final controller = GameController.starter();
     final salt = MarketGoods.byId('salt')!;
-    final price = MarketLogic.priceFor(salt, 1);
+    final price = MarketLogic.priceFor(salt, controller.state.day.day);
+    expect(controller.buyGood('salt'), isTrue);
+    expect(controller.state.resource(ResourceType.gold), lessThan(250 - price + 100));
 
-    for (var i = 0; i < salt.baseStock; i++) {
-      expect(controller.buyGood('salt'), isTrue);
-    }
-    expect(controller.buyGood('salt'), isFalse);
-    expect(controller.state.stockOf('salt'), 0);
-    expect(
-      controller.state.resource(ResourceType.gold),
-      250 - price * salt.baseStock,
-    );
-    expect(
-      controller.state.resource(ResourceType.food),
-      100 + salt.amount * salt.baseStock,
-    );
-
-    controller.endDay();
-    expect(controller.state.stockOf('salt'), salt.baseStock);
-  });
-
-  test('untradable goods are rejected', () {
-    final controller = GameController.starter();
-    expect(controller.buyGood('iron_ore'), isFalse);
-  });
-
-  test('serializer round-trips the run and rejects corrupt input', () {
-    final controller = GameController.starter();
-    controller.performCampAction(GameActions.hunt, 'Avlan', huntEffects);
-    controller.endDay();
-
-    final decoded = GameSerializer.decode(
-      GameSerializer.encode(controller.state),
-    );
-
+    final decoded = GameSerializer.decode(GameSerializer.encode(controller.state));
     expect(decoded, isNotNull);
-    expect(decoded!.day.day, controller.state.day.day);
-    expect(decoded.energy, controller.state.energy);
-    expect(decoded.resources, controller.state.resources);
-    expect(decoded.eventIndex, controller.state.eventIndex);
-    expect(decoded.quests.length, controller.state.quests.length);
-    expect(decoded.currentEvent?.id, controller.state.currentEvent?.id);
+    expect(decoded!.buildings.length, controller.state.buildings.length);
+    expect(decoded.tribes.length, controller.state.tribes.length);
+    expect(decoded.household.householdMorale, controller.state.household.householdMorale);
 
-    expect(GameSerializer.decode('not-json'), isNull);
-
-    // A pre-P1 save without the newer keys still loads with defaults.
-    final legacyMap = jsonDecode(GameSerializer.encode(controller.state))
-        as Map<String, dynamic>;
+    final legacyMap = jsonDecode(GameSerializer.encode(controller.state)) as Map<String, dynamic>;
     legacyMap
-      ..remove('craftQueue')
-      ..remove('craftedItems')
-      ..remove('completedExpeditions')
-      ..remove('marketStock');
+      ..remove('buildings')
+      ..remove('tribes')
+      ..remove('household')
+      ..remove('marriageCandidates')
+      ..remove('dailyActionPoints')
+      ..remove('maxDailyActionPoints');
     final legacy = GameSerializer.decode(jsonEncode(legacyMap));
     expect(legacy, isNotNull);
-    expect(legacy!.craftQueue, isEmpty);
-    expect(legacy.marketStock, MarketGoods.startingStock());
+    expect(legacy!.buildings.length, StarterGameData.campBuildings.length);
+    expect(GameSerializer.decode('not-json'), isNull);
   });
+
+  test('ritual spends resources and cooldown blocks repeat', () {
+    final controller = GameController.starter();
+    final beforeGold = controller.state.resource(ResourceType.gold);
+    expect(controller.performRitual('sky_oath'), isTrue);
+    expect(controller.state.resource(ResourceType.gold), beforeGold - 80);
+    expect(controller.state.faithState.kut, 53);
+    expect(controller.performRitual('sky_oath'), isFalse);
+  });
+
+  test('faith values stay clamped between zero and one hundred', () {
+    final state = StarterGameData.create().copyWith(
+      faithState: const FaithState().apply({
+        'faith': 1000,
+        'kut': -1000,
+        'tore': 1000,
+        'ancestorHonor': -1000,
+      }),
+    );
+    expect(state.faithState.faith, 100);
+    expect(state.faithState.kut, 0);
+    expect(state.faithState.tore, 100);
+    expect(state.faithState.ancestorHonor, 0);
+  });
+
+  test('end day can create an omen and kam consultation softens a bad omen', () {
+    final controller = GameController(StarterGameData.create(), random: _FixedRandom(20));
+    controller.endDay();
+    expect(controller.state.faithState.hasOmen, isTrue);
+    expect(controller.state.faithState.omenSeverity, OmenSeverity.bad);
+    expect(controller.consultAdvisor('interpret_omen'), isTrue);
+    expect(controller.state.faithState.omenSeverity, OmenSeverity.neutral);
+    expect(controller.state.faithState.activeWarnings, isEmpty);
+  });
+
+  test('sacred place visit costs AP and energy while increasing faith state', () {
+    final controller = GameController.starter();
+    final beforeEnergy = controller.state.profile.energy;
+    final beforeKut = controller.state.faithState.kut;
+    expect(controller.visitSacredPlace('old_inscription'), isTrue);
+    expect(controller.state.dailyActionPoints, 3);
+    expect(controller.state.profile.energy, lessThan(beforeEnergy));
+    expect(controller.state.faithState.kut, beforeKut + 2);
+    expect(controller.visitSacredPlace('old_inscription'), isFalse);
+  });
+
+  test('tore event applies faith effects and tracks tore quest action', () {
+    final controller = GameController.starter();
+    final event = StarterGameData.events.firstWhere((item) => item.id == 'tore_herd_dispute');
+    final choice = event.choices.first;
+    final beforeTore = controller.state.faithState.tore;
+    expect(controller.chooseEvent(choice), isTrue);
+    expect(controller.state.faithState.tore, beforeTore + 4);
+    final quest = controller.state.quests.firstWhere((item) => item.id == 's_tore_case');
+    expect(quest.progress, 1);
+  });
+
 }

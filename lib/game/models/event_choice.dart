@@ -7,6 +7,12 @@ class EventChoice {
     required this.description,
     this.resourceEffects = const {},
     this.statEffects = const {},
+    this.faithEffects = const {},
+    this.actionPointCost = 0,
+    this.healthEffect = 0,
+    this.energyEffect = 0,
+    this.fatigueEffect = 0,
+    this.xpReward = 10,
   });
 
   final String id;
@@ -14,6 +20,12 @@ class EventChoice {
   final String description;
   final Map<ResourceType, int> resourceEffects;
   final Map<String, int> statEffects;
+  final Map<String, int> faithEffects;
+  final int actionPointCost;
+  final int healthEffect;
+  final int energyEffect;
+  final int fatigueEffect;
+  final int xpReward;
 }
 
 class GameEvent {

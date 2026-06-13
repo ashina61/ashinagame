@@ -10,7 +10,6 @@ import '../../game/models/expedition.dart';
 import '../../game/models/resource.dart';
 import '../../game/state/game_controller.dart';
 import '../../game/state/game_scope.dart';
-import '../../game/state/game_state.dart';
 import 'expedition_result_screen.dart';
 
 class _Region {
@@ -95,7 +94,7 @@ class _ExpeditionsScreenState extends State<ExpeditionsScreen> {
   @override
   Widget build(BuildContext context) {
     final controller = GameScope.of(context);
-    final energy = controller.state.energy;
+    final energy = controller.state.dailyActionPoints;
     return OrnateScaffold(
       child: Column(
         children: [
@@ -107,7 +106,7 @@ class _ExpeditionsScreenState extends State<ExpeditionsScreen> {
                 Image.asset(GameAssets.iconEnergyBolt, width: 16, height: 16),
                 const SizedBox(width: 4),
                 Text(
-                  'Enerji $energy/${GameState.maxEnergy}  •  '
+                  'Aksiyon $energy/${controller.state.maxDailyActionPoints}  •  '
                   'Keşif ${GameController.exploreCost}  •  '
                   'Sefer ${GameController.expeditionCost}',
                   style: AppTextStyles.meta.copyWith(fontSize: 11),
@@ -217,6 +216,7 @@ class _ExpeditionsScreenState extends State<ExpeditionsScreen> {
     return ListView(
       padding: const EdgeInsets.only(top: 4, bottom: 16),
       children: [
+        const SectionPlaque('KEŞİF BÖLGELERİ'),
         for (final region in _regions)
           OrnatePanel(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
@@ -263,6 +263,37 @@ class _ExpeditionsScreenState extends State<ExpeditionsScreen> {
               ],
             ),
           ),
+        const SectionPlaque('KUTSAL MEKÂNLAR'),
+        for (final place in controller.state.sacredPlaces)
+          OrnatePanel(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(place.name, style: AppTextStyles.bodyStrong),
+                      Text('Risk: ${place.risk} • Ödül: ${place.reward}', style: AppTextStyles.meta),
+                      Text(place.description, style: AppTextStyles.body.copyWith(fontSize: 13)),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 10),
+                DarkButton(
+                  label: 'ZİYARET',
+                  onPressed: controller.state.dailyActionPoints > 0
+                      ? () {
+                          final done = controller.visitSacredPlace(place.id);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text(done ? '${place.name} ziyaret edildi.' : 'Ziyaret için cooldown/AP uygun değil.')),
+                          );
+                        }
+                      : null,
+                ),
+              ],
+            ),
+          ),
       ],
     );
   }
@@ -277,7 +308,7 @@ class _ExpeditionsScreenState extends State<ExpeditionsScreen> {
       );
       return;
     }
-    if (controller.state.energy < GameController.expeditionCost) {
+    if (controller.state.dailyActionPoints < GameController.expeditionCost) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Sefer için enerji yetmiyor. Günü bitirerek dinlen.'),

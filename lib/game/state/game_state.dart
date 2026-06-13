@@ -1,10 +1,15 @@
+import '../models/camp_building.dart';
 import '../models/clan.dart';
 import '../models/craft.dart';
 import '../models/event_choice.dart';
+import '../models/faith.dart';
 import '../models/game_day.dart';
+import '../models/household.dart';
+import '../models/marriage_candidate.dart';
 import '../models/player_profile.dart';
 import '../models/quest.dart';
 import '../models/resource.dart';
+import '../models/tribe_relation.dart';
 
 class GameState {
   const GameState({
@@ -16,7 +21,9 @@ class GameState {
     required this.currentEvent,
     required this.eventIndex,
     required this.log,
-    this.energy = maxEnergy,
+    this.dailyActionPoints = baseDailyActionPoints,
+    this.maxDailyActionPoints = baseDailyActionPoints,
+    this.energy = baseDailyActionPoints,
     this.collapseDays = 0,
     this.gameOver = false,
     this.gameOverReason,
@@ -24,9 +31,27 @@ class GameState {
     this.craftedItems = const {},
     this.completedExpeditions = const [],
     this.marketStock = const {},
+    this.buildings = const [],
+    this.tribes = const [],
+    this.household = const Household(),
+    this.marriageCandidates = const [],
+    this.faithState = const FaithState(),
+    this.spiritualAdvisor = const SpiritualAdvisor(
+      id: 'aruk_kam',
+      name: 'Aruk Kam',
+      role: 'Kam',
+      level: 1,
+      effect: 'Alametleri yorumlar, kötü olay riskini azaltır.',
+      cooldownDays: 1,
+      description: 'Gök, ateş ve rüzgâr işaretlerini obaya sade bir dille açıklar.',
+    ),
+    this.rituals = const [],
+    this.sacredPlaces = const [],
+    this.ritualCooldowns = const {},
   });
 
-  static const maxEnergy = 10;
+  static const baseDailyActionPoints = 4;
+  static const maxEnergy = baseDailyActionPoints;
 
   final PlayerProfile profile;
   final Clan clan;
@@ -36,42 +61,52 @@ class GameState {
   final GameEvent? currentEvent;
   final int eventIndex;
   final List<String> log;
+  final int dailyActionPoints;
+  final int maxDailyActionPoints;
 
-  /// Action points left for the current day.
+  /// Legacy AP alias kept for older screens/tests during the systems upgrade.
   final int energy;
 
-  /// Consecutive days the camp spent at zero morale.
   final int collapseDays;
   final bool gameOver;
   final String? gameOverReason;
-
-  /// Workshop jobs currently in production.
   final List<CraftJob> craftQueue;
-
-  /// Finished workshop items by recipe id.
   final Map<String, int> craftedItems;
-
-  /// Conquered expedition site ids, in order.
   final List<String> completedExpeditions;
-
-  /// Remaining market stock by good id; restocked daily.
   final Map<String, int> marketStock;
+  final List<CampBuilding> buildings;
+  final List<TribeRelation> tribes;
+  final Household household;
+  final List<MarriageCandidate> marriageCandidates;
+  final FaithState faithState;
+  final SpiritualAdvisor spiritualAdvisor;
+  final List<Ritual> rituals;
+  final List<SacredPlace> sacredPlaces;
+  final Map<String, int> ritualCooldowns;
 
   int resource(ResourceType type) => resources[type] ?? 0;
-
   int craftedCount(String recipeId) => craftedItems[recipeId] ?? 0;
-
   int stockOf(String goodId) => marketStock[goodId] ?? 0;
-
   bool expeditionDone(String siteId) => completedExpeditions.contains(siteId);
+  CampBuilding? building(String id) {
+    for (final b in buildings) {
+      if (b.id == id) return b;
+    }
+    return null;
+  }
 
-  /// Live progress of a quest (resource goals read the stockpile).
+  TribeRelation? tribeByName(String name) {
+    for (final tribe in tribes) {
+      if (tribe.name == name) return tribe;
+    }
+    return null;
+  }
+
   int questProgress(Quest quest) => switch (quest.goalType) {
         QuestGoalType.action => quest.progress,
         QuestGoalType.resource => resource(quest.goalResource!),
       };
 
-  /// Whether a quest's goal is met and its reward can be claimed.
   bool questReady(Quest quest) =>
       !quest.completed && questProgress(quest) >= quest.goalTarget;
 
@@ -85,6 +120,8 @@ class GameState {
     bool clearEvent = false,
     int? eventIndex,
     List<String>? log,
+    int? dailyActionPoints,
+    int? maxDailyActionPoints,
     int? energy,
     int? collapseDays,
     bool? gameOver,
@@ -93,7 +130,20 @@ class GameState {
     Map<String, int>? craftedItems,
     List<String>? completedExpeditions,
     Map<String, int>? marketStock,
+    List<CampBuilding>? buildings,
+    List<TribeRelation>? tribes,
+    Household? household,
+    List<MarriageCandidate>? marriageCandidates,
+    FaithState? faithState,
+    SpiritualAdvisor? spiritualAdvisor,
+    List<Ritual>? rituals,
+    List<SacredPlace>? sacredPlaces,
+    Map<String, int>? ritualCooldowns,
   }) {
+    final nextMax = maxDailyActionPoints ?? this.maxDailyActionPoints;
+    final nextAp = (dailyActionPoints ?? energy ?? this.dailyActionPoints)
+        .clamp(0, nextMax)
+        .toInt();
     return GameState(
       profile: profile ?? this.profile,
       clan: clan ?? this.clan,
@@ -103,7 +153,9 @@ class GameState {
       currentEvent: clearEvent ? null : currentEvent ?? this.currentEvent,
       eventIndex: eventIndex ?? this.eventIndex,
       log: log ?? this.log,
-      energy: energy ?? this.energy,
+      dailyActionPoints: nextAp,
+      maxDailyActionPoints: nextMax,
+      energy: nextAp,
       collapseDays: collapseDays ?? this.collapseDays,
       gameOver: gameOver ?? this.gameOver,
       gameOverReason: gameOverReason ?? this.gameOverReason,
@@ -111,6 +163,15 @@ class GameState {
       craftedItems: craftedItems ?? this.craftedItems,
       completedExpeditions: completedExpeditions ?? this.completedExpeditions,
       marketStock: marketStock ?? this.marketStock,
+      buildings: buildings ?? this.buildings,
+      tribes: tribes ?? this.tribes,
+      household: household ?? this.household,
+      marriageCandidates: marriageCandidates ?? this.marriageCandidates,
+      faithState: faithState ?? this.faithState,
+      spiritualAdvisor: spiritualAdvisor ?? this.spiritualAdvisor,
+      rituals: rituals ?? this.rituals,
+      sacredPlaces: sacredPlaces ?? this.sacredPlaces,
+      ritualCooldowns: ritualCooldowns ?? this.ritualCooldowns,
     );
   }
 }
