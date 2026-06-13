@@ -276,19 +276,28 @@ class GameController extends ChangeNotifier {
   /// the good is not tradable, or gold runs short.
   bool buyGood(String goodId) {
     final good = MarketGoods.byId(goodId);
-    final grants = good?.grants;
-    if (good == null || grants == null || _state.stockOf(good.id) <= 0) {
+    // Tradable goods grant either a resource or a finished crafted item.
+    if (good == null ||
+        (good.grants == null && good.grantsItem == null) ||
+        _state.stockOf(good.id) <= 0) {
       return false;
     }
     final price = MarketLogic.priceFor(good, _state.day.day);
     if (_state.resource(ResourceType.gold) < price) {
       return false;
     }
+    final crafted = good.grantsItem == null
+        ? _state.craftedItems
+        : {
+            ..._state.craftedItems,
+            good.grantsItem!: (_state.craftedItems[good.grantsItem!] ?? 0) + 1,
+          };
     _commit(_state.copyWith(
       resources: ResourceLogic.apply(_state.resources, {
         ResourceType.gold: -price,
-        grants: good.amount,
+        if (good.grants != null) good.grants!: good.amount,
       }),
+      craftedItems: crafted,
       marketStock: {
         ..._state.marketStock,
         good.id: _state.stockOf(good.id) - 1,
@@ -410,6 +419,21 @@ class GameController extends ChangeNotifier {
         });
         log = ['Obaya bir çocuk doğdu; soy büyüyor.', ...log].take(6).toList();
       }
+    }
+
+    // A content, well-fed oba steadily draws and raises new people.
+    final growMorale = resources[ResourceType.morale] ?? 0;
+    final growFood = resources[ResourceType.food] ?? 0;
+    final growPop = resources[ResourceType.population] ?? 0;
+    if (growMorale >= 55 &&
+        growFood >= 40 &&
+        growPop < 220 &&
+        nextDay.day % 8 == 0) {
+      resources = ResourceLogic.apply(resources, const {
+        ResourceType.population: 2,
+      });
+      log =
+          ['Oba büyüyor: yeni canlar ocağa katıldı.', ...log].take(6).toList();
     }
 
     // Discontent at the bottom or top of the camp gnaws at it daily.

@@ -20,6 +20,9 @@ String goodIcon(String goodId) => switch (goodId) {
       'salt' => GameAssets.iconItemSalt,
       'horse' => GameAssets.iconItemHorse,
       'bow' => GameAssets.iconItemBow,
+      'm_sword' => GameAssets.iconItemSword,
+      'm_shield' => GameAssets.iconItemShieldWood,
+      'm_armor' => GameAssets.iconItemArmor,
       _ => GameAssets.iconItemWheat,
     };
 
@@ -423,7 +426,7 @@ class _BuyRow extends StatelessWidget {
             label: 'AL',
             height: 30,
             onPressed: () {
-              if (good.grants == null) {
+              if (good.grants == null && good.grantsItem == null) {
                 _MarketScreenState._notify(
                   context,
                   '${good.name} için takas yakında açılacak.',

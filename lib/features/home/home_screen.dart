@@ -719,6 +719,15 @@ class _DailyJobsRow extends StatelessWidget {
       16,
     ),
     (
+      GameAssets.sceneMercenary,
+      GameActions.trade,
+      'Kervan Koru',
+      {ResourceType.gold: 18, ResourceType.food: -4},
+      12,
+      8,
+      14,
+    ),
+    (
       GameAssets.bgSceneCampNight,
       GameActions.rest,
       'Dinlen',

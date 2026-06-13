@@ -9,6 +9,7 @@ class MarketGood {
     required this.category,
     this.grants,
     this.amount = 0,
+    this.grantsItem,
   });
 
   final String id;
@@ -22,6 +23,9 @@ class MarketGood {
   /// Resource added per purchase; null goods are not tradable yet.
   final ResourceType? grants;
   final int amount;
+
+  /// Crafted-item recipe id granted per purchase (finished gear sold ready).
+  final String? grantsItem;
 }
 
 class MarketGoods {
@@ -90,9 +94,34 @@ class MarketGoods {
     MarketGood(
       id: 'bow',
       name: 'Kompozit Yay',
-      basePrice: 280,
+      basePrice: 240,
       baseStock: 2,
       category: 4,
+      grantsItem: 'composite_bow',
+    ),
+    MarketGood(
+      id: 'm_sword',
+      name: 'Demir Kılıç',
+      basePrice: 200,
+      baseStock: 2,
+      category: 4,
+      grantsItem: 'iron_sword',
+    ),
+    MarketGood(
+      id: 'm_shield',
+      name: 'Ahşap Kalkan',
+      basePrice: 90,
+      baseStock: 3,
+      category: 4,
+      grantsItem: 'wood_shield',
+    ),
+    MarketGood(
+      id: 'm_armor',
+      name: 'Deri Zırh',
+      basePrice: 160,
+      baseStock: 2,
+      category: 4,
+      grantsItem: 'leather_armor',
     ),
   ];
 

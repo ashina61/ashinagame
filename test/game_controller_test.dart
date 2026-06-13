@@ -340,6 +340,35 @@ void main() {
     expect(ready.canFoundNewOba, isTrue);
   });
 
+  test('the market sells finished gear into the inventory', () {
+    final base = StarterGameData.create();
+    final controller = GameController(
+      base.copyWith(resources: {...base.resources, ResourceType.gold: 600}),
+    );
+    expect(controller.state.craftedCount('iron_sword'), 0);
+    expect(controller.buyGood('m_sword'), isTrue);
+    expect(controller.state.craftedCount('iron_sword'), 1);
+    expect(controller.buyGood('m_shield'), isTrue);
+    expect(controller.state.craftedCount('wood_shield'), 1);
+  });
+
+  test('a thriving oba gains people on the growth cadence', () {
+    final base = StarterGameData.create();
+    final controller = GameController(
+      base.copyWith(
+        day: const GameDay(day: 7, season: Season.spring),
+        resources: {
+          ...base.resources,
+          ResourceType.morale: 80,
+          ResourceType.food: 400,
+          ResourceType.population: 40,
+        },
+      ),
+    );
+    controller.endDay(); // day 8 -> +2 population
+    expect(controller.state.resource(ResourceType.population), 42);
+  });
+
   test('the council convenes on schedule and decisions shift approval', () {
     final base = StarterGameData.create();
     final controller = GameController(
