@@ -8,6 +8,7 @@ import '../../game/data/tamgas.dart';
 import '../../game/models/resource.dart';
 import '../../game/models/tribe_relation.dart';
 import '../../game/state/game_scope.dart';
+import '../khanate/khanate_screen.dart';
 
 class BoyScreen extends StatelessWidget {
   const BoyScreen({super.key});
@@ -49,6 +50,18 @@ class BoyScreen extends StatelessWidget {
                         ),
                       ),
                     ],
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(12, 4, 12, 0),
+                  child: GoldButton(
+                    label: state.isKhan ? 'KAĞANLIK (KAĞANSIN)' : 'KAĞANLIK',
+                    height: 46,
+                    onPressed: () => Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) => const KhanateScreen(),
+                      ),
+                    ),
                   ),
                 ),
                 const SectionPlaque('BOY DURUMU / DİPLOMASİ'),

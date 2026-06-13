@@ -804,6 +804,144 @@ class GameController extends ChangeNotifier {
     return true;
   }
 
+  /// Military and political weight behind the oba, used to gauge whether a
+  /// rebellion against the khan can succeed.
+  int get khanatePower {
+    var allies = 0;
+    for (final tribe in _state.tribes) {
+      if (tribe.relation >= 60) allies++;
+    }
+    return _state.resource(ResourceType.population) +
+        _state.profile.reputation * 2 +
+        _state.completedExpeditions.length * 15 +
+        _state.vassalObas * 25 +
+        allies * 12;
+  }
+
+  /// Power needed before the throne can realistically be challenged.
+  static const rebellionPowerThreshold = 220;
+
+  bool get canRebel =>
+      !_state.isKhan &&
+      khanatePower >= rebellionPowerThreshold &&
+      _state.khanateStanding >= 50;
+
+  /// Pays tribute to the khan: gold for standing.
+  bool payTribute() {
+    if (_state.resource(ResourceType.gold) < 120) {
+      return false;
+    }
+    _commit(_state.copyWith(
+      resources: ResourceLogic.apply(_state.resources, const {
+        ResourceType.gold: -120,
+      }),
+      khanateStanding: _state.khanateStanding + 10,
+      log: _prependLog('Kağana haraç ödendi; bağlılık arttı.'),
+    ));
+    return true;
+  }
+
+  /// Answers the khan's call to war: action point and food for standing,
+  /// reputation and plunder.
+  bool joinKhanCampaign() {
+    if (_state.dailyActionPoints < 1 ||
+        _state.resource(ResourceType.food) < 20) {
+      return false;
+    }
+    _commit(_state.copyWith(
+      dailyActionPoints: _state.dailyActionPoints - 1,
+      resources: ResourceLogic.apply(_state.resources, const {
+        ResourceType.food: -20,
+        ResourceType.gold: 50,
+      }),
+      profile: ProgressionLogic.addXp(
+        _state.profile.copyWith(
+          reputation: _state.profile.reputation + 3,
+          fatigue: _state.profile.fatigue + 8,
+        ),
+        24,
+      ),
+      khanateStanding: _state.khanateStanding + 6,
+      log: _prependLog(
+          'Kağanın seferine katılındı; itibar ve ganimet kazanıldı.'),
+    ));
+    return true;
+  }
+
+  /// Sits at the khan's divan: an action point for standing and wisdom.
+  bool attendDivan() {
+    if (_state.dailyActionPoints < 1) {
+      return false;
+    }
+    _commit(_state.copyWith(
+      dailyActionPoints: _state.dailyActionPoints - 1,
+      profile: ProgressionLogic.addXp(
+        ProgressionLogic.applyStats(_state.profile, const {'wisdom': 1}),
+        18,
+      ),
+      khanateStanding: _state.khanateStanding + 4,
+      log: _prependLog('Divana katılındı; söz sahibi olundu.'),
+    ));
+    return true;
+  }
+
+  /// Rallies a nearby oba under the banner, raising power.
+  bool rallyObas() {
+    if (_state.resource(ResourceType.gold) < 200 ||
+        _state.profile.reputation < 25) {
+      return false;
+    }
+    _commit(_state.copyWith(
+      resources: ResourceLogic.apply(_state.resources, const {
+        ResourceType.gold: -200,
+      }),
+      vassalObas: _state.vassalObas + 1,
+      khanateStanding: _state.khanateStanding + 5,
+      log: _prependLog('Bir oba senin tamganın altına girdi.'),
+    ));
+    return true;
+  }
+
+  /// Stakes everything on overthrowing the khan. Success seats you on the
+  /// throne; failure scatters followers and burns standing.
+  bool attemptRebellion() {
+    if (!canRebel) {
+      return false;
+    }
+    final chance =
+        (40 + (khanatePower - rebellionPowerThreshold) ~/ 4).clamp(20, 90);
+    final success = _random.nextInt(100) < chance;
+    if (success) {
+      _commit(_state.copyWith(
+        isKhan: true,
+        khanateStanding: 100,
+        resources: ResourceLogic.apply(_state.resources, const {
+          ResourceType.gold: 600,
+          ResourceType.reputation: 20,
+          ResourceType.morale: 15,
+        }),
+        profile: _state.profile.copyWith(
+          title: 'Kağan',
+          reputation: _state.profile.reputation + 20,
+        ),
+        log: _prependLog(
+            'İSYAN ZAFERLE BİTTİ! Kağan devrildi, tahta sen geçtin.'),
+      ));
+    } else {
+      _commit(_state.copyWith(
+        khanateStanding: (_state.khanateStanding - 30).clamp(0, 100).toInt(),
+        vassalObas: 0,
+        resources: ResourceLogic.apply(_state.resources, const {
+          ResourceType.morale: -20,
+          ResourceType.population: -8,
+          ResourceType.gold: -200,
+        }),
+        log: _prependLog('İsyan bastırıldı; oba ağır kayıp verdi.'),
+      ));
+    }
+    return success;
+  }
+
   /// Founds a brand-new oba under a chosen name and tamga, bound to the
   /// khanate. A fresh young founder takes over; a small share of the old
   /// treasury carries forward as a founding legacy.

@@ -57,6 +57,8 @@ class GameState {
     this.faithPath = '',
     this.tamga = 'wolf',
     this.khanateStanding = 20,
+    this.isKhan = false,
+    this.vassalObas = 0,
   });
 
   static const baseDailyActionPoints = 4;
@@ -113,6 +115,12 @@ class GameState {
 
   /// Standing within the khanate the oba is bound to (0–100).
   final int khanateStanding;
+
+  /// True once the leader has overthrown the khan and taken the throne.
+  final bool isKhan;
+
+  /// Number of nearby obas rallied under this banner.
+  final int vassalObas;
 
   int resource(ResourceType type) => resources[type] ?? 0;
 
@@ -195,6 +203,8 @@ class GameState {
     String? faithPath,
     String? tamga,
     int? khanateStanding,
+    bool? isKhan,
+    int? vassalObas,
   }) {
     final nextMax = maxDailyActionPoints ?? this.maxDailyActionPoints;
     final nextAp = (dailyActionPoints ?? energy ?? this.dailyActionPoints)
@@ -236,6 +246,8 @@ class GameState {
       tamga: tamga ?? this.tamga,
       khanateStanding:
           (khanateStanding ?? this.khanateStanding).clamp(0, 100).toInt(),
+      isKhan: isKhan ?? this.isKhan,
+      vassalObas: vassalObas ?? this.vassalObas,
     );
   }
 }

@@ -228,6 +228,41 @@ void main() {
     expect(quest.progress, 1);
   });
 
+  test('khanate duties shift standing and resources', () {
+    final controller = GameController.starter();
+    final standing = controller.state.khanateStanding;
+
+    expect(controller.payTribute(), isTrue);
+    expect(controller.state.khanateStanding, standing + 10);
+    expect(controller.state.resource(ResourceType.gold), 250 - 120);
+
+    expect(controller.attendDivan(), isTrue);
+    expect(controller.state.dailyActionPoints, 3);
+  });
+
+  test('rebellion needs power and standing, and the throne is winnable', () {
+    final base = StarterGameData.create();
+    // Weak oba cannot rebel.
+    final weak = GameController(base);
+    expect(weak.canRebel, isFalse);
+    expect(weak.attemptRebellion(), isFalse);
+
+    // A strong, well-standing oba can, and with a lucky roll takes the throne.
+    final strong = GameController(
+      base.copyWith(
+        khanateStanding: 80,
+        vassalObas: 6,
+        resources: {...base.resources, ResourceType.population: 120},
+        profile: base.profile.copyWith(reputation: 60),
+      ),
+      random: _FixedRandom(0),
+    );
+    expect(strong.canRebel, isTrue);
+    expect(strong.attemptRebellion(), isTrue);
+    expect(strong.state.isKhan, isTrue);
+    expect(strong.state.profile.title, 'Kağan');
+  });
+
   test('founding a new oba resets the run with chosen name and tamga', () {
     final controller = GameController.starter();
     controller.endDay();
