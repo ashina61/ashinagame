@@ -10,6 +10,7 @@ import '../../game/data/expedition_sites.dart';
 import '../../game/logic/unlock_logic.dart';
 import '../../game/models/expedition.dart';
 import '../../game/models/resource.dart';
+import '../../game/models/unit_type.dart';
 import '../../game/state/game_controller.dart';
 import '../../game/state/game_scope.dart';
 import '../army/army_screen.dart';
@@ -98,7 +99,6 @@ class _ExpeditionsScreenState extends State<ExpeditionsScreen> {
   @override
   Widget build(BuildContext context) {
     final controller = GameScope.of(context);
-    final energy = controller.state.dailyActionPoints;
     if (!UnlockLogic.expeditions(controller.state)) {
       return const OrnateScaffold(
         child: Column(
@@ -125,99 +125,133 @@ class _ExpeditionsScreenState extends State<ExpeditionsScreen> {
       child: Column(
         children: [
           const OrnateHeader(title: 'Seferler'),
-          OrnatePanel(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-            child: Column(
-              children: [
-                Row(
-                  children: [
-                    Image.asset(GameAssets.iconEnergyBolt,
-                        width: 18, height: 18),
-                    const SizedBox(width: 6),
-                    Expanded(
-                      child: Text(
-                        'Aksiyon $energy/${controller.state.maxDailyActionPoints}'
-                        '  •  Ordu Gücü ${controller.armyStrength}',
-                        style: AppTextStyles.body.copyWith(fontSize: 13),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    Expanded(
-                      child: DarkButton(
-                        label: 'ORDU',
-                        height: 36,
-                        onPressed: () => Navigator.of(context).push(
-                          MaterialPageRoute<void>(
-                            builder: (_) => const ArmyScreen(),
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: GoldButton(
-                        label: 'FETİH HARİTASI',
-                        height: 36,
-                        onPressed: () => Navigator.of(context).push(
-                          MaterialPageRoute<void>(
-                            builder: (_) => const ConquestScreen(),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(12, 4, 12, 10),
-            child: Row(
-              children: [
-                for (final (i, asset) in const [
-                  (0, GameAssets.uiTabHarita),
-                  (1, GameAssets.uiTabSeferListesi),
-                ])
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () => setState(() => _tab = i),
-                      child: Container(
-                        margin: EdgeInsets.only(left: i == 0 ? 0 : 8),
-                        decoration: _tab == i
-                            ? BoxDecoration(
-                                borderRadius: BorderRadius.circular(8),
-                                boxShadow: const [
-                                  BoxShadow(
-                                    color: Color(0x66EEC36A),
-                                    blurRadius: 12,
-                                  ),
-                                ],
-                              )
-                            : null,
-                        child: Opacity(
-                          opacity: _tab == i ? 1 : 0.7,
-                          child: Image.asset(asset, height: 36),
-                        ),
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-          ),
           Expanded(child: _tab == 0 ? _buildMap(controller) : _buildList()),
-          if (_tab == 0)
+          if (_tab == 0) ...[
+            _seferGucu(context, controller),
             Padding(
-              padding: const EdgeInsets.fromLTRB(40, 4, 40, 12),
-              child: ImageButton(
-                asset: GameAssets.uiButtonSefereCik,
-                height: 56,
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+              child: GoldButton(
+                label: 'SEFERE ÇIK',
+                height: 54,
                 onPressed: () => _embark(context, controller),
               ),
             ),
+          ] else
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
+              child: GoldButton(
+                label: 'HARİTAYA DÖN',
+                height: 46,
+                onPressed: () => setState(() => _tab = 0),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  /// The dense force-readout strip beneath the map, as in the SEFERLER mockup.
+  Widget _seferGucu(BuildContext context, GameController controller) {
+    final state = controller.state;
+    var atli = 0, kilicli = 0, okcu = 0;
+    state.army.forEach((id, n) {
+      final unit = UnitTypes.byId(id);
+      if (unit == null) return;
+      if (unit.requiresHorse) atli += n;
+      if (unit.name.contains('Kılıç')) kilicli += n;
+      if (unit.name.contains('Okçu')) okcu += n;
+    });
+    final target = _effectiveTarget(controller);
+    return OrnatePanel(
+      margin: const EdgeInsets.fromLTRB(12, 0, 12, 8),
+      padding: const EdgeInsets.all(12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Image.asset(
+                GameAssets.iconSwordsCrossedGold,
+                width: 34,
+                height: 34,
+                errorBuilder: (context, error, stackTrace) =>
+                    const SizedBox(width: 34),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'SEFER GÜCÜ',
+                      style: AppTextStyles.section.copyWith(fontSize: 11),
+                    ),
+                    Text(
+                      '${controller.armyStrength}',
+                      style: AppTextStyles.display.copyWith(fontSize: 26),
+                    ),
+                  ],
+                ),
+              ),
+              _ForceStat(GameAssets.iconMedallionHorse, 'Atlı', atli),
+              _ForceStat(GameAssets.iconItemSword, 'Kılıçlı', kilicli),
+              _ForceStat(GameAssets.iconItemBow, 'Okçu', okcu),
+            ],
+          ),
+          const SizedBox(height: 8),
+          const Text('Ordu Gücü', style: AppTextStyles.meta),
+          const SizedBox(height: 3),
+          StatBar(
+            fraction: (controller.armyStrength / 100000).clamp(0, 1),
+            height: 10,
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              _SeferInfo('Sefer Yönü', target?.name ?? '—'),
+              _SeferInfo('Ordu', '${state.totalSoldiers}'),
+              _SeferInfo('Yaralı', '${state.totalWounded}'),
+              _SeferInfo(
+                'Aksiyon',
+                '${state.dailyActionPoints}/${state.maxDailyActionPoints}',
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Expanded(
+                child: DarkButton(
+                  label: 'ORDU',
+                  height: 34,
+                  onPressed: () => Navigator.of(context).push(
+                    MaterialPageRoute<void>(builder: (_) => const ArmyScreen()),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: DarkButton(
+                  label: 'FETİH',
+                  height: 34,
+                  onPressed: () => Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => const ConquestScreen(),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: DarkButton(
+                  label: 'KEŞİF',
+                  height: 34,
+                  onPressed: () => setState(() => _tab = 1),
+                ),
+              ),
+            ],
+          ),
         ],
       ),
     );
@@ -389,6 +423,71 @@ class _ExpeditionsScreenState extends State<ExpeditionsScreen> {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (context) => ExpeditionResultScreen(outcome: outcome),
+      ),
+    );
+  }
+}
+
+/// Compact icon + count + label used in the Sefer Gücü force breakdown.
+class _ForceStat extends StatelessWidget {
+  const _ForceStat(this.icon, this.label, this.count);
+
+  final String icon;
+  final String label;
+  final int count;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 6),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Image.asset(
+            icon,
+            width: 22,
+            height: 22,
+            errorBuilder: (context, error, stackTrace) =>
+                const SizedBox(width: 22),
+          ),
+          Text(
+            '$count',
+            style: AppTextStyles.value.copyWith(fontSize: 13),
+          ),
+          Text(label, style: AppTextStyles.navLabel),
+        ],
+      ),
+    );
+  }
+}
+
+/// One labelled cell in the Sefer Gücü info strip.
+class _SeferInfo extends StatelessWidget {
+  const _SeferInfo(this.label, this.value);
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: Column(
+        children: [
+          Text(
+            label,
+            style: AppTextStyles.meta.copyWith(fontSize: 10),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 2),
+          Text(
+            value,
+            style: AppTextStyles.value.copyWith(fontSize: 13),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.center,
+          ),
+        ],
       ),
     );
   }
