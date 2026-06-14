@@ -270,21 +270,80 @@ class _MarchBanner extends StatelessWidget {
         borderRadius: BorderRadius.circular(10),
         border: Border.all(color: AppColors.goldBright.withValues(alpha: 0.7)),
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(Icons.flag, size: 16, color: AppColors.goldBright),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              left > 0
-                  ? 'Ordu ${castle.name} yolunda — ${controller.marchStatus}, '
-                      '$left gün kaldı.'
-                  : 'Ordu ${castle.name} önünde — kuşatma başlıyor.',
-              style: AppTextStyles.meta.copyWith(color: AppColors.goldBright),
-            ),
+          Text(
+            left > 0
+                ? 'Ordu ${castle.name} yolunda — ${controller.marchStatus}, '
+                    '$left gün kaldı.'
+                : 'Ordu ${castle.name} önünde — kuşatma başlıyor.',
+            style: AppTextStyles.meta.copyWith(color: AppColors.goldBright),
           ),
+          const SizedBox(height: 6),
+          _CampaignTrack(progress: controller.marchProgress, daysLeft: left),
         ],
       ),
+    );
+  }
+}
+
+/// A simple campaign track: a route line from camp to castle with the army pin
+/// sliding along it as the days pass, and a days-left badge by the pin.
+class _CampaignTrack extends StatelessWidget {
+  const _CampaignTrack({required this.progress, required this.daysLeft});
+
+  final double progress;
+  final int daysLeft;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, c) {
+        final w = c.maxWidth;
+        final x = (w - 24) * progress.clamp(0.0, 1.0);
+        return SizedBox(
+          height: 26,
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Positioned(
+                left: 0,
+                right: 0,
+                top: 12,
+                child: Container(
+                  height: 2,
+                  color: AppColors.goldDim.withValues(alpha: 0.6),
+                ),
+              ),
+              const Positioned(
+                left: 0,
+                top: 4,
+                child: Icon(Icons.home, size: 16, color: AppColors.goldDim),
+              ),
+              const Positioned(
+                right: 0,
+                top: 4,
+                child:
+                    Icon(Icons.castle, size: 16, color: AppColors.goldBright),
+              ),
+              Positioned(
+                left: x,
+                top: 2,
+                child: const Icon(Icons.flag,
+                    size: 18, color: AppColors.goldBright),
+              ),
+              if (daysLeft > 0)
+                Positioned(
+                  left: (x - 6).clamp(0.0, w - 28),
+                  top: 18,
+                  child: Text('${daysLeft}g',
+                      style: AppTextStyles.meta.copyWith(fontSize: 10)),
+                ),
+            ],
+          ),
+        );
+      },
     );
   }
 }
