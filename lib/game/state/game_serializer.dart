@@ -140,6 +140,8 @@ class GameSerializer {
         'obaFounded': state.obaFounded,
         'landScouted': state.landScouted,
         'companionRoles': state.companionRoles,
+        'raidCountdown': state.raidCountdown,
+        'raidFrom': state.raidFrom,
       });
 
   static GameState? decode(String raw) {
@@ -272,6 +274,8 @@ class GameSerializer {
         landScouted: json['landScouted'] as bool? ?? true,
         companionRoles: (json['companionRoles'] as Map<String, dynamic>? ?? {})
             .cast<String, String>(),
+        raidCountdown: json['raidCountdown'] as int? ?? 0,
+        raidFrom: json['raidFrom'] as String? ?? '',
       );
     } catch (_) {
       return null;

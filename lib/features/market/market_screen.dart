@@ -33,6 +33,56 @@ class MarketScreen extends StatefulWidget {
   State<MarketScreen> createState() => _MarketScreenState();
 }
 
+/// A small bazaar flavour strip: the day's featured good and a rotating trader
+/// quote, so the market feels staffed rather than static.
+class _TraderBanner extends StatelessWidget {
+  const _TraderBanner({required this.day});
+
+  final int day;
+
+  static const _quotes = [
+    'Bezirgân: "Yollar tozlu ama mal taze, bey’im."',
+    'Bezirgân: "Bugün kalkan demiri ucuza geldi."',
+    'Bezirgân: "İyi at, iyi yol açar — al derim."',
+    'Bezirgân: "Tuz bitiyor, acele et."',
+    'Bezirgân: "Kervan sağ salim döndü, stok bol."',
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    const goods = MarketGoods.all;
+    final featured = goods.isEmpty ? null : goods[day % goods.length];
+    final quote = _quotes[day % _quotes.length];
+    return Container(
+      margin: const EdgeInsets.fromLTRB(12, 0, 12, 4),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: AppColors.leatherDeep.withValues(alpha: 0.8),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: AppColors.goldDim.withValues(alpha: 0.6)),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.local_offer, size: 16, color: AppColors.goldBright),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (featured != null)
+                  Text('Günün teklifi: ${featured.name}',
+                      style: AppTextStyles.meta
+                          .copyWith(color: AppColors.goldBright)),
+                Text(quote, style: AppTextStyles.meta),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _MarketScreenState extends State<MarketScreen> {
   int _tab = 0;
   int _category = 0;
@@ -93,6 +143,7 @@ class _MarketScreenState extends State<MarketScreen> {
                 ),
               ),
             ),
+            _TraderBanner(day: controller.state.day.day),
             OrnateTabs(
               tabs: const ['Satın Al', 'Sat', 'Teklifler'],
               index: _tab,

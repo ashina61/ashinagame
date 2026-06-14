@@ -307,6 +307,34 @@ class _CampBottom extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
+          if (state.raidLooming)
+            Container(
+              width: double.infinity,
+              margin: const EdgeInsets.only(bottom: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: AppColors.leatherDeep.withValues(alpha: 0.9),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: AppColors.danger),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.warning_amber_rounded,
+                      size: 18, color: AppColors.danger),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Düşman akını ${state.raidCountdown} gün sonra! '
+                      'Ordunu güçlendir.',
+                      style: AppTextStyles.body
+                          .copyWith(fontSize: 13, color: AppColors.danger),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ),
           if (objective != null)
             Container(
               width: double.infinity,

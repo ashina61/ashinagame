@@ -972,6 +972,43 @@ void main() {
     expect(led.warStrength, greaterThan(plain.warStrength));
   });
 
+  test('an enemy raid musters, counts down, and a strong host repels it', () {
+    final base = _foundableState().copyWith(
+      obaFounded: true,
+      day: const GameDay(day: 11, season: Season.spring),
+      army: const {'heavy_cav': 40},
+      resources: {
+        ...StarterGameData.create().resources,
+        ResourceType.food: 800,
+        ResourceType.population: 200,
+      },
+    );
+    final c = GameController(base, random: _FixedRandom(0));
+    c.endDay(); // day 12 -> a raid is mustered
+    expect(c.state.raidLooming, isTrue);
+    expect(c.state.raidCountdown, 3);
+    expect(c.state.raidFrom, isNotEmpty);
+
+    c.endDay(); // 2 days out
+    c.endDay(); // 1 day out
+    c.endDay(); // strikes -> repelled by the strong host
+    expect(c.state.raidLooming, isFalse);
+    expect(c.state.raidFrom, '');
+  });
+
+  test('a lone traveller faces no raids before founding an oba', () {
+    final base = StarterGameData.create().copyWith(
+      day: const GameDay(day: 11, season: Season.spring),
+      resources: {
+        ...StarterGameData.create().resources,
+        ResourceType.food: 400,
+      },
+    );
+    final c = GameController(base);
+    c.endDay(); // day 12, but no oba -> no raid
+    expect(c.state.raidLooming, isFalse);
+  });
+
   test('the merchant role discounts the market', () {
     final base = _foundableState().copyWith(
       obaFounded: true,
