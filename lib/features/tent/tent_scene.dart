@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../app/theme/app_colors.dart';
 import '../../app/theme/app_text_styles.dart';
 import '../../core/assets/game_assets.dart';
+import '../../core/audio/audio_service.dart';
 import '../../core/utils/formatters.dart';
 import '../../core/widgets/ornate.dart';
 import '../../game/logic/phase_logic.dart';
@@ -11,6 +12,7 @@ import '../../game/state/game_scope.dart';
 import '../achievements/achievements_screen.dart';
 import '../found_oba/found_oba_screen.dart';
 import '../quests/quests_screen.dart';
+import '../scene/floating_text.dart';
 import '../scene/scene_background.dart';
 import '../scene/scene_detail_panel.dart';
 import '../scene/scene_hotspot.dart';
@@ -121,11 +123,16 @@ class TentScreen extends StatelessWidget {
           enabled: building.canUpgrade && affordable,
           onTap: () {
             final ok = controller.upgradeBuilding(id);
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(ok ? '$label yükseltildi.' : 'Kaynak yetersiz.'),
-              ),
-            );
+            if (ok) {
+              AudioService.instance.playSfx('craft');
+              showFloatingGain(context, '$label ↑',
+                  color: AppColors.goldBright);
+            } else {
+              AudioService.instance.playSfx('denied');
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Kaynak yetersiz.')),
+              );
+            }
           },
         ),
       ],

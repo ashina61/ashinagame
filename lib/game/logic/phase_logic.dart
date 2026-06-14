@@ -112,6 +112,23 @@ class PhaseLogic {
   static int requirementsMet(GameState s) =>
       foundingRequirements(s).where((r) => r.met).length;
 
+  /// A gentle first-15-days guide shown as the "Sıradaki adım" line, so a new
+  /// player always has one clear, low-pressure thing to try. Null once the oba
+  /// is founded or the opening fortnight is past.
+  static String? dailyTutorial(GameState s) {
+    if (s.obaFounded) return null;
+    final d = s.day.day;
+    if (d > 15) return null;
+    if (d <= 1) return 'Odun kes — ocağın için odun lazım.';
+    if (d == 2) return 'Kampı toparla, yorgunluğunu at.';
+    if (d == 3) return 'Avlan — erzakını biriktir.';
+    if (d == 4) return 'Sandığını aç, neyin var bir bak.';
+    if (d == 5) return 'Çadırını güçlendirmeye başla.';
+    if (d <= 8) return 'Yakın çevreyi keşfet — toprağı tanı.';
+    if (d <= 11) return 'Biriyle konuş; güven kazanmaya başla.';
+    return 'Adını yükselt, yandaş topla; oba yolu açılıyor.';
+  }
+
   /// One short, ordered hint of the next milestone to chase. Null once an oba
   /// has been founded and the early road is behind you.
   static String? nextObjective(GameState s) {

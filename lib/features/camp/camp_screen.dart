@@ -3,8 +3,11 @@ import 'package:flutter/material.dart';
 import '../../app/theme/app_colors.dart';
 import '../../app/theme/app_text_styles.dart';
 import '../../core/assets/game_assets.dart';
+import '../../core/audio/audio_service.dart';
 import '../../core/utils/formatters.dart';
 import '../../core/widgets/ornate.dart';
+import '../scene/floating_text.dart';
+import '../../game/data/companion_roles.dart';
 import '../../game/data/faith_paths.dart';
 import '../../game/data/tamgas.dart';
 import '../../game/models/camp_building.dart';
@@ -128,11 +131,16 @@ class _CampScreenState extends State<CampScreen> {
           enabled: b.canUpgrade && affordable,
           onTap: () {
             final ok = controller.upgradeBuilding(id);
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(ok ? '$label yükseltildi.' : 'Kaynak yetersiz.'),
-              ),
-            );
+            if (ok) {
+              AudioService.instance.playSfx('craft');
+              showFloatingGain(context, '$label ↑',
+                  color: AppColors.goldBright);
+            } else {
+              AudioService.instance.playSfx('denied');
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Kaynak yetersiz.')),
+              );
+            }
           },
         ),
       ],
@@ -253,6 +261,44 @@ class _FaithRitualSheet extends StatelessWidget {
   }
 }
 
+/// Shows the standing bonuses the leader's sworn followers grant in their
+/// assigned roles.
+class _CompanionBonusPanel extends StatelessWidget {
+  const _CompanionBonusPanel();
+
+  @override
+  Widget build(BuildContext context) {
+    final roles = GameScope.of(context).state.companionRoles.values;
+    final seen = <String>{};
+    return OrnatePanel(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          for (final id in roles)
+            if (seen.add(id) && CompanionRoles.byId(id) != null)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 3),
+                child: Row(
+                  children: [
+                    const Icon(Icons.star,
+                        size: 14, color: AppColors.goldBright),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        '${CompanionRoles.byId(id)!.name} — '
+                        '${CompanionRoles.byId(id)!.effect}',
+                        style: AppTextStyles.meta,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+        ],
+      ),
+    );
+  }
+}
+
 /// Full management list — the fallback view behind the scene.
 class _ObaList extends StatelessWidget {
   const _ObaList();
@@ -263,6 +309,10 @@ class _ObaList extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.only(top: 4, bottom: 16),
       children: [
+        if (state.companionRoles.isNotEmpty) ...[
+          const SectionPlaque('YANDAŞ BONUSLARI'),
+          const _CompanionBonusPanel(),
+        ],
         Padding(
           padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
           child: GoldButton(

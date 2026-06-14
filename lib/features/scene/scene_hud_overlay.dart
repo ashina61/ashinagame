@@ -8,6 +8,7 @@ import '../../core/utils/resource_visuals.dart';
 import '../../core/widgets/ornate.dart';
 import '../../game/models/resource.dart';
 import '../../game/state/game_scope.dart';
+import 'floating_text.dart';
 
 /// The HUD that floats over a scene: a thin resource strip, a day/season
 /// chip, the action-point count and the "end the day" button. It reads like a
@@ -61,6 +62,7 @@ class SceneHudOverlay extends StatelessWidget {
                   controller.endDay();
                   AudioService.instance.playSfx('end_day');
                   final next = controller.state.day;
+                  showDayTransition(context, 'GÜN ${next.day}');
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(

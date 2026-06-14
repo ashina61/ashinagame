@@ -139,6 +139,7 @@ class GameSerializer {
         'nationLoyalty': state.nationLoyalty,
         'obaFounded': state.obaFounded,
         'landScouted': state.landScouted,
+        'companionRoles': state.companionRoles,
       });
 
   static GameState? decode(String raw) {
@@ -269,6 +270,8 @@ class GameSerializer {
         // Saves made before the phase system already ran a full oba.
         obaFounded: json['obaFounded'] as bool? ?? true,
         landScouted: json['landScouted'] as bool? ?? true,
+        companionRoles: (json['companionRoles'] as Map<String, dynamic>? ?? {})
+            .cast<String, String>(),
       );
     } catch (_) {
       return null;

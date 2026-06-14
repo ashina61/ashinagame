@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/foundation.dart';
 
 import '../data/achievements.dart';
+import '../data/companion_roles.dart';
 import '../data/craft_recipes.dart';
 import '../data/equipment.dart';
 import '../data/expedition_sites.dart';
@@ -71,6 +72,23 @@ class GameController extends ChangeNotifier {
     return bonus;
   }
 
+  /// The roles the leader's sworn followers hold, each a real standing bonus.
+  Iterable<CompanionRole> get companionRoles => _state.companionRoles.values
+      .map(CompanionRoles.byId)
+      .whereType<CompanionRole>();
+
+  int get companionWarPercent =>
+      companionRoles.fold(0, (s, r) => s + r.warPercent);
+  int get companionMarketDiscount =>
+      companionRoles.fold(0, (s, r) => s + r.marketDiscountPercent);
+  int get companionCraftDiscount =>
+      companionRoles.fold(0, (s, r) => s + r.craftDiscountPercent);
+  bool get companionCalmsOmens => companionRoles.any((r) => r.calmsOmens);
+
+  /// Daily resource trickle from merchant/hunter/hearth-mother roles.
+  Map<ResourceType, int> get companionDailyBonus =>
+      CompanionRoles.dailyBonus(_state.companionRoles.values);
+
   /// Equips an owned crafted item into its slot. Returns false if the item
   /// is not gear or none have been crafted.
   bool equipItem(String recipeId) {
@@ -101,7 +119,8 @@ class GameController extends ChangeNotifier {
     final chance = site.baseChance +
         _state.profile.courage +
         _state.profile.warfare * 2 +
-        equipmentBonus;
+        equipmentBonus +
+        companionWarPercent;
     return chance.clamp(5, 95).toInt();
   }
 
@@ -205,7 +224,12 @@ class GameController extends ChangeNotifier {
   }
 
   /// Scouting run from the expedition list; returns false without energy.
-  bool exploreRegion(String title, Map<ResourceType, int> effects) {
+  bool exploreRegion(
+    String title,
+    Map<ResourceType, int> effects, {
+    int healthEffect = 0,
+    String? note,
+  }) {
     if (_state.dailyActionPoints < exploreCost) {
       return false;
     }
@@ -214,13 +238,14 @@ class GameController extends ChangeNotifier {
       profile: ProgressionLogic.addXp(
           _state.profile.copyWith(
               energy: _state.profile.energy - 12,
-              fatigue: _state.profile.fatigue + 8),
+              fatigue: _state.profile.fatigue + 8,
+              health: _state.profile.health + healthEffect),
           16),
       resources: ResourceLogic.apply(_state.resources, effects),
       quests: _trackAction(GameActions.explore),
       // Scouting the near country is how you find ground fit to settle on.
       landScouted: true,
-      log: _prependLog('$title keşfi tamamlandı.'),
+      log: _prependLog(note ?? '$title keşfi tamamlandı.'),
     ));
     return true;
   }
@@ -268,14 +293,21 @@ class GameController extends ChangeNotifier {
     if (recipe == null || _state.craftQueue.length >= CraftRecipes.maxQueue) {
       return CraftStart.queueFull;
     }
-    for (final entry in recipe.costs.entries) {
+    // A Zanaatkâr (artisan role) shaves a percent off every workshop cost.
+    final discount = companionCraftDiscount;
+    final costs = {
+      for (final entry in recipe.costs.entries)
+        entry.key:
+            (entry.value * (100 - discount) ~/ 100).clamp(1, 1 << 30).toInt(),
+    };
+    for (final entry in costs.entries) {
       if (_state.resource(entry.key) < entry.value) {
         return CraftStart.noResources;
       }
     }
     _commit(_state.copyWith(
       resources: ResourceLogic.apply(_state.resources, {
-        for (final entry in recipe.costs.entries) entry.key: -entry.value,
+        for (final entry in costs.entries) entry.key: -entry.value,
       }),
       craftQueue: [
         ..._state.craftQueue,
@@ -296,7 +328,11 @@ class GameController extends ChangeNotifier {
         _state.stockOf(good.id) <= 0) {
       return false;
     }
-    final price = MarketLogic.priceFor(good, _state.day.day);
+    final price = (MarketLogic.priceFor(good, _state.day.day) *
+            (100 - companionMarketDiscount) ~/
+            100)
+        .clamp(1, 1 << 30)
+        .toInt();
     if (_state.resource(ResourceType.gold) < price) {
       return false;
     }
@@ -472,6 +508,13 @@ class GameController extends ChangeNotifier {
       resources = ResourceLogic.apply(resources, {ResourceType.gold: tribute});
     }
 
+    // Sworn followers in their roles bring a small daily trickle (merchant
+    // gold, hunter food, hearth-mother morale).
+    final roleBonus = companionDailyBonus;
+    if (roleBonus.isNotEmpty) {
+      resources = ResourceLogic.apply(resources, roleBonus);
+    }
+
     // Held provinces drift in loyalty; the neglected break away in revolt.
     final drift = _driftProvinces();
     final nationPolicies = drift.policies;
@@ -493,6 +536,7 @@ class GameController extends ChangeNotifier {
     var wounded = _state.wounded;
     if (_state.totalWounded > 0) {
       var cap = healCapacity;
+      var healed = 0;
       final a = Map<String, int>.from(army);
       final w = Map<String, int>.from(wounded);
       for (final id in w.keys.toList()) {
@@ -502,10 +546,15 @@ class GameController extends ChangeNotifier {
         if (w[id]! <= 0) w.remove(id);
         a[id] = (a[id] ?? 0) + heal;
         cap -= heal;
+        healed += heal;
       }
       army = a;
       wounded = w;
-      log = ['Şifacı çadırında yaralılar iyileşiyor.', ...log].take(6).toList();
+      if (healed > 0) {
+        log = ['$healed yaralı iyileşti, saflara döndü.', ...log]
+            .take(6)
+            .toList();
+      }
     }
 
     // The council convenes on a fixed cadence — but only once there is an oba
@@ -532,7 +581,15 @@ class GameController extends ChangeNotifier {
     }
 
     final eventIndex = _state.eventIndex + 1;
-    final omenState = _rollOmen(resources);
+    var omenState = _rollOmen(resources);
+    // A Kam (kam role) steadies the camp: a bad omen is read away to neutral.
+    if (companionCalmsOmens && omenState.omenSeverity == OmenSeverity.bad) {
+      omenState = omenState.copyWith(
+        omen: 'Kam kötü alameti yatıştırdı.',
+        omenSeverity: OmenSeverity.neutral,
+        activeWarnings: const [],
+      );
+    }
     _commit(_state.copyWith(
       day: nextDay,
       resources: resources,
@@ -1204,17 +1261,20 @@ class GameController extends ChangeNotifier {
   BattleReport? lastBattle;
 
   /// Military weight thrown behind a regional war. Attack drives the punch,
-  /// defence steadies the line, and the leader and realm add their weight.
-  int get warStrength =>
-      armyStrength * 4 +
-      armyDefense * 2 +
-      _state.resource(ResourceType.population) +
-      _state.profile.warfare * 8 +
-      _state.profile.courage * 3 +
-      equipmentBonus * 3 +
-      _state.completedExpeditions.length * 10 +
-      _state.vassalObas * 20 +
-      (_state.isKhan ? 50 : 0);
+  /// defence steadies the line, and the leader and realm add their weight. A
+  /// Savaşçı Başı (warleader role) lifts the whole host by a percent.
+  int get warStrength {
+    final base = armyStrength * 4 +
+        armyDefense * 2 +
+        _state.resource(ResourceType.population) +
+        _state.profile.warfare * 8 +
+        _state.profile.courage * 3 +
+        equipmentBonus * 3 +
+        _state.completedExpeditions.length * 10 +
+        _state.vassalObas * 20 +
+        (_state.isKhan ? 50 : 0);
+    return base * (100 + companionWarPercent) ~/ 100;
+  }
 
   /// Current relation with a castle.
   int regionRelation(Castle castle) =>
@@ -1586,7 +1646,11 @@ class GameController extends ChangeNotifier {
   /// followers now form the first households of a living settlement, so the
   /// camp gains people and morale. This flips the game into the oba phase,
   /// changing navigation and opening the oba, boy and campaign scenes.
-  void foundNewOba(String name, String tamgaId) {
+  void foundNewOba(
+    String name,
+    String tamgaId, {
+    Map<String, String> roles = const {},
+  }) {
     if (_state.obaFounded || !canFoundNewOba) {
       return;
     }
@@ -1595,6 +1659,7 @@ class GameController extends ChangeNotifier {
     final founders = 8 + _state.swornFollowers * 4;
     _commit(_state.copyWith(
       obaFounded: true,
+      companionRoles: roles,
       clan: Clan(
         name: trimmed.isEmpty ? '${_state.profile.name} Obası' : trimmed,
         motto: _state.clan.motto,

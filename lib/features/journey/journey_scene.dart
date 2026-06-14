@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 
 import '../../app/theme/app_colors.dart';
@@ -10,6 +12,7 @@ import '../../game/models/resource.dart';
 import '../../game/state/game_controller.dart';
 import '../../game/state/game_scope.dart';
 import '../expeditions/expeditions_screen.dart';
+import '../scene/floating_text.dart';
 import '../scene/scene_background.dart';
 import '../scene/scene_detail_panel.dart';
 import '../scene/scene_hotspot.dart';
@@ -23,18 +26,54 @@ class JourneyScreen extends StatelessWidget {
 
   final bool showBack;
 
+  static final _rng = Random();
+
   static const _sites = <_Site>[
-    _Site('river', 'Irmak Kıyısı', 0.22, 0.3, 'Düşük',
-        {ResourceType.food: 8, ResourceType.wood: 4}),
-    _Site('forest', 'Ormanlık', 0.5, 0.24, 'Düşük', {ResourceType.wood: 12}),
-    _Site('hunt', 'Avlak', 0.74, 0.32, 'Orta',
-        {ResourceType.food: 14, ResourceType.leather: 3}),
-    _Site('market', 'Pazar Yolu', 0.3, 0.62, 'Düşük', {ResourceType.gold: 10}),
-    _Site('inscription', 'Eski Yazıt', 0.58, 0.66, 'Orta',
-        {ResourceType.reputation: 2, ResourceType.morale: 1}),
-    _Site('pass', 'Tepelik Geçit', 0.82, 0.62, 'Yüksek',
-        {ResourceType.reputation: 3}),
+    _Site('river', 'Irmak Kıyısı', 0.22, 0.3, 'Düşük'),
+    _Site('forest', 'Ormanlık', 0.5, 0.24, 'Düşük'),
+    _Site('hunt', 'Avlak', 0.74, 0.32, 'Orta'),
+    _Site('market', 'Pazar Yolu', 0.3, 0.62, 'Düşük'),
+    _Site('inscription', 'Eski Yazıt', 0.58, 0.66, 'Orta'),
+    _Site('pass', 'Tepelik Geçit', 0.82, 0.62, 'Yüksek'),
   ];
+
+  /// Each place can play out a few different ways — a small mini-event with its
+  /// own flavour, reward and sometimes a wound. One is rolled on each scout.
+  static const _outcomes = <String, List<_Outcome>>{
+    'river': [
+      _Outcome('Temiz su buldun; içtin, kaplarını doldurdun.',
+          {ResourceType.food: 8, ResourceType.wood: 4}, 4),
+      _Outcome('Kıyıda balık tuttun.', {ResourceType.food: 14}, 0),
+    ],
+    'forest': [
+      _Outcome('Bol odun kestin.', {ResourceType.wood: 14}, 0),
+      _Outcome('Kurt izi gördün; temkinli avlandın.',
+          {ResourceType.leather: 4, ResourceType.food: 6}, -2),
+    ],
+    'hunt': [
+      _Outcome('İyi bir av vurdun.',
+          {ResourceType.food: 16, ResourceType.leather: 3}, 0),
+      _Outcome('Avlanırken yaralandın ama eli boş dönmedin.',
+          {ResourceType.leather: 4, ResourceType.food: 8}, -8),
+    ],
+    'market': [
+      _Outcome('Tüccara yol gösterdin; bahşiş aldın.',
+          {ResourceType.gold: 12, ResourceType.reputation: 1}, 0),
+      _Outcome('Küçük bir takas yaptın.', {ResourceType.gold: 8}, 0),
+    ],
+    'inscription': [
+      _Outcome('Ataların izini okudun; içine huzur doldu.',
+          {ResourceType.reputation: 2, ResourceType.morale: 2}, 0),
+      _Outcome('Eski bir töre öğrendin.',
+          {ResourceType.reputation: 1, ResourceType.morale: 1}, 0),
+    ],
+    'pass': [
+      _Outcome('Geçidi aştın; adın biraz daha duyuldu.',
+          {ResourceType.reputation: 3}, -3),
+      _Outcome(
+          'Sis seni yordu ama vazgeçmedin.', {ResourceType.reputation: 2}, -5),
+    ],
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -89,9 +128,8 @@ class JourneyScreen extends StatelessWidget {
     showSceneDetail(
       context,
       title: site.name,
-      description: 'Risk: ${site.risk} • Ödül: '
-          '${Formatters.resourceDelta(site.reward)}. Yakın çevreyi keşfetmek '
-          'obana uygun toprağı tanımanı sağlar.',
+      description: 'Risk: ${site.risk}. Ne çıkacağı belli olmaz — keşfet, '
+          'toprağı tanı. Bazen ödül, bazen yara.',
       actions: [
         SceneAction(
           label: 'Keşfet',
@@ -99,20 +137,44 @@ class JourneyScreen extends StatelessWidget {
           enabled: hasAp,
           subtitle: hasAp ? null : 'Aksiyon hakkın kalmadı.',
           onTap: () {
-            final ok = controller.exploreRegion(site.name, site.reward);
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(ok
-                    ? '${site.name} keşfedildi: '
-                        '${Formatters.resourceDelta(site.reward)}'
-                    : 'Keşif için aksiyon gerekiyor.'),
-              ),
+            final pool = _outcomes[site.id] ?? const [];
+            final outcome =
+                pool.isEmpty ? null : pool[_rng.nextInt(pool.length)];
+            final effects = outcome?.effects ?? const {ResourceType.wood: 6};
+            final ok = controller.exploreRegion(
+              site.name,
+              effects,
+              healthEffect: outcome?.health ?? 0,
+              note: '${site.name}: ${outcome?.note ?? 'Keşif tamamlandı.'}',
             );
+            if (ok) {
+              showFloatingGain(context, Formatters.resourceDelta(effects));
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(outcome?.note ?? 'Keşif tamamlandı.'),
+                  duration: const Duration(seconds: 3),
+                ),
+              );
+            } else {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Keşif için aksiyon gerekiyor.')),
+              );
+            }
           },
         ),
       ],
     );
   }
+}
+
+/// A possible result of scouting a place: a flavour note, resource effects,
+/// and an optional health change (a wound or a restful gain).
+class _Outcome {
+  const _Outcome(this.note, this.effects, this.health);
+
+  final String note;
+  final Map<ResourceType, int> effects;
+  final int health;
 }
 
 class _DistantLandsPanel extends StatelessWidget {
@@ -167,12 +229,11 @@ class _DistantLandsPanel extends StatelessWidget {
 }
 
 class _Site {
-  const _Site(this.id, this.name, this.x, this.y, this.risk, this.reward);
+  const _Site(this.id, this.name, this.x, this.y, this.risk);
 
   final String id;
   final String name;
   final double x;
   final double y;
   final String risk;
-  final Map<ResourceType, int> reward;
 }

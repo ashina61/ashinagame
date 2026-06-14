@@ -16,6 +16,7 @@ import '../inventory/inventory_screen.dart';
 import '../journey/journey_scene.dart';
 import '../market/market_screen.dart';
 import '../people/nearby_people_scene.dart';
+import '../scene/floating_text.dart';
 import '../scene/scene_detail_panel.dart';
 import '../scene/scene_hotspot.dart';
 import '../scene/scene_hud_overlay.dart';
@@ -291,7 +292,8 @@ class _CampBottom extends StatelessWidget {
   Widget build(BuildContext context) {
     final controller = GameScope.of(context);
     final state = controller.state;
-    final objective = PhaseLogic.nextObjective(state);
+    final objective =
+        PhaseLogic.dailyTutorial(state) ?? PhaseLogic.nextObjective(state);
 
     return Container(
       decoration: const BoxDecoration(
@@ -346,12 +348,12 @@ class _CampBottom extends StatelessWidget {
                         effects,
                         xp: xp,
                       );
-                      _toast(
-                        context,
-                        done
-                            ? '$label: ${Formatters.resourceDelta(effects)}'
-                            : 'Aksiyon hakkı bitti. Günü bitir.',
-                      );
+                      if (done) {
+                        showFloatingGain(
+                            context, Formatters.resourceDelta(effects));
+                      } else {
+                        _toast(context, 'Aksiyon hakkı bitti. Günü bitir.');
+                      }
                     },
                   ),
                 ),
@@ -368,12 +370,12 @@ class _CampBottom extends StatelessWidget {
                   label: 'Kampı Toparla',
                   onTap: () {
                     final done = controller.rest();
-                    _toast(
-                      context,
-                      done
-                          ? 'Kamp toparlandı; enerji ve sağlık geldi.'
-                          : 'Aksiyon hakkı bitti. Günü bitir.',
-                    );
+                    if (done) {
+                      showFloatingGain(context, 'Dinlendin',
+                          color: AppColors.success);
+                    } else {
+                      _toast(context, 'Aksiyon hakkı bitti. Günü bitir.');
+                    }
                   },
                 ),
               ),

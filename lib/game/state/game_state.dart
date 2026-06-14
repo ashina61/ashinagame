@@ -75,6 +75,7 @@ class GameState {
     this.nationLoyalty = const {},
     this.obaFounded = false,
     this.landScouted = false,
+    this.companionRoles = const {},
   });
 
   static const baseDailyActionPoints = 4;
@@ -186,6 +187,10 @@ class GameState {
   /// True once the player has scouted nearby lands and found ground fit to
   /// settle an oba on. One of the conditions for founding an oba.
   final bool landScouted;
+
+  /// Roles assigned to sworn followers when the oba is founded (npc id → role
+  /// id, see [CompanionRoles]). Each role grants a small standing bonus.
+  final Map<String, String> companionRoles;
 
   /// Named figures whose bond has grown into a sworn follower (relation ≥ 75).
   int get swornFollowers => npcRelations.values.where((v) => v >= 75).length;
@@ -309,6 +314,7 @@ class GameState {
     Map<String, int>? nationLoyalty,
     bool? obaFounded,
     bool? landScouted,
+    Map<String, String>? companionRoles,
   }) {
     final nextMax = maxDailyActionPoints ?? this.maxDailyActionPoints;
     final nextAp = (dailyActionPoints ?? energy ?? this.dailyActionPoints)
@@ -373,6 +379,7 @@ class GameState {
       nationLoyalty: nationLoyalty ?? this.nationLoyalty,
       obaFounded: obaFounded ?? this.obaFounded,
       landScouted: landScouted ?? this.landScouted,
+      companionRoles: companionRoles ?? this.companionRoles,
     );
   }
 }
