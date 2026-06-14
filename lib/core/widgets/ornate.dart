@@ -41,143 +41,51 @@ class OrnateScaffold extends StatelessWidget {
   }
 }
 
-/// Ornate screen header: a centred gold title flanked by scroll flourishes
-/// (and an optional small-caps subtitle), drawn over a faint scene strip,
-/// with optional round back / info medallions. Matches the in-game mockups.
+/// Header row: optional back medallion, plaque title, optional info medallion.
 class OrnateHeader extends StatelessWidget {
   const OrnateHeader({
     required this.title,
-    this.subtitle,
     this.showBack = false,
     this.showInfo = true,
-    this.onInfo,
     super.key,
   });
 
   final String title;
-  final String? subtitle;
   final bool showBack;
   final bool showInfo;
-  final VoidCallback? onInfo;
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: subtitle == null ? 60 : 74,
-      child: Stack(
-        alignment: Alignment.center,
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(10, 6, 10, 4),
+      child: Row(
         children: [
-          // Faint battlefield strip fading into the page, as in the mockups.
-          Positioned.fill(
-            child: ClipRect(
-              child: ShaderMask(
-                shaderCallback: (rect) => const LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [Color(0x66000000), Color(0x00000000)],
-                ).createShader(rect),
-                blendMode: BlendMode.dstIn,
-                child: Image.asset(
-                  GameAssets.sceneBattlefieldDusk,
-                  fit: BoxFit.cover,
-                  alignment: Alignment.center,
-                  color: Colors.black.withValues(alpha: 0.55),
-                  colorBlendMode: BlendMode.darken,
-                  errorBuilder: (context, error, stackTrace) =>
-                      const SizedBox.shrink(),
-                ),
-              ),
-            ),
-          ),
-          Column(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const _HeaderFlourish(),
-                  Flexible(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 10),
-                      child: Text(
-                        title.toUpperCase(),
-                        style: AppTextStyles.header.copyWith(
-                          fontSize: 22,
-                          color: AppColors.goldBright,
-                          shadows: const [
-                            Shadow(color: Colors.black, blurRadius: 6),
-                          ],
-                        ),
-                        textAlign: TextAlign.center,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ),
-                  const _HeaderFlourish(flip: true),
-                ],
-              ),
-              if (subtitle != null)
-                Padding(
-                  padding: const EdgeInsets.only(top: 1),
-                  child: Text(
-                    subtitle!.toUpperCase(),
-                    style: AppTextStyles.navLabel.copyWith(
-                      color: AppColors.gold,
-                      fontSize: 9,
-                      letterSpacing: 2,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-            ],
-          ),
           if (showBack)
-            Align(
-              alignment: Alignment.centerLeft,
-              child: _MedallionButton(
-                asset: GameAssets.uiButtonBack,
-                onTap: () => Navigator.of(context).maybePop(),
+            _MedallionButton(
+              asset: GameAssets.uiButtonBack,
+              onTap: () => Navigator.of(context).maybePop(),
+            )
+          else
+            const SizedBox(width: 38),
+          Expanded(
+            child: Container(
+              height: 46,
+              margin: const EdgeInsets.symmetric(horizontal: 8),
+              decoration: _stretchedImage(GameAssets.uiPanelPlaque),
+              alignment: Alignment.center,
+              child: Text(
+                title.toUpperCase(),
+                style: AppTextStyles.header,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
             ),
+          ),
           if (showInfo)
-            Align(
-              alignment: Alignment.centerRight,
-              child: _MedallionButton(
-                asset: GameAssets.uiButtonInfo,
-                onTap: onInfo ?? () {},
-              ),
-            ),
+            _MedallionButton(asset: GameAssets.uiButtonInfo, onTap: () {})
+          else
+            const SizedBox(width: 38),
         ],
-      ),
-    );
-  }
-}
-
-/// Small mirrored scroll ornament that flanks an [OrnateHeader] title.
-class _HeaderFlourish extends StatelessWidget {
-  const _HeaderFlourish({this.flip = false});
-
-  final bool flip;
-
-  @override
-  Widget build(BuildContext context) {
-    return Transform.flip(
-      flipX: flip,
-      child: Image.asset(
-        GameAssets.uiDividerOrnate,
-        width: 44,
-        height: 18,
-        fit: BoxFit.contain,
-        alignment: Alignment.centerRight,
-        errorBuilder: (context, error, stackTrace) => Icon(
-          Icons.star,
-          size: 12,
-          color: AppColors.gold.withValues(alpha: 0.8),
-        ),
       ),
     );
   }
@@ -192,22 +100,8 @@ class _MedallionButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: _tap(onTap),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 6),
-        child: Image.asset(
-          asset,
-          width: 38,
-          height: 38,
-          errorBuilder: (context, error, stackTrace) => Icon(
-            asset == GameAssets.uiButtonBack
-                ? Icons.arrow_back_ios_new
-                : Icons.info_outline,
-            color: AppColors.gold,
-            size: 24,
-          ),
-        ),
-      ),
+      onTap: onTap,
+      child: Image.asset(asset, width: 38, height: 38),
     );
   }
 }
@@ -271,33 +165,26 @@ class OrnatePanel extends StatelessWidget {
     return Container(
       width: double.infinity,
       margin: margin,
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [Color(0xE61A140C), Color(0xF20F0B07)],
+      decoration: const BoxDecoration(
+        image: DecorationImage(
+          image: AssetImage(GameAssets.uiPanelPlain),
+          centerSlice: Rect.fromLTRB(90, 90, 1190, 136),
         ),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: AppColors.gold.withValues(alpha: 0.45),
-          width: 1.1,
-        ),
-        boxShadow: const [
-          BoxShadow(
-              color: Colors.black54, blurRadius: 10, offset: Offset(0, 5)),
-        ],
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(11),
+        borderRadius: BorderRadius.circular(14),
         child: Stack(
           children: [
             if (backgroundAsset != null)
               Positioned.fill(
-                child: Image.asset(
-                  backgroundAsset!,
-                  fit: BoxFit.cover,
-                  color: Colors.black.withValues(alpha: 0.45),
-                  colorBlendMode: BlendMode.darken,
+                child: Padding(
+                  padding: const EdgeInsets.all(6),
+                  child: Image.asset(
+                    backgroundAsset!,
+                    fit: BoxFit.cover,
+                    color: Colors.black.withValues(alpha: 0.5),
+                    colorBlendMode: BlendMode.darken,
+                  ),
                 ),
               ),
             Padding(padding: padding, child: child),
@@ -630,9 +517,6 @@ class OrnateNavBar extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 6),
       decoration: _stretchedImage(GameAssets.uiPanelNavBar).copyWith(
         color: AppColors.ink,
-        border: const Border(
-          top: BorderSide(color: AppColors.goldDim, width: 1.2),
-        ),
       ),
       child: Row(
         children: [
