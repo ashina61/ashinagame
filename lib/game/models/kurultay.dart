@@ -9,6 +9,7 @@ class KurultayChoice {
     this.peopleEffect = 0,
     this.councilEffect = 0,
     this.resourceEffects = const {},
+    this.npcEffects = const {},
   });
 
   final String label;
@@ -16,6 +17,10 @@ class KurultayChoice {
   final int peopleEffect;
   final int councilEffect;
   final Map<ResourceType, int> resourceEffects;
+
+  /// Bonds shifted with named figures (npc id → delta), so a verdict that
+  /// pleases the war captain may vex the elder.
+  final Map<String, int> npcEffects;
 }
 
 /// A matter raised when the council convenes.

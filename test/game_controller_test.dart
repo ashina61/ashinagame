@@ -495,6 +495,50 @@ void main() {
     expect(controller.state.councilApproval, 60 + 10);
   });
 
+  test('kurultay verdicts shift bey bonds and trigger extreme consequences',
+      () {
+    final base = StarterGameData.create();
+    // A council on the brink: a hostile verdict tips both estates over.
+    final controller = GameController(
+      base.copyWith(
+        currentKurultay: 'justice',
+        peopleApproval: 28,
+        councilApproval: 26,
+        vassalObas: 2,
+        npcRelations: const {'bori_bey': 50, 'alis_hatun': 50},
+        resources: {...base.resources, ResourceType.population: 60},
+      ),
+    );
+
+    // 'justice' choice 1 (beyi kolla): people -12 -> 16 (<=20 triggers exodus),
+    // council +12 -> 38; bonds shift toward Böri, away from Alış.
+    final popBefore = controller.state.resource(ResourceType.population);
+    controller.resolveKurultay(1);
+    expect(controller.state.councilApproval, 38);
+    expect(controller.state.peopleApproval, 16);
+    expect(controller.state.relationWith('bori_bey'), 58);
+    expect(controller.state.relationWith('alis_hatun'), 42);
+    // The exodus from a furious populace bleeds population.
+    expect(controller.state.resource(ResourceType.population),
+        lessThan(popBefore));
+  });
+
+  test('a furious council costs a bound oba at the next verdict', () {
+    final base = StarterGameData.create();
+    final controller = GameController(
+      base.copyWith(
+        currentKurultay: 'justice',
+        councilApproval: 26,
+        vassalObas: 3,
+        resources: {...base.resources, ResourceType.population: 80},
+      ),
+    );
+    // 'justice' choice 0 (çobanı kolla): council -8 -> 18 (<=20), a bey leaves.
+    controller.resolveKurultay(0);
+    expect(controller.state.councilApproval, 18);
+    expect(controller.state.vassalObas, 2);
+  });
+
   test('onboarding names the oba and opens play', () {
     final controller = GameController(StarterGameData.create());
     expect(controller.state.onboarded, isFalse);

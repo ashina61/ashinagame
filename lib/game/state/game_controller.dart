@@ -445,6 +445,13 @@ class GameController extends ChangeNotifier {
         ResourceType.morale: -3,
       });
     }
+    // A sullen council needles the bey's standing day after day.
+    if (_state.councilApproval < 25) {
+      resources = ResourceLogic.apply(resources, const {
+        ResourceType.morale: -2,
+        ResourceType.reputation: -1,
+      });
+    }
 
     // Provinces and bound states pour tribute into the treasury each day.
     final tribute = _dailyNationIncome();
@@ -1438,12 +1445,53 @@ class GameController extends ChangeNotifier {
       return;
     }
     final choice = decision.choices[choiceIndex];
+    final people =
+        (_state.peopleApproval + choice.peopleEffect).clamp(0, 100).toInt();
+    final council =
+        (_state.councilApproval + choice.councilEffect).clamp(0, 100).toInt();
+
+    // A verdict echoes through the named beys it touches.
+    var relations = _state.npcRelations;
+    if (choice.npcEffects.isNotEmpty) {
+      relations = Map<String, int>.from(relations);
+      for (final e in choice.npcEffects.entries) {
+        relations[e.key] = (_state.relationWith(e.key) + e.value).clamp(0, 100);
+      }
+    }
+
+    // When a verdict pushes approval to an extreme, the realm reacts at once.
+    var resources =
+        ResourceLogic.apply(_state.resources, choice.resourceEffects);
+    var vassals = _state.vassalObas;
+    final notes = <String>['Kurultay kararı: ${choice.label}.'];
+    if (council <= 20 && vassals > 0) {
+      vassals -= 1;
+      notes.add('Küskün bir bey obasını alıp gitti (bağlı oba -1).');
+    }
+    if (people <= 20) {
+      resources = ResourceLogic.apply(resources, const {
+        ResourceType.population: -6,
+        ResourceType.morale: -6,
+      });
+      notes.add('Küskün halktan göç başladı (nüfus -6).');
+    }
+    if (people >= 85 && council >= 85) {
+      resources = ResourceLogic.apply(resources, const {
+        ResourceType.gold: 80,
+        ResourceType.morale: 6,
+      });
+      notes.add('Hem halk hem meclis ardında; obadan armağanlar yağdı.');
+    }
+
+    final log = [...notes.reversed, ..._state.log].take(6).toList();
     _commit(_state.copyWith(
-      peopleApproval: _state.peopleApproval + choice.peopleEffect,
-      councilApproval: _state.councilApproval + choice.councilEffect,
-      resources: ResourceLogic.apply(_state.resources, choice.resourceEffects),
+      peopleApproval: people,
+      councilApproval: council,
+      resources: resources,
+      vassalObas: vassals,
+      npcRelations: relations,
       clearKurultay: true,
-      log: _prependLog('Kurultay kararı: ${choice.label}.'),
+      log: log,
     ));
   }
 

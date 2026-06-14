@@ -8,6 +8,7 @@ import '../../core/utils/formatters.dart';
 import '../../core/widgets/ornate.dart';
 import '../../game/data/kurultay_decisions.dart';
 import '../../game/models/kurultay.dart';
+import '../../game/models/npc.dart';
 import '../../game/state/game_scope.dart';
 
 class KurultayScreen extends StatelessWidget {
@@ -107,6 +108,8 @@ class _ChoicePanel extends StatelessWidget {
       effect(choice.councilEffect, 'Kurultay'),
       if (choice.resourceEffects.isNotEmpty)
         Formatters.resourceDelta(choice.resourceEffects),
+      for (final e in choice.npcEffects.entries)
+        effect(e.value, NpcCharacters.byId(e.key)?.name ?? e.key),
     ].where((s) => s.isNotEmpty).join(' • ');
 
     return OrnatePanel(
