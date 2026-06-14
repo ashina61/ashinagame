@@ -133,6 +133,7 @@ class GameSerializer {
         'lastKurultayDay': state.lastKurultayDay,
         'army': state.army,
         'wounded': state.wounded,
+        'npcRelations': state.npcRelations,
       });
 
   static GameState? decode(String raw) {
@@ -252,6 +253,8 @@ class GameSerializer {
         lastKurultayDay: json['lastKurultayDay'] as int? ?? 0,
         army: (json['army'] as Map<String, dynamic>? ?? {}).cast<String, int>(),
         wounded: (json['wounded'] as Map<String, dynamic>? ?? {})
+            .cast<String, int>(),
+        npcRelations: (json['npcRelations'] as Map<String, dynamic>? ?? {})
             .cast<String, int>(),
       );
     } catch (_) {

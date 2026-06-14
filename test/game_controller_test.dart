@@ -8,6 +8,7 @@ import 'package:ashinagame/game/logic/market_logic.dart';
 import 'package:ashinagame/game/logic/unlock_logic.dart';
 import 'package:ashinagame/game/models/faith.dart';
 import 'package:ashinagame/game/models/game_day.dart';
+import 'package:ashinagame/game/data/npc_dialogues.dart';
 import 'package:ashinagame/game/models/household.dart';
 import 'package:ashinagame/game/models/resource.dart';
 import 'package:ashinagame/game/models/season.dart';
@@ -626,5 +627,46 @@ void main() {
     expect(decoded!.generation, 3);
     expect(decoded.leaderLifespan, 70);
     expect(decoded.claimedAchievements, controller.state.claimedAchievements);
+  });
+
+  test('talking to an NPC spends an action and shifts the bond and approvals',
+      () {
+    final controller = GameController.starter();
+    final dialogue = controller.dialogueFor('bori_bey');
+    expect(dialogue, isNotNull);
+    expect(controller.state.relationWith('bori_bey'), 50);
+
+    final ap = controller.state.dailyActionPoints;
+    final people = controller.state.peopleApproval;
+    final council = controller.state.councilApproval;
+    final choice = dialogue!.choices.first;
+
+    expect(controller.talkTo('bori_bey', choice), isTrue);
+    expect(controller.state.dailyActionPoints, ap - 1);
+    expect(controller.state.relationWith('bori_bey'),
+        (50 + choice.relationEffect).clamp(0, 100));
+    expect(controller.state.peopleApproval, people + choice.peopleEffect);
+    expect(controller.state.councilApproval, council + choice.councilEffect);
+  });
+
+  test('npc relations survive a serializer round-trip', () {
+    final controller = GameController.starter();
+    final choice = NpcDialogues.forNpc('kaya_atabek').first.choices.first;
+    controller.talkTo('kaya_atabek', choice);
+
+    final decoded =
+        GameSerializer.decode(GameSerializer.encode(controller.state));
+    expect(decoded, isNotNull);
+    expect(decoded!.relationWith('kaya_atabek'),
+        controller.state.relationWith('kaya_atabek'));
+  });
+
+  test('talking with no action points left fails', () {
+    final controller = GameController(
+      StarterGameData.create().copyWith(dailyActionPoints: 0),
+    );
+    final choice = NpcDialogues.forNpc('alis_hatun').first.choices.first;
+    expect(controller.talkTo('alis_hatun', choice), isFalse);
+    expect(controller.state.relationWith('alis_hatun'), 50);
   });
 }

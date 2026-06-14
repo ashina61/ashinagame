@@ -8,6 +8,7 @@ import '../../game/data/faith_paths.dart';
 import '../../game/models/camp_building.dart';
 import '../../game/models/resource.dart';
 import '../../game/state/game_scope.dart';
+import '../npc/npc_screen.dart';
 
 class CampScreen extends StatelessWidget {
   const CampScreen({super.key});
@@ -33,6 +34,16 @@ class CampScreen extends StatelessWidget {
                       Text(
                         'Aksiyon ${state.dailyActionPoints}/${state.maxDailyActionPoints} • Nüfus ${state.resource(ResourceType.population)} • Moral ${state.resource(ResourceType.morale)}/100',
                         style: AppTextStyles.body,
+                      ),
+                      const SizedBox(height: 10),
+                      GoldButton(
+                        label: 'OBA HALKI İLE KONUŞ',
+                        height: 44,
+                        onPressed: () => Navigator.of(context).push(
+                          MaterialPageRoute<void>(
+                            builder: (_) => const NpcScreen(),
+                          ),
+                        ),
                       ),
                     ],
                   ),

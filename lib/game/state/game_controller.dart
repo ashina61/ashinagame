@@ -10,6 +10,7 @@ import '../data/expedition_sites.dart';
 import '../data/faith_paths.dart';
 import '../data/kurultay_decisions.dart';
 import '../data/market_goods.dart';
+import '../data/npc_dialogues.dart';
 import '../data/recruitment.dart';
 import '../data/starter_game_data.dart';
 import '../logic/event_logic.dart';
@@ -25,6 +26,7 @@ import '../models/craft.dart';
 import '../models/event_choice.dart';
 import '../models/faith.dart';
 import '../models/expedition.dart';
+import '../models/npc.dart';
 import '../models/quest.dart';
 import '../models/resource.dart';
 import '../models/unit_type.dart';
@@ -1319,6 +1321,33 @@ class GameController extends ChangeNotifier {
       clearKurultay: true,
       log: _prependLog('Kurultay kararı: ${choice.label}.'),
     ));
+  }
+
+  /// The exchange [npcId] offers right now; dialogues rotate by the day so a
+  /// figure does not repeat the same line each visit. Returns null if unknown.
+  Dialogue? dialogueFor(String npcId) {
+    final pool = NpcDialogues.forNpc(npcId);
+    if (pool.isEmpty) return null;
+    return pool[_state.day.day % pool.length];
+  }
+
+  /// Speaks with an NPC: costs one action point, shifts the bond with the
+  /// speaker, and may sway the people, the council or the treasury.
+  bool talkTo(String npcId, DialogueChoice choice) {
+    if (_state.dailyActionPoints < 1) return false;
+    final npc = NpcCharacters.byId(npcId);
+    final relations = Map<String, int>.from(_state.npcRelations);
+    relations[npcId] =
+        (_state.relationWith(npcId) + choice.relationEffect).clamp(0, 100);
+    _commit(_state.copyWith(
+      dailyActionPoints: _state.dailyActionPoints - 1,
+      npcRelations: relations,
+      peopleApproval: _state.peopleApproval + choice.peopleEffect,
+      councilApproval: _state.councilApproval + choice.councilEffect,
+      resources: ResourceLogic.apply(_state.resources, choice.resourceEffects),
+      log: _prependLog('${npc?.name ?? 'Biri'} ile konuşuldu: ${choice.label}'),
+    ));
+    return true;
   }
 
   /// Finishes first-run onboarding: names the oba and leader and opens play.

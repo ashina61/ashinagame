@@ -69,6 +69,7 @@ class GameState {
     this.lastKurultayDay = 0,
     this.army = const {},
     this.wounded = const {},
+    this.npcRelations = const {},
   });
 
   static const baseDailyActionPoints = 4;
@@ -157,6 +158,12 @@ class GameState {
   /// Battle-ready soldiers and those recovering from wounds, by unit id.
   final Map<String, int> army;
   final Map<String, int> wounded;
+
+  /// How each named figure feels about the leader (0–100), 50 by default.
+  final Map<String, int> npcRelations;
+
+  /// Bond with [npcId], defaulting to a neutral 50 when never spoken to.
+  int relationWith(String npcId) => npcRelations[npcId] ?? 50;
 
   int resource(ResourceType type) => resources[type] ?? 0;
 
@@ -261,6 +268,7 @@ class GameState {
     int? lastKurultayDay,
     Map<String, int>? army,
     Map<String, int>? wounded,
+    Map<String, int>? npcRelations,
   }) {
     final nextMax = maxDailyActionPoints ?? this.maxDailyActionPoints;
     final nextAp = (dailyActionPoints ?? energy ?? this.dailyActionPoints)
@@ -317,6 +325,7 @@ class GameState {
       lastKurultayDay: lastKurultayDay ?? this.lastKurultayDay,
       army: army ?? this.army,
       wounded: wounded ?? this.wounded,
+      npcRelations: npcRelations ?? this.npcRelations,
     );
   }
 }
