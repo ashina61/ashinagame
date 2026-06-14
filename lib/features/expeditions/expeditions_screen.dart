@@ -125,6 +125,19 @@ class _ExpeditionsScreenState extends State<ExpeditionsScreen> {
       child: Column(
         children: [
           const OrnateHeader(title: 'Seferler'),
+          ResourceBar(
+            entries: [
+              (GameAssets.iconFortStone,
+                  '${controller.state.conqueredRegions.length}'),
+              (GameAssets.iconArmyEmblem,
+                  '${controller.state.totalSoldiers}'),
+              (GameAssets.iconSwordsCrossedGold, '${controller.armyStrength}'),
+              (GameAssets.iconFood,
+                  '${controller.state.resource(ResourceType.food)}'),
+              (GameAssets.iconMoraleEmblem,
+                  '${controller.state.resource(ResourceType.morale)}'),
+            ],
+          ),
           OrnatePanel(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             child: Column(
