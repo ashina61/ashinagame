@@ -2,6 +2,59 @@ import 'package:flutter/material.dart';
 
 import '../../app/theme/app_colors.dart';
 import '../../app/theme/app_text_styles.dart';
+import '../../core/widgets/ornate.dart';
+
+/// A short end-of-day report: the day's headline, atmosphere and the latest
+/// chronicle lines (healed wounded, news, omens, raids, relations…). Shown as
+/// a dismissible card so the turn closes with a beat, not just a date change.
+Future<void> showDayReport(
+  BuildContext context, {
+  required String title,
+  required String atmosphere,
+  required List<String> lines,
+}) {
+  return showDialog<void>(
+    context: context,
+    barrierColor: Colors.black54,
+    builder: (dialogContext) => Dialog(
+      backgroundColor: Colors.transparent,
+      child: OrnatePanel(
+        margin: EdgeInsets.zero,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(title,
+                style:
+                    AppTextStyles.title.copyWith(color: AppColors.goldBright)),
+            const SizedBox(height: 4),
+            Text(atmosphere, style: AppTextStyles.meta),
+            const SizedBox(height: 10),
+            for (final line in lines.take(5))
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 3),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Icon(Icons.brightness_2,
+                        size: 12, color: AppColors.goldDim),
+                    const SizedBox(width: 8),
+                    Expanded(child: Text(line, style: AppTextStyles.body)),
+                  ],
+                ),
+              ),
+            const SizedBox(height: 12),
+            GoldButton(
+              label: 'DEVAM',
+              height: 44,
+              onPressed: () => Navigator.of(dialogContext).maybePop(),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
 
 /// Pops a small "+6 Odun" style label that floats up and fades, giving each
 /// gain a bit of juice. Fail-safe: does nothing if there is no overlay or the

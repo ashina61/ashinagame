@@ -6,6 +6,7 @@ import '../../core/assets/game_assets.dart';
 import '../../core/audio/audio_service.dart';
 import '../../core/widgets/ornate.dart';
 import '../../game/data/market_goods.dart';
+import '../../game/data/rare_offers.dart';
 import '../../game/logic/market_logic.dart';
 import '../../game/models/resource.dart';
 import '../../game/state/game_scope.dart';
@@ -53,23 +54,33 @@ class _TraderBanner extends StatelessWidget {
     const goods = MarketGoods.all;
     final featured = goods.isEmpty ? null : goods[day % goods.length];
     final quote = _quotes[day % _quotes.length];
+    final rare = RareOffers.forDay(day);
     return Container(
       margin: const EdgeInsets.fromLTRB(12, 0, 12, 4),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
         color: AppColors.leatherDeep.withValues(alpha: 0.8),
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: AppColors.goldDim.withValues(alpha: 0.6)),
+        border: Border.all(
+          color: rare != null
+              ? AppColors.goldBright.withValues(alpha: 0.8)
+              : AppColors.goldDim.withValues(alpha: 0.6),
+        ),
       ),
       child: Row(
         children: [
-          const Icon(Icons.local_offer, size: 16, color: AppColors.goldBright),
+          Icon(rare != null ? Icons.auto_awesome : Icons.local_offer,
+              size: 16, color: AppColors.goldBright),
           const SizedBox(width: 8),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                if (featured != null)
+                if (rare != null)
+                  Text('Nadir teklif: ${rare.title} — ${rare.note}',
+                      style: AppTextStyles.meta
+                          .copyWith(color: AppColors.goldBright))
+                else if (featured != null)
                   Text('Günün teklifi: ${featured.name}',
                       style: AppTextStyles.meta
                           .copyWith(color: AppColors.goldBright)),

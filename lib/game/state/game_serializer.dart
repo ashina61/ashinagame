@@ -142,6 +142,8 @@ class GameSerializer {
         'companionRoles': state.companionRoles,
         'raidCountdown': state.raidCountdown,
         'raidFrom': state.raidFrom,
+        'marchTarget': state.marchTarget,
+        'marchDaysLeft': state.marchDaysLeft,
       });
 
   static GameState? decode(String raw) {
@@ -276,6 +278,8 @@ class GameSerializer {
             .cast<String, String>(),
         raidCountdown: json['raidCountdown'] as int? ?? 0,
         raidFrom: json['raidFrom'] as String? ?? '',
+        marchTarget: json['marchTarget'] as String? ?? '',
+        marchDaysLeft: json['marchDaysLeft'] as int? ?? 0,
       );
     } catch (_) {
       return null;

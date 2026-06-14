@@ -8,6 +8,7 @@ import '../../core/widgets/ornate.dart';
 import '../../game/data/nations.dart';
 import '../../game/models/nation.dart';
 import '../../game/models/resource.dart';
+import '../../game/state/game_controller.dart';
 import '../../game/state/game_scope.dart';
 import 'battle_report_dialog.dart';
 
@@ -76,6 +77,7 @@ class _ConquestScreenState extends State<ConquestScreen> {
             ),
             if (pending != null) _GovernancePanel(nation: pending),
             const _RaidThreatBanner(),
+            const _MarchBanner(),
             Expanded(
               child: ListView(
                 padding: const EdgeInsets.only(top: 4, bottom: 16),
@@ -142,15 +144,23 @@ class _RaidThreatBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final state = GameScope.of(context).state;
+    final controller = GameScope.of(context);
+    final state = controller.state;
 
-    // An active, counting-down raid takes priority over the idle threat line.
+    // An active, counting-down raid takes priority over the idle threat line,
+    // and offers the player a real choice: brace, parley, strike or pull back.
     if (state.raidLooming) {
       final nation = Nations.byId(state.raidFrom);
       return _banner(
         '${nation?.name ?? 'Düşman'} akını ${state.raidCountdown} gün sonra '
-        'geliyor! Ordunu hazırla.',
+        'geliyor! Ne yapacaksın?',
         strong: true,
+        actions: [
+          _RaidChoice('Savun', 'defend', controller),
+          _RaidChoice('Elçi', 'envoy', controller),
+          _RaidChoice('Baskın', 'preempt', controller),
+          _RaidChoice('Tahliye', 'evacuate', controller),
+        ],
       );
     }
 
@@ -170,7 +180,7 @@ class _RaidThreatBanner extends StatelessWidget {
     );
   }
 
-  Widget _banner(String text, {bool strong = false}) {
+  Widget _banner(String text, {bool strong = false, List<Widget>? actions}) {
     return Container(
       margin: const EdgeInsets.fromLTRB(12, 0, 12, 8),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -182,15 +192,95 @@ class _RaidThreatBanner extends StatelessWidget {
           width: strong ? 1.6 : 1,
         ),
       ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const _RebellionPulse(),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  text,
+                  style: AppTextStyles.meta
+                      .copyWith(color: strong ? AppColors.danger : null),
+                ),
+              ),
+            ],
+          ),
+          if (actions != null) ...[
+            const SizedBox(height: 6),
+            Wrap(spacing: 6, runSpacing: 6, children: actions),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+/// One response chip for a looming raid.
+class _RaidChoice extends StatelessWidget {
+  const _RaidChoice(this.label, this.action, this.controller);
+
+  final String label;
+  final String action;
+  final GameController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 84,
+      child: DarkButton(
+        label: label,
+        height: 32,
+        onPressed: controller.state.dailyActionPoints > 0
+            ? () {
+                final ok = controller.respondToRaid(action);
+                AudioService.instance.playSfx(ok ? 'tap' : 'denied');
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(ok
+                        ? 'Karar verildi: $label.'
+                        : 'Bu karar için aksiyon/kaynak yetersiz.'),
+                    duration: const Duration(seconds: 2),
+                  ),
+                );
+              }
+            : null,
+      ),
+    );
+  }
+}
+
+/// A banner showing the army on campaign and how far it has to go.
+class _MarchBanner extends StatelessWidget {
+  const _MarchBanner();
+
+  @override
+  Widget build(BuildContext context) {
+    final controller = GameScope.of(context);
+    final castle = controller.marchCastle;
+    if (castle == null) return const SizedBox.shrink();
+    final left = controller.state.marchDaysLeft;
+    return Container(
+      margin: const EdgeInsets.fromLTRB(12, 0, 12, 8),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: AppColors.leatherDeep.withValues(alpha: 0.85),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: AppColors.goldBright.withValues(alpha: 0.7)),
+      ),
       child: Row(
         children: [
-          const _RebellionPulse(),
+          const Icon(Icons.flag, size: 16, color: AppColors.goldBright),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-              text,
-              style: AppTextStyles.meta
-                  .copyWith(color: strong ? AppColors.danger : null),
+              left > 0
+                  ? 'Ordu ${castle.name} yolunda — ${controller.marchStatus}, '
+                      '$left gün kaldı.'
+                  : 'Ordu ${castle.name} önünde — kuşatma başlıyor.',
+              style: AppTextStyles.meta.copyWith(color: AppColors.goldBright),
             ),
           ),
         ],
@@ -378,6 +468,47 @@ class _NationBlock extends StatelessWidget {
                           : null,
                     ),
                   ),
+                  if (loyalty < 50) ...[
+                    const SizedBox(height: 8),
+                    const Text('İsyana karşı kararlar:',
+                        style: AppTextStyles.meta),
+                    const SizedBox(height: 4),
+                    Wrap(
+                      spacing: 6,
+                      runSpacing: 6,
+                      children: [
+                        for (final (label, action) in const [
+                          ('Vergiyi Düşür', 'lower_tax'),
+                          ('Garnizon', 'garrison'),
+                          ('Sert Bastır', 'suppress'),
+                          ('Erzak Yardımı', 'gift'),
+                          ('Vali Değiştir', 'replace'),
+                        ])
+                          SizedBox(
+                            width: 116,
+                            child: DarkButton(
+                              label: label,
+                              height: 30,
+                              onPressed: state.dailyActionPoints > 0
+                                  ? () {
+                                      final ok = controller.manageProvince(
+                                          nation.id, action);
+                                      AudioService.instance
+                                          .playSfx(ok ? 'tap' : 'denied');
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(SnackBar(
+                                        content: Text(ok
+                                            ? '$label uygulandı.'
+                                            : 'Aksiyon/kaynak yetersiz.'),
+                                        duration: const Duration(seconds: 2),
+                                      ));
+                                    }
+                                  : null,
+                            ),
+                          ),
+                      ],
+                    ),
+                  ],
                 ],
               ],
             ),
@@ -505,6 +636,22 @@ class _CastlePanel extends StatelessWidget {
                               );
                             }
                           }
+                        : null,
+                  ),
+                ),
+                SizedBox(
+                  width: 132,
+                  child: DarkButton(
+                    label: state.marchTarget == castle.id
+                        ? '${controller.marchStatus} ${state.marchDaysLeft}g'
+                        : 'SEFER ${controller.marchDaysTo(castle)}g',
+                    height: 34,
+                    onPressed: !state.marching &&
+                            hasAp &&
+                            state.resource(ResourceType.food) >=
+                                controller.marchFoodCost(castle)
+                        ? () => _act(context, controller.startMarch(castle.id),
+                            'Ordu ${castle.name} üzerine yürüyüşe geçti.')
                         : null,
                   ),
                 ),

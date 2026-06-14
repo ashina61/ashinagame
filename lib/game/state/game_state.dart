@@ -78,6 +78,8 @@ class GameState {
     this.companionRoles = const {},
     this.raidCountdown = 0,
     this.raidFrom = '',
+    this.marchTarget = '',
+    this.marchDaysLeft = 0,
   });
 
   static const baseDailyActionPoints = 4;
@@ -202,6 +204,15 @@ class GameState {
 
   /// True while an enemy raid is on its way to the oba.
   bool get raidLooming => raidCountdown > 0 && raidFrom.isNotEmpty;
+
+  /// Castle id the army is marching on, empty when no campaign is afoot.
+  final String marchTarget;
+
+  /// Days until the marching army reaches [marchTarget].
+  final int marchDaysLeft;
+
+  /// True while an army is on campaign toward a castle.
+  bool get marching => marchTarget.isNotEmpty;
 
   /// Named figures whose bond has grown into a sworn follower (relation ≥ 75).
   int get swornFollowers => npcRelations.values.where((v) => v >= 75).length;
@@ -328,6 +339,8 @@ class GameState {
     Map<String, String>? companionRoles,
     int? raidCountdown,
     String? raidFrom,
+    String? marchTarget,
+    int? marchDaysLeft,
   }) {
     final nextMax = maxDailyActionPoints ?? this.maxDailyActionPoints;
     final nextAp = (dailyActionPoints ?? energy ?? this.dailyActionPoints)
@@ -395,6 +408,8 @@ class GameState {
       companionRoles: companionRoles ?? this.companionRoles,
       raidCountdown: raidCountdown ?? this.raidCountdown,
       raidFrom: raidFrom ?? this.raidFrom,
+      marchTarget: marchTarget ?? this.marchTarget,
+      marchDaysLeft: marchDaysLeft ?? this.marchDaysLeft,
     );
   }
 }

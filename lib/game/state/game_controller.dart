@@ -644,6 +644,20 @@ class GameController extends ChangeNotifier {
       }
     }
 
+    // A campaign on the road steps one day closer; the siege itself resolves
+    // just after this day's commit (see below).
+    var marchDaysLeft = _state.marchDaysLeft;
+    if (_state.marching && marchDaysLeft > 0) {
+      marchDaysLeft -= 1;
+      final name = Nations.castleById(_state.marchTarget)?.name ?? 'hedef';
+      log = [
+        marchDaysLeft > 0
+            ? '$name seferi: $marchDaysLeft gün kaldı.'
+            : 'Ordu $name önüne vardı; kuşatma başlıyor.',
+        ...log,
+      ].take(6).toList();
+    }
+
     final eventIndex = _state.eventIndex + 1;
     var omenState = _rollOmen(resources);
     // A Kam (kam role) steadies the camp: a bad omen is read away to neutral.
@@ -684,8 +698,20 @@ class GameController extends ChangeNotifier {
       eventIndex: eventIndex,
       raidCountdown: raidCountdown,
       raidFrom: raidFrom,
+      marchDaysLeft: marchDaysLeft,
       log: log,
     ));
+
+    // A campaign that reached its walls today storms them now — a second,
+    // self-contained commit so the siege report and spoils land cleanly.
+    if (_state.marching && _state.marchDaysLeft <= 0) {
+      final castle = Nations.castleById(_state.marchTarget);
+      if (castle != null && !_state.regionConquered(castle.id)) {
+        _resolveSiege(castle, costAp: false);
+      } else {
+        _commit(_state.copyWith(marchTarget: '', marchDaysLeft: 0));
+      }
+    }
   }
 
   bool chooseEvent(EventChoice choice) {
@@ -1413,6 +1439,54 @@ class GameController extends ChangeNotifier {
         _state.dailyActionPoints < 1) {
       return false;
     }
+    return _resolveSiege(castle, costAp: true);
+  }
+
+  /// Days a campaign needs to reach a castle — a capital lies deeper.
+  int marchDaysTo(Castle castle) => castle.isCenter ? 3 : 2;
+
+  /// Provisions a campaign burns on the road to a castle.
+  int marchFoodCost(Castle castle) => castle.isCenter ? 25 : 8;
+
+  /// Status of the army on campaign: '', 'Yolda' or 'Kuşatmada'.
+  String get marchStatus {
+    if (_state.marchTarget.isEmpty) return '';
+    return _state.marchDaysLeft <= 0 ? 'Kuşatmada' : 'Yolda';
+  }
+
+  /// The castle the army is marching on, or null.
+  Castle? get marchCastle => _state.marchTarget.isEmpty
+      ? null
+      : Nations.castleById(_state.marchTarget);
+
+  /// Sends the army on campaign toward a castle. It marches over several days
+  /// (one step per day-end) and the siege resolves automatically on arrival.
+  bool startMarch(String castleId) {
+    final castle = Nations.castleById(castleId);
+    if (castle == null ||
+        _state.marching ||
+        _state.regionConquered(castleId) ||
+        centerLocked(castle) ||
+        _state.dailyActionPoints < 1 ||
+        _state.resource(ResourceType.food) < marchFoodCost(castle)) {
+      return false;
+    }
+    final days = marchDaysTo(castle);
+    _commit(_state.copyWith(
+      dailyActionPoints: _state.dailyActionPoints - 1,
+      resources: ResourceLogic.apply(
+          _state.resources, {ResourceType.food: -marchFoodCost(castle)}),
+      marchTarget: castle.id,
+      marchDaysLeft: days,
+      log: _prependLog(
+          'Ordu ${castle.name} üzerine yürüyüşe geçti ($days gün).'),
+    ));
+    return true;
+  }
+
+  /// Resolves a siege against [castle], whether reached instantly via
+  /// [attackRegion] or at the end of a [startMarch] campaign.
+  bool _resolveSiege(Castle castle, {required bool costAp}) {
     final chance = warChanceFor(castle);
     final success = _random.nextInt(100) < chance;
     // Winning costs fewer soldiers; a rout wounds and kills many more. Each
@@ -1428,6 +1502,7 @@ class GameController extends ChangeNotifier {
       lost: casualties.lost,
       wounded: casualties.hurt,
     );
+    final ap = costAp ? _state.dailyActionPoints - 1 : _state.dailyActionPoints;
     if (success) {
       _commit(_takeCastle(
         castle,
@@ -1438,7 +1513,7 @@ class GameController extends ChangeNotifier {
           ResourceType.food: -15,
         }),
         '${castle.name} kılıçla fethedildi!',
-        _state.dailyActionPoints - 1,
+        ap,
         army: army,
         wounded: wounded,
       ));
@@ -1449,10 +1524,12 @@ class GameController extends ChangeNotifier {
         fatigue: _state.profile.fatigue + 10,
       );
       _commit(_state.copyWith(
-        dailyActionPoints: _state.dailyActionPoints - 1,
+        dailyActionPoints: ap,
         army: army,
         wounded: wounded,
         profile: hurtLeader,
+        marchTarget: '',
+        marchDaysLeft: 0,
         resources: ResourceLogic.apply(_state.resources, const {
           ResourceType.morale: -10,
           ResourceType.population: -5,
@@ -1486,6 +1563,8 @@ class GameController extends ChangeNotifier {
       army: army,
       wounded: wounded,
       resources: resources,
+      marchTarget: '',
+      marchDaysLeft: 0,
       pendingNationPolicy: nationDone ? nation.id : null,
       log: _prependLog(nationDone
           ? '$logLine ${nation.name} dize geldi — kaderine sen karar ver.'
@@ -1624,6 +1703,130 @@ class GameController extends ChangeNotifier {
           '${nation?.name ?? 'İl'} sadakati tazelendi ($next/100).'),
     ));
     return true;
+  }
+
+  /// A restless province's fate is a choice, not just a warning. Each action
+  /// trades something — treasury, the people's fear, or töre — for order.
+  bool manageProvince(String nationId, String action) {
+    if (!_isHeldProvince(nationId) || _state.dailyActionPoints < 1) {
+      return false;
+    }
+    final cost = switch (action) {
+      'replace' => const {ResourceType.gold: 80},
+      'garrison' => const {ResourceType.gold: 60},
+      'gift' => const {ResourceType.food: 20},
+      _ => const <ResourceType, int>{},
+    };
+    for (final e in cost.entries) {
+      if (_state.resource(e.key) < e.value) return false;
+    }
+    var gain = 0;
+    var people = _state.peopleApproval;
+    var faith = _state.faithState;
+    switch (action) {
+      case 'lower_tax':
+        gain = 12;
+        people += 2;
+      case 'replace':
+        gain = 8;
+      case 'garrison':
+        gain = 15;
+      case 'suppress':
+        gain = 20;
+        people -= 10;
+        faith = faith.apply({'tore': -5, 'kut': -2});
+      case 'gift':
+        gain = 10;
+      default:
+        return false;
+    }
+    final next = (_state.loyaltyOf(nationId) + gain).clamp(0, 100).toInt();
+    final nation = Nations.byId(nationId);
+    _commit(_state.copyWith(
+      dailyActionPoints: _state.dailyActionPoints - 1,
+      resources: ResourceLogic.apply(
+          _state.resources, {for (final e in cost.entries) e.key: -e.value}),
+      nationLoyalty: {..._state.nationLoyalty, nationId: next},
+      peopleApproval: people,
+      faithState: faith,
+      log: _prependLog('${nation?.name ?? 'İl'} için karar verildi; '
+          'sadakat $next/100.'),
+    ));
+    return true;
+  }
+
+  /// The player's answer to a looming raid: brace, parley, strike first or
+  /// pull back. Returns false if no raid looms or the cost cannot be met.
+  bool respondToRaid(String action) {
+    if (!_state.raidLooming || _state.dailyActionPoints < 1) return false;
+    final nation = Nations.byId(_state.raidFrom);
+    final name = nation?.name ?? 'Düşman';
+    switch (action) {
+      case 'defend':
+        if (_state.resource(ResourceType.gold) < 40) return false;
+        _commit(_state.copyWith(
+          dailyActionPoints: _state.dailyActionPoints - 1,
+          resources: ResourceLogic.apply(_state.resources,
+              const {ResourceType.gold: -40, ResourceType.morale: 4}),
+          log: _prependLog('Savunma hazırlandı; oba teyakkuzda.'),
+        ));
+        return true;
+      case 'envoy':
+        if (_state.resource(ResourceType.gold) < 80) return false;
+        final appeased = _random.nextInt(100) < 55;
+        _commit(_state.copyWith(
+          dailyActionPoints: _state.dailyActionPoints - 1,
+          resources: ResourceLogic.apply(
+              _state.resources, const {ResourceType.gold: -80}),
+          raidCountdown: appeased ? 0 : _state.raidCountdown,
+          raidFrom: appeased ? '' : _state.raidFrom,
+          log: _prependLog(appeased
+              ? '$name elçiyle yatıştı; akın dağıldı.'
+              : 'Elçi geri çevrildi; akın sürüyor.'),
+        ));
+        return true;
+      case 'preempt':
+        final raidPower = ((nation?.center.power ?? 80) * 0.6).round();
+        final s = warStrength;
+        final chance = (s * 100 / (s + raidPower)).round().clamp(10, 90);
+        final won = _random.nextInt(100) < chance;
+        final cas = _battleCasualties(won ? 0.08 : 0.20, won ? 0.03 : 0.08);
+        _commit(_state.copyWith(
+          dailyActionPoints: _state.dailyActionPoints - 1,
+          army: cas.army,
+          wounded: cas.wounded,
+          raidCountdown: won ? 0 : _state.raidCountdown,
+          raidFrom: won ? '' : _state.raidFrom,
+          resources: ResourceLogic.apply(
+              _state.resources,
+              won
+                  ? const {
+                      ResourceType.gold: 40,
+                      ResourceType.reputation: 4,
+                      ResourceType.morale: 4
+                    }
+                  : const {
+                      ResourceType.morale: -6,
+                      ResourceType.population: -3
+                    }),
+          log: _prependLog(won
+              ? 'Baskın tuttu; akıncılar dağıtıldı.'
+              : 'Baskın geri tepti; kayıp verildi.'),
+        ));
+        return won;
+      case 'evacuate':
+        _commit(_state.copyWith(
+          dailyActionPoints: _state.dailyActionPoints - 1,
+          resources: ResourceLogic.apply(_state.resources,
+              const {ResourceType.gold: -20, ResourceType.morale: -2}),
+          raidCountdown: 0,
+          raidFrom: '',
+          log: _prependLog('Halk ve sürüler geri çekildi; akın boşa düştü.'),
+        ));
+        return true;
+      default:
+        return false;
+    }
   }
 
   /// Daily loyalty drift for every held province. A respected, popular khan
