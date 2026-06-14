@@ -165,33 +165,26 @@ class OrnatePanel extends StatelessWidget {
     return Container(
       width: double.infinity,
       margin: margin,
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [Color(0xE61A140C), Color(0xF20F0B07)],
+      decoration: const BoxDecoration(
+        image: DecorationImage(
+          image: AssetImage(GameAssets.uiPanelPlain),
+          centerSlice: Rect.fromLTRB(90, 90, 1190, 136),
         ),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: AppColors.gold.withValues(alpha: 0.45),
-          width: 1.1,
-        ),
-        boxShadow: const [
-          BoxShadow(
-              color: Colors.black54, blurRadius: 10, offset: Offset(0, 5)),
-        ],
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(11),
+        borderRadius: BorderRadius.circular(14),
         child: Stack(
           children: [
             if (backgroundAsset != null)
               Positioned.fill(
-                child: Image.asset(
-                  backgroundAsset!,
-                  fit: BoxFit.cover,
-                  color: Colors.black.withValues(alpha: 0.45),
-                  colorBlendMode: BlendMode.darken,
+                child: Padding(
+                  padding: const EdgeInsets.all(6),
+                  child: Image.asset(
+                    backgroundAsset!,
+                    fit: BoxFit.cover,
+                    color: Colors.black.withValues(alpha: 0.5),
+                    colorBlendMode: BlendMode.darken,
+                  ),
                 ),
               ),
             Padding(padding: padding, child: child),
