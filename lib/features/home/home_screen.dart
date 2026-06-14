@@ -4,7 +4,6 @@ import '../../app/theme/app_colors.dart';
 import '../../app/theme/app_text_styles.dart';
 import '../../core/assets/game_assets.dart';
 import '../../core/utils/formatters.dart';
-import '../../core/utils/resource_visuals.dart';
 import '../../core/audio/audio_service.dart';
 import '../../core/widgets/ornate.dart';
 import '../../game/data/achievements.dart';
@@ -52,14 +51,13 @@ class HomeScreen extends StatelessWidget {
           ),
           ResourceBar(
             entries: [
-              for (final type in const [
-                ResourceType.gold,
-                ResourceType.food,
-                ResourceType.wood,
-                ResourceType.horse,
-                ResourceType.reputation,
-              ])
-                (ResourceVisuals.icon(type), '${state.resource(type)}'),
+              (GameAssets.iconCoinGold, '${state.resource(ResourceType.gold)}'),
+              (GameAssets.iconFood, '${state.resource(ResourceType.food)}'),
+              (GameAssets.iconItemHorse,
+                  '${state.resource(ResourceType.horse)}'),
+              (GameAssets.iconArmyEmblem, '${controller.armyStrength}'),
+              (GameAssets.iconScrollMedallion,
+                  '${state.resource(ResourceType.reputation)}'),
             ],
           ),
           const _DayStrip(),
@@ -82,6 +80,7 @@ class HomeScreen extends StatelessWidget {
                 ),
                 const SectionPlaque('GÜNLÜK İŞLER'),
                 const _DailyJobsRow(),
+                const _KhanCallBanner(),
                 Padding(
                   padding: const EdgeInsets.fromLTRB(12, 4, 12, 0),
                   child: Column(
@@ -252,8 +251,6 @@ class _CharacterCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final state = GameScope.of(context).state;
     final profile = state.profile;
-    final morale = state.resource(ResourceType.morale);
-    final reputation = state.resource(ResourceType.reputation);
     return GestureDetector(
       onTap: () => Navigator.of(context).push(
         MaterialPageRoute<void>(
@@ -319,28 +316,53 @@ class _CharacterCard extends StatelessWidget {
                   const SizedBox(height: 8),
                   _StatRow(
                     GameAssets.iconHeartMedallion,
-                    'Moral',
-                    morale,
-                    100,
-                  ),
-                  _StatRow(
-                    GameAssets.iconScrollMedallion,
-                    'İtibar',
-                    reputation,
-                    100,
-                  ),
-                  _StatRow(
-                    GameAssets.iconEnergyBolt,
                     'Sağlık',
                     profile.health,
                     100,
+                    fill: AppColors.success,
+                  ),
+                  _StatRow(
+                    GameAssets.iconEnergyBolt,
+                    'Enerji',
+                    profile.energy,
+                    100,
+                    fill: AppColors.success,
+                  ),
+                  _StatRow(
+                    GameAssets.iconSleepMedallion,
+                    'Yorgunluk',
+                    profile.fatigue,
+                    100,
+                    fill: AppColors.amber,
                   ),
                   const SizedBox(height: 4),
-                  Text(
-                    'Enerji ${profile.energy}/100 • Yorgunluk ${profile.fatigue}/100 — ${state.day.season.atmosphere}',
-                    style: AppTextStyles.meta.copyWith(fontSize: 12),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          'Seviye ${profile.level}',
+                          style: AppTextStyles.value.copyWith(fontSize: 13),
+                        ),
+                      ),
+                      Text(
+                        'XP ${profile.xp}/${profile.xpToNextLevel}',
+                        style: AppTextStyles.meta.copyWith(
+                          color: AppColors.goldBright,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  DarkButton(
+                    label: 'KARAKTER DETAYLARI',
+                    height: 32,
+                    onPressed: () => Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) =>
+                            const CharacterScreen(showBack: true),
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -353,12 +375,13 @@ class _CharacterCard extends StatelessWidget {
 }
 
 class _StatRow extends StatelessWidget {
-  const _StatRow(this.icon, this.label, this.value, this.max);
+  const _StatRow(this.icon, this.label, this.value, this.max, {this.fill});
 
   final String icon;
   final String label;
   final int value;
   final int max;
+  final Color? fill;
 
   @override
   Widget build(BuildContext context) {
@@ -373,7 +396,7 @@ class _StatRow extends StatelessWidget {
             child:
                 Text(label, style: AppTextStyles.body.copyWith(fontSize: 13)),
           ),
-          Expanded(child: StatBar(fraction: value / max, height: 9)),
+          Expanded(child: StatBar(fraction: value / max, height: 9, fill: fill)),
           SizedBox(
             width: 52,
             child: Text(
@@ -673,6 +696,57 @@ class _SuggestedMoveCard extends StatelessWidget {
             ],
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// Wide ember-lit banner inviting the player to the next campaign, matching
+/// the "Kağanın Çağrısı" strip at the foot of the home mockup.
+class _KhanCallBanner extends StatelessWidget {
+  const _KhanCallBanner();
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => Navigator.of(context).push(
+        MaterialPageRoute<void>(builder: (_) => const ExpeditionsScreen()),
+      ),
+      child: OrnatePanel(
+        backgroundAsset: GameAssets.bgSceneFortressNight,
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+        child: Row(
+          children: [
+            const Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'KAĞANIN ÇAĞRISI',
+                    style: AppTextStyles.section,
+                  ),
+                  SizedBox(height: 4),
+                  Text(
+                    'Yeni bir sefer için hazırlan.',
+                    style: AppTextStyles.body,
+                  ),
+                  Text(
+                    'Bozkırda düşman hareketliliği artıyor.',
+                    style: AppTextStyles.meta,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 10),
+            Image.asset(
+              GameAssets.uiEmblemWolfRound,
+              width: 56,
+              height: 56,
+              errorBuilder: (context, error, stackTrace) =>
+                  const SizedBox.shrink(),
+            ),
+          ],
+        ),
       ),
     );
   }
