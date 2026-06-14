@@ -9,93 +9,279 @@ import '../../game/data/faith_paths.dart';
 import '../../game/data/tamgas.dart';
 import '../../game/models/camp_building.dart';
 import '../../game/models/resource.dart';
+import '../../game/state/game_controller.dart';
 import '../../game/state/game_scope.dart';
 import '../npc/npc_screen.dart';
+import '../scene/scene_background.dart';
+import '../scene/scene_detail_panel.dart';
+import '../scene/scene_hotspot.dart';
 
-class CampScreen extends StatelessWidget {
+/// "Oba" — the player's settlement, drawn as a living encampment rather than a
+/// list of buildings. Each structure is a tappable pin over the camp scene; a
+/// tap slides up its level, effect, cost and upgrade. A "Liste" toggle keeps
+/// the full management view (faith, kam, rituals, buildings) as a fallback.
+class CampScreen extends StatefulWidget {
   const CampScreen({super.key});
+
+  @override
+  State<CampScreen> createState() => _CampScreenState();
+}
+
+class _CampScreenState extends State<CampScreen> {
+  bool _list = false;
+
+  /// Each oba structure placed around the settlement scene.
+  static const _spots =
+      <(String id, String label, double x, double y, String icon)>[
+    ('main_tent', 'Ana Çadır', 0.5, 0.3, GameAssets.iconYurtMedallion),
+    ('watchtower', 'Gözcü Kulesi', 0.85, 0.22, GameAssets.iconWatchtower),
+    ('storage', 'Depo', 0.2, 0.46, GameAssets.iconChestMedallion),
+    ('pen', 'Ağıl', 0.8, 0.48, GameAssets.iconMedallionHorse),
+    ('market_tent', 'Pazar Çadırı', 0.5, 0.56, GameAssets.iconCoinsMedallion),
+    ('workshop', 'Atölye', 0.16, 0.72, GameAssets.iconGearEmblem),
+    ('kam_tent', 'Kam Çadırı', 0.34, 0.78, GameAssets.iconScrollMedallion),
+    ('healer', 'Şifacı Çadırı', 0.66, 0.78, GameAssets.iconHeartMedallion),
+    ('training', 'Eğitim Alanı', 0.86, 0.74, GameAssets.iconSwordsCrossed),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    final controller = GameScope.of(context);
+    final state = controller.state;
+    final hotspots = [
+      for (final (id, label, x, y, icon) in _spots)
+        if (state.building(id) != null)
+          SceneHotspot(
+            id: id,
+            title: label,
+            x: x,
+            y: y,
+            icon: icon,
+            onTap: () => _openBuilding(context, controller, id, label, icon),
+          ),
+    ];
+
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        const SceneBackground(asset: GameAssets.bgSceneCampNight),
+        SafeArea(
+          child: Column(
+            children: [
+              const OrnateHeader(title: 'Oba'),
+              _IdentityBand(onToggle: () => setState(() => _list = !_list)),
+              Expanded(
+                child: _list
+                    ? const _ObaList()
+                    : LayoutBuilder(
+                        builder: (context, c) => Stack(
+                          clipBehavior: Clip.none,
+                          children: [
+                            for (final hot in hotspots)
+                              Positioned(
+                                left: hot.x * c.maxWidth - 28,
+                                top: hot.y * (c.maxHeight - 56) - 28,
+                                child: SceneHotspotWidget(hotspot: hot),
+                              ),
+                            const Positioned(
+                              left: 12,
+                              right: 12,
+                              bottom: 8,
+                              child: _SceneActionsBar(),
+                            ),
+                          ],
+                        ),
+                      ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _openBuilding(
+    BuildContext context,
+    GameController controller,
+    String id,
+    String label,
+    String icon,
+  ) {
+    final b = controller.state.building(id);
+    if (b == null) return;
+    final affordable = b.upgradeCost.entries
+        .every((e) => controller.state.resource(e.key) >= e.value);
+    showSceneDetail(
+      context,
+      title: '$label • Lv.${b.level}/${b.maxLevel}',
+      icon: icon,
+      description: '${b.description}\n\n${b.effectDescription}',
+      actions: [
+        SceneAction(
+          label: b.canUpgrade ? 'Yükselt' : 'Azami seviye',
+          subtitle: b.canUpgrade
+              ? 'Maliyet: ${Formatters.resourceDelta({
+                      for (final e in b.upgradeCost.entries) e.key: -e.value,
+                    })}'
+              : null,
+          primary: true,
+          enabled: b.canUpgrade && affordable,
+          onTap: () {
+            final ok = controller.upgradeBuilding(id);
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(ok ? '$label yükseltildi.' : 'Kaynak yetersiz.'),
+              ),
+            );
+          },
+        ),
+      ],
+    );
+  }
+}
+
+/// Compact oba identity + stats strip with the scene/list toggle.
+class _IdentityBand extends StatelessWidget {
+  const _IdentityBand({required this.onToggle});
+
+  final VoidCallback onToggle;
 
   @override
   Widget build(BuildContext context) {
     final state = GameScope.of(context).state;
-    return OrnateScaffold(
+    return OrnatePanel(
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const OrnateHeader(title: 'Oba'),
-          Expanded(
-            child: ListView(
-              padding: const EdgeInsets.only(top: 4, bottom: 16),
-              children: [
-                OrnatePanel(
-                  backgroundAsset: GameAssets.bgSceneCampNight,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Image.asset(
-                            Tamgas.byId(state.tamga).asset,
-                            width: 48,
-                            height: 48,
-                            errorBuilder: (_, __, ___) =>
-                                const SizedBox(width: 48, height: 48),
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(state.clan.name,
-                                    style: AppTextStyles.title),
-                                Text(state.clan.motto,
-                                    style: AppTextStyles.meta),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 10),
-                      Wrap(
-                        spacing: 14,
-                        runSpacing: 4,
-                        children: [
-                          _ObaStat(
-                              'Nüfus', state.resource(ResourceType.population)),
-                          _ObaStat(
-                              'Moral', state.resource(ResourceType.morale)),
-                          _ObaStat('Sadakat', state.peopleApproval),
-                          _ObaStat('Güvenlik', state.councilApproval),
-                          _ObaStat('Erzak', state.resource(ResourceType.food)),
-                          _ObaStat('At', state.resource(ResourceType.horse)),
-                        ],
-                      ),
-                      const SizedBox(height: 10),
-                      GoldButton(
-                        label: 'OBA HALKI İLE KONUŞ',
-                        height: 44,
-                        onPressed: () => Navigator.of(context).push(
-                          MaterialPageRoute<void>(
-                            builder: (_) => const NpcScreen(),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SectionPlaque('İNANÇ YOLU'),
-                const _FaithPathPanel(),
-                const SectionPlaque('KAM VE RİTÜELLER'),
-                const _AdvisorPanel(),
-                for (final ritual in state.rituals)
-                  _RitualCard(ritualId: ritual.id),
-                const SectionPlaque('YAPILAR'),
-                for (final building in state.buildings)
-                  _BuildingCard(building: building),
-              ],
-            ),
+          Row(
+            children: [
+              Image.asset(
+                Tamgas.byId(state.tamga).asset,
+                width: 40,
+                height: 40,
+                errorBuilder: (_, __, ___) => const SizedBox(width: 40),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(state.clan.name, style: AppTextStyles.title),
+              ),
+              GestureDetector(
+                onTap: onToggle,
+                child: const Icon(Icons.list_alt, color: AppColors.goldBright),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 14,
+            runSpacing: 4,
+            children: [
+              _ObaStat('Nüfus', state.resource(ResourceType.population)),
+              _ObaStat('Moral', state.resource(ResourceType.morale)),
+              _ObaStat('Sadakat', state.peopleApproval),
+              _ObaStat('Güvenlik', state.councilApproval),
+              _ObaStat('Erzak', state.resource(ResourceType.food)),
+              _ObaStat('At', state.resource(ResourceType.horse)),
+            ],
           ),
         ],
       ),
+    );
+  }
+}
+
+/// Buttons floating at the foot of the settlement scene.
+class _SceneActionsBar extends StatelessWidget {
+  const _SceneActionsBar();
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: GoldButton(
+            label: 'OBA HALKI',
+            height: 42,
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(builder: (_) => const NpcScreen()),
+            ),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: DarkButton(
+            label: 'İNANÇ & RİTÜEL',
+            height: 42,
+            onPressed: () => showModalBottomSheet<void>(
+              context: context,
+              backgroundColor: Colors.transparent,
+              isScrollControlled: true,
+              builder: (_) => const _FaithRitualSheet(),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Bottom sheet gathering faith path, the kam and the rituals.
+class _FaithRitualSheet extends StatelessWidget {
+  const _FaithRitualSheet();
+
+  @override
+  Widget build(BuildContext context) {
+    final state = GameScope.of(context).state;
+    return SafeArea(
+      child: FractionallySizedBox(
+        heightFactor: 0.85,
+        child: Padding(
+          padding: const EdgeInsets.all(8),
+          child: ListView(
+            children: [
+              const SectionPlaque('İNANÇ YOLU'),
+              const _FaithPathPanel(),
+              const SectionPlaque('KAM VE RİTÜELLER'),
+              const _AdvisorPanel(),
+              for (final ritual in state.rituals)
+                _RitualCard(ritualId: ritual.id),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Full management list — the fallback view behind the scene.
+class _ObaList extends StatelessWidget {
+  const _ObaList();
+
+  @override
+  Widget build(BuildContext context) {
+    final state = GameScope.of(context).state;
+    return ListView(
+      padding: const EdgeInsets.only(top: 4, bottom: 16),
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
+          child: GoldButton(
+            label: 'OBA HALKI İLE KONUŞ',
+            height: 44,
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(builder: (_) => const NpcScreen()),
+            ),
+          ),
+        ),
+        const SectionPlaque('İNANÇ YOLU'),
+        const _FaithPathPanel(),
+        const SectionPlaque('KAM VE RİTÜELLER'),
+        const _AdvisorPanel(),
+        for (final ritual in state.rituals) _RitualCard(ritualId: ritual.id),
+        const SectionPlaque('YAPILAR'),
+        for (final building in state.buildings)
+          _BuildingCard(building: building),
+      ],
     );
   }
 }

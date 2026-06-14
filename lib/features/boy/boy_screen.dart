@@ -21,7 +21,7 @@ class BoyScreen extends StatelessWidget {
     return OrnateScaffold(
       child: Column(
         children: [
-          const OrnateHeader(title: 'Boy'),
+          const OrnateHeader(title: 'Boylar'),
           Expanded(
             child: ListView(
               padding: const EdgeInsets.only(top: 4, bottom: 16),
@@ -165,6 +165,18 @@ class _RecruitPanel extends StatelessWidget {
   }
 }
 
+/// Banner and ruler portrait art for each NPC boy, by id.
+const _boyArt = <String, (String banner, String portrait)>{
+  'kara_kurtlar': (GameAssets.uiBadgeBanner1, GameAssets.portraitTogan),
+  'demir_kartallar': (GameAssets.uiBadgeBanner2, GameAssets.portraitTugan),
+  'gok_yeleler': (GameAssets.uiBadgeBanner3, GameAssets.portraitBori),
+  'ak_sancak': (GameAssets.uiBadgeBanner4, GameAssets.portraitKaya),
+  'yagiz_oba': (GameAssets.uiEmblemWarRound, GameAssets.portraitMerchant),
+};
+
+/// A boy rendered as a political power card: sancak, ruler portrait, the bars
+/// that decide war and peace, the bonds that bind, and short icon actions.
+/// Every boy here is NPC/AI — there are no online clans.
 class _TribePanel extends StatelessWidget {
   const _TribePanel({required this.tribe});
   final TribeRelation tribe;
@@ -174,54 +186,106 @@ class _TribePanel extends StatelessWidget {
     final controller = GameScope.of(context);
     final state = controller.state;
     final hasAp = state.dailyActionPoints > 0;
+    final art = _boyArt[tribe.id] ??
+        (GameAssets.uiBadgeBanner1, GameAssets.portraitTogan);
+
     return OrnatePanel(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              Image.asset(art.$1,
+                  width: 44,
+                  height: 60,
+                  fit: BoxFit.contain,
+                  errorBuilder: (_, __, ___) => const SizedBox(width: 44)),
+              const SizedBox(width: 8),
+              Container(
+                width: 52,
+                height: 52,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(10),
+                  border:
+                      Border.all(color: AppColors.gold.withValues(alpha: 0.6)),
+                ),
+                clipBehavior: Clip.antiAlias,
+                child: Image.asset(art.$2,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) =>
+                        const ColoredBox(color: AppColors.leatherDeep)),
+              ),
+              const SizedBox(width: 10),
               Expanded(
-                  child: Text(tribe.name,
-                      style: AppTextStyles.bodyStrong.copyWith(fontSize: 16))),
-              Text(tribe.status,
-                  style: AppTextStyles.value.copyWith(
-                      fontSize: 14, color: _statusColor(tribe.status))),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(tribe.name,
+                        style: AppTextStyles.bodyStrong.copyWith(fontSize: 16)),
+                    Text(tribe.leader, style: AppTextStyles.meta),
+                    Text(tribe.status,
+                        style: AppTextStyles.value.copyWith(
+                            fontSize: 13, color: _statusColor(tribe.status))),
+                  ],
+                ),
+              ),
             ],
           ),
-          const SizedBox(height: 4),
-          Text(
-              'Lider ${tribe.leader} • Güç ${tribe.power} • Nüfus ${tribe.population}',
-              style: AppTextStyles.body),
-          Text(
-              'İlişki ${tribe.relation}/100 • Savaş riski %${tribe.warRisk} • Ticaret ${tribe.tradeOpen ? 'Açık' : 'Kapalı'} • Evlilik bağı ${tribe.marriageTie ? 'Var' : 'Yok'}',
-              style: AppTextStyles.meta),
+          const SizedBox(height: 8),
+          _Bar('Güç', tribe.power / 120, '${tribe.power}', AppColors.gold),
+          _Bar('İlişki', (tribe.relation + 100) / 200, '${tribe.relation}',
+              _statusColor(tribe.status)),
+          _Bar('Savaş riski', tribe.warRisk / 100, '%${tribe.warRisk}',
+              AppColors.danger),
+          const SizedBox(height: 6),
+          Wrap(
+            spacing: 6,
+            runSpacing: 6,
+            children: [
+              _Badge(
+                  icon: Icons.swap_horiz,
+                  label: tribe.tradeOpen ? 'Ticaret açık' : 'Ticaret kapalı',
+                  on: tribe.tradeOpen),
+              _Badge(
+                  icon: Icons.favorite,
+                  label: tribe.marriageTie ? 'Evlilik bağı' : 'Bağ yok',
+                  on: tribe.marriageTie),
+            ],
+          ),
           const SizedBox(height: 8),
           Wrap(
             spacing: 6,
             runSpacing: 6,
             children: [
               _Action(
+                  icon: Icons.card_giftcard,
                   label: 'Hediye',
                   enabled: hasAp && state.resource(ResourceType.gold) >= 100,
                   onTap: () => controller.performDiplomacy(tribe.id, 'gift')),
               _Action(
+                  icon: Icons.handshake,
                   label: 'Ticaret',
                   enabled: hasAp && state.resource(ResourceType.gold) >= 60,
                   onTap: () => controller.performDiplomacy(tribe.id, 'trade')),
               _Action(
+                  icon: Icons.mail_outline,
                   label: 'Elçi',
                   enabled: hasAp,
                   onTap: () => controller.performDiplomacy(tribe.id, 'envoy')),
               _Action(
+                  icon: Icons.volunteer_activism,
                   label: 'Yardım',
                   enabled: hasAp && state.resource(ResourceType.food) >= 20,
                   onTap: () => controller.performDiplomacy(tribe.id, 'aid')),
               _Action(
+                  icon: Icons.local_fire_department,
                   label: 'Savaş Haz.',
                   enabled: hasAp && state.resource(ResourceType.gold) >= 40,
                   onTap: () => controller.performDiplomacy(tribe.id, 'war')),
               _Action(
-                  label: 'Evlilik Bağı',
+                  icon: Icons.diversity_3,
+                  label: 'Evlilik',
                   enabled: hasAp && state.resource(ResourceType.gold) >= 80,
                   onTap: () =>
                       controller.performDiplomacy(tribe.id, 'marriage')),
@@ -239,28 +303,103 @@ class _TribePanel extends StatelessWidget {
       };
 }
 
+class _Bar extends StatelessWidget {
+  const _Bar(this.label, this.fraction, this.value, this.fill);
+  final String label;
+  final double fraction;
+  final String value;
+  final Color fill;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 4),
+      child: Row(
+        children: [
+          SizedBox(
+              width: 78,
+              child: Text(label,
+                  style: AppTextStyles.meta.copyWith(fontSize: 11))),
+          Expanded(child: StatBar(fraction: fraction, height: 8, fill: fill)),
+          SizedBox(
+              width: 44,
+              child: Text(value,
+                  textAlign: TextAlign.right,
+                  style: AppTextStyles.meta.copyWith(fontSize: 11))),
+        ],
+      ),
+    );
+  }
+}
+
+class _Badge extends StatelessWidget {
+  const _Badge({required this.icon, required this.label, required this.on});
+  final IconData icon;
+  final String label;
+  final bool on;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = on ? AppColors.success : AppColors.stone;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: color.withValues(alpha: 0.6)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 13, color: color),
+          const SizedBox(width: 4),
+          Text(label,
+              style: AppTextStyles.meta.copyWith(fontSize: 11, color: color)),
+        ],
+      ),
+    );
+  }
+}
+
 class _Action extends StatelessWidget {
   const _Action(
-      {required this.label, required this.enabled, required this.onTap});
+      {required this.icon,
+      required this.label,
+      required this.enabled,
+      required this.onTap});
+  final IconData icon;
   final String label;
   final bool enabled;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: 106,
-      child: DarkButton(
-        label: label,
-        height: 32,
-        onPressed: enabled
-            ? () {
-                final ok = onTap;
-                ok();
-                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                    content: Text('$label diplomasi aksiyonu işlendi.')));
-              }
-            : null,
+    return GestureDetector(
+      onTap: enabled
+          ? () {
+              onTap();
+              ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('$label: diplomasi işlendi.')));
+            }
+          : null,
+      child: Opacity(
+        opacity: enabled ? 1 : 0.45,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+          decoration: BoxDecoration(
+            color: AppColors.leatherDeep.withValues(alpha: 0.8),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: AppColors.goldDim.withValues(alpha: 0.6)),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, size: 15, color: AppColors.goldBright),
+              const SizedBox(width: 5),
+              Text(label,
+                  style: AppTextStyles.buttonDark.copyWith(fontSize: 12)),
+            ],
+          ),
+        ),
       ),
     );
   }

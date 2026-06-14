@@ -1317,17 +1317,23 @@ class GameController extends ChangeNotifier {
         wounded: wounded,
       ));
     } else {
+      // A rout can wound the leader too — health bleeds and fatigue mounts.
+      final hurtLeader = _state.profile.copyWith(
+        health: _state.profile.health - 8,
+        fatigue: _state.profile.fatigue + 10,
+      );
       _commit(_state.copyWith(
         dailyActionPoints: _state.dailyActionPoints - 1,
         army: army,
         wounded: wounded,
+        profile: hurtLeader,
         resources: ResourceLogic.apply(_state.resources, const {
           ResourceType.morale: -10,
           ResourceType.population: -5,
           ResourceType.food: -15,
         }),
-        log:
-            _prependLog('${castle.name} kuşatması püskürtüldü; kayıp verildi.'),
+        log: _prependLog(
+            '${castle.name} kuşatması püskürtüldü; sen de yara aldın.'),
       ));
     }
     return success;
@@ -1375,6 +1381,8 @@ class GameController extends ChangeNotifier {
     var gold = 0;
     for (final policyId in _state.nationPolicies.values) {
       switch (NationPolicyInfo.byId(policyId)) {
+        case NationPolicy.directRule:
+          gold += 20;
         case NationPolicy.vali:
           gold += 14;
         case NationPolicy.vassal:
@@ -1429,6 +1437,13 @@ class GameController extends ChangeNotifier {
         });
         vassals += nation.outerCastles.length;
         people += 8;
+      case NationPolicy.directRule:
+        resources = ResourceLogic.apply(resources, {
+          ResourceType.gold: reward,
+          ResourceType.reputation: rep + 2,
+        });
+        people -= 8;
+        council += 6;
     }
     // A razed land holds no people to revolt; the rest start at a loyalty set
     // by how the conquest was handled.
@@ -1436,6 +1451,7 @@ class GameController extends ChangeNotifier {
     final startLoyalty = switch (policy) {
       NationPolicy.vali => 70,
       NationPolicy.vassal => 78,
+      NationPolicy.directRule => 55,
       NationPolicy.yagma => 35,
       NationPolicy.yik => 0,
     };
@@ -1507,6 +1523,7 @@ class GameController extends ChangeNotifier {
       final order = switch (policy) {
         NationPolicy.vali => 1, // a governor keeps order
         NationPolicy.yagma => -1, // the plundered stay resentful
+        NationPolicy.directRule => -1, // no local lord to calm the land
         _ => 0,
       };
       final delta = -2 + hold + order;

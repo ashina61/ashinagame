@@ -69,6 +69,10 @@ enum NationPolicy {
 
   /// Leave it a bound state under its own ruler: lighter, lasting tribute.
   vassal,
+
+  /// Rule it directly from your own seat: the richest tribute, but a resented
+  /// land that slips toward revolt without a local lord to calm it.
+  directRule,
 }
 
 extension NationPolicyInfo on NationPolicy {
@@ -79,6 +83,7 @@ extension NationPolicyInfo on NationPolicy {
         NationPolicy.yagma => 'Yağmala',
         NationPolicy.yik => 'Yık',
         NationPolicy.vassal => 'Bağlı Devlet',
+        NationPolicy.directRule => 'Doğrudan Yönet',
       };
 
   String get blurb => switch (this) {
@@ -94,6 +99,9 @@ extension NationPolicyInfo on NationPolicy {
         NationPolicy.vassal =>
           'İli kendi beyine bağlı devlet bırak. Hafif ama kalıcı haraç; '
               'merhametin halkı hoşnut eder.',
+        NationPolicy.directRule =>
+          'İli kendi otağından doğrudan yönet. En yüksek vergi senin; ama '
+              'yerel bir bey olmadan halk huzursuz, isyan riski yüksek.',
       };
 
   static NationPolicy? byId(String id) {
