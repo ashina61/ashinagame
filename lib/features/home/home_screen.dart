@@ -6,15 +6,13 @@ import '../../core/assets/game_assets.dart';
 import '../../core/utils/formatters.dart';
 import '../../core/audio/audio_service.dart';
 import '../../core/widgets/ornate.dart';
-import '../../game/data/achievements.dart';
-import '../../game/data/expedition_sites.dart';
 import '../../game/data/starter_game_data.dart';
-import '../../game/logic/unlock_logic.dart';
 import '../../game/models/event_choice.dart';
 import '../../game/models/resource.dart';
 import '../../game/state/game_controller.dart';
 import '../../game/state/game_scope.dart';
 import '../achievements/achievements_screen.dart';
+import '../camp/camp_screen.dart';
 import '../character/character_screen.dart';
 import '../expeditions/expeditions_screen.dart';
 import '../inventory/inventory_screen.dart';
@@ -66,8 +64,6 @@ class HomeScreen extends StatelessWidget {
               padding: const EdgeInsets.only(top: 6, bottom: 16),
               children: [
                 const _CharacterCard(),
-                const SectionPlaque('YAPILACAKLAR'),
-                const _TodoPanel(),
                 if (state.currentEvent != null) ...[
                   const SectionPlaque('OBA OLAYI'),
                   const _EventPanel(),
@@ -76,6 +72,12 @@ class HomeScreen extends StatelessWidget {
                   children: [
                     Expanded(child: _DailyGoalCard()),
                     Expanded(child: _SuggestedMoveCard()),
+                  ],
+                ),
+                const Row(
+                  children: [
+                    Expanded(child: _ObaStatusCard()),
+                    Expanded(child: _TodayTasksCard()),
                   ],
                 ),
                 const SectionPlaque('GÜNLÜK İŞLER'),
@@ -411,102 +413,152 @@ class _StatRow extends StatelessWidget {
   }
 }
 
-/// Active steppe event with its branching choices.
-/// A live checklist of what the player can do right now.
-class _TodoPanel extends StatelessWidget {
-  const _TodoPanel();
+/// Live oba snapshot card mirroring the home mockup's "Oba Durumu" panel.
+class _ObaStatusCard extends StatelessWidget {
+  const _ObaStatusCard();
+
+  @override
+  Widget build(BuildContext context) {
+    final controller = GameScope.of(context);
+    final state = controller.state;
+    return OrnatePanel(
+      margin: const EdgeInsets.fromLTRB(12, 0, 4, 10),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('OBA DURUMU', style: AppTextStyles.section.copyWith(fontSize: 12)),
+          const SizedBox(height: 6),
+          _HomeStatBar(
+              'Mutluluk', state.resource(ResourceType.morale), 100,
+              AppColors.success),
+          _HomeStatBar('Halk', state.peopleApproval, 100, AppColors.info),
+          _HomeKv('Atlar', '${state.resource(ResourceType.horse)}'),
+          _HomeKv('Savaşçılar', '${controller.armyStrength}'),
+          _HomeKv('Nüfus', '${state.resource(ResourceType.population)}'),
+          const SizedBox(height: 8),
+          DarkButton(
+            label: 'DETAYLARI GÖR',
+            height: 30,
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(builder: (_) => const CampScreen()),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Daily quest checklist mirroring the home mockup's "Bugünkü Görevler" panel.
+class _TodayTasksCard extends StatelessWidget {
+  const _TodayTasksCard();
 
   @override
   Widget build(BuildContext context) {
     final state = GameScope.of(context).state;
-    final items = <(IconData, String, Widget?)>[];
-
-    // The ordered progression hint comes first, so a new player always knows
-    // the next milestone to chase.
-    final objective = UnlockLogic.nextObjective(state);
-    if (objective != null) {
-      items.add((Icons.flag_circle, objective, null));
-    }
-
-    final readyQuests = state.quests.where(state.questReady).length;
-    if (readyQuests > 0) {
-      items.add((
-        Icons.emoji_events,
-        '$readyQuests görev ödülü almaya hazır',
-        const QuestsScreen(),
-      ));
-    }
-
-    final readyAchievements =
-        Achievements.all.where(state.achievementReady).length;
-    if (readyAchievements > 0) {
-      items.add((
-        Icons.military_tech,
-        '$readyAchievements başarım ödülü hazır',
-        const AchievementsScreen(),
-      ));
-    }
-
-    if (state.currentEvent != null) {
-      items.add((Icons.campaign, 'Oba olayını karara bağla', null));
-    }
-
-    for (final site in ExpeditionSites.all) {
-      if (!state.expeditionDone(site.id)) {
-        items.add((
-          Icons.flag,
-          '${site.name} henüz fethedilmedi',
-          const ExpeditionsScreen(),
-        ));
-        break;
-      }
-    }
-
-    if (state.dailyActionPoints > 0) {
-      items.add((
-        Icons.bolt,
-        '${state.dailyActionPoints} hamle hakkın var — işlere bak',
-        null,
-      ));
-    }
-
-    if (items.isEmpty) {
-      items.add((Icons.bedtime, 'Bugünlük her şey tamam — günü bitir', null));
-    }
-
+    final tasks = state.quests.take(3).toList();
     return OrnatePanel(
+      margin: const EdgeInsets.fromLTRB(4, 0, 12, 10),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          for (final (icon, label, target) in items.take(4))
-            GestureDetector(
-              onTap: target == null
-                  ? null
-                  : () => Navigator.of(context).push(
-                        MaterialPageRoute<void>(builder: (_) => target),
-                      ),
-              behavior: HitTestBehavior.opaque,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4),
+          Text(
+            'BUGÜNKÜ GÖREVLER',
+            style: AppTextStyles.section.copyWith(fontSize: 12),
+          ),
+          const SizedBox(height: 6),
+          if (tasks.isEmpty)
+            const Text('Bugünlük görev yok.', style: AppTextStyles.meta)
+          else
+            for (final q in tasks)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 3),
                 child: Row(
                   children: [
-                    Icon(icon, size: 18, color: AppColors.goldBright),
-                    const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        label,
-                        style: AppTextStyles.body.copyWith(fontSize: 13),
+                        q.title,
+                        style: AppTextStyles.body.copyWith(fontSize: 12),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                    if (target != null)
-                      const Icon(
-                        Icons.chevron_right,
-                        size: 18,
-                        color: AppColors.stone,
+                    const SizedBox(width: 6),
+                    Text(
+                      '${state.questProgress(q)}/${q.goalTarget}',
+                      style: AppTextStyles.meta.copyWith(
+                        fontSize: 11,
+                        color: AppColors.goldBright,
                       ),
+                    ),
                   ],
                 ),
               ),
+          const SizedBox(height: 8),
+          DarkButton(
+            label: 'TÜM GÖREVLER',
+            height: 30,
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(builder: (_) => const QuestsScreen()),
             ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Compact label + bar row for the home Oba Durumu card.
+class _HomeStatBar extends StatelessWidget {
+  const _HomeStatBar(this.label, this.value, this.max, this.fill);
+
+  final String label;
+  final int value;
+  final int max;
+  final Color fill;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 3),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 60,
+            child: Text(label, style: AppTextStyles.body.copyWith(fontSize: 11)),
+          ),
+          Expanded(child: StatBar(fraction: value / max, height: 8, fill: fill)),
+          const SizedBox(width: 4),
+          Text(
+            '$value',
+            style: AppTextStyles.meta.copyWith(fontSize: 10),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Compact label + value row for the home Oba Durumu card.
+class _HomeKv extends StatelessWidget {
+  const _HomeKv(this.label, this.value);
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 3),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(label, style: AppTextStyles.body.copyWith(fontSize: 11)),
+          ),
+          Text(
+            value,
+            style: AppTextStyles.value.copyWith(fontSize: 12),
+          ),
         ],
       ),
     );
