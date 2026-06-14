@@ -126,7 +126,8 @@ class _SceneHotspotWidgetState extends State<SceneHotspotWidget>
                         )
                       : Icon(
                           hot.iconData ?? Icons.place,
-                          color: locked ? AppColors.stone : AppColors.goldBright,
+                          color:
+                              locked ? AppColors.stone : AppColors.goldBright,
                           size: 26,
                         ),
                 ),
@@ -137,8 +138,8 @@ class _SceneHotspotWidgetState extends State<SceneHotspotWidget>
                     right: 2,
                     top: 2,
                     child: Container(
-                      padding:
-                          const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 5, vertical: 1),
                       decoration: const BoxDecoration(
                         color: AppColors.danger,
                         shape: BoxShape.circle,

@@ -59,8 +59,8 @@ class CampScreen extends StatelessWidget {
                         spacing: 14,
                         runSpacing: 4,
                         children: [
-                          _ObaStat('Nüfus',
-                              state.resource(ResourceType.population)),
+                          _ObaStat(
+                              'Nüfus', state.resource(ResourceType.population)),
                           _ObaStat(
                               'Moral', state.resource(ResourceType.morale)),
                           _ObaStat('Sadakat', state.peopleApproval),

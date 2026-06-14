@@ -87,7 +87,8 @@ Future<void> showSceneDetail(
                           : null,
                     )
                   else
-                    _DetailActionRow(action: action, sheetContext: sheetContext),
+                    _DetailActionRow(
+                        action: action, sheetContext: sheetContext),
                   const SizedBox(height: 8),
                 ],
               ],

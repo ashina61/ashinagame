@@ -50,7 +50,8 @@ class SceneHudOverlay extends StatelessWidget {
               const SizedBox(width: 6),
               _Chip(
                 icon: GameAssets.iconEnergyBolt,
-                label: '${state.dailyActionPoints}/${state.maxDailyActionPoints}',
+                label:
+                    '${state.dailyActionPoints}/${state.maxDailyActionPoints}',
               ),
               const Spacer(),
               GoldButton(

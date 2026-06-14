@@ -25,7 +25,8 @@ class TentScreen extends StatelessWidget {
 
   /// The handful of personal-camp parts the early game surfaces, mapped to the
   /// underlying building ids and placed around the tent scene.
-  static const _parts = <(String id, String label, double x, double y, String icon)>[
+  static const _parts =
+      <(String id, String label, double x, double y, String icon)>[
     ('main_tent', 'Ana Çadır', 0.5, 0.34, GameAssets.iconYurtMedallion),
     ('storage', 'Sandık', 0.24, 0.6, GameAssets.iconChestMedallion),
     ('workshop', 'Çalışma Tezgâhı', 0.16, 0.34, GameAssets.iconGearEmblem),
@@ -112,8 +113,9 @@ class TentScreen extends StatelessWidget {
           label: building.canUpgrade ? 'Yükselt' : 'Azami seviye',
           subtitle: building.canUpgrade
               ? 'Maliyet: ${Formatters.resourceDelta({
-                  for (final e in building.upgradeCost.entries) e.key: -e.value,
-                })}'
+                      for (final e in building.upgradeCost.entries)
+                        e.key: -e.value,
+                    })}'
               : null,
           primary: true,
           enabled: building.canUpgrade && affordable,

@@ -69,8 +69,8 @@ class _FoundObaScreenState extends State<FoundObaScreen> {
                                 ),
                                 const SizedBox(width: 8),
                                 Expanded(
-                                  child: Text(r.label,
-                                      style: AppTextStyles.meta),
+                                  child:
+                                      Text(r.label, style: AppTextStyles.meta),
                                 ),
                                 Text(r.progress,
                                     style: AppTextStyles.meta.copyWith(

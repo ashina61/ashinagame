@@ -256,7 +256,8 @@ class _MiniStat extends StatelessWidget {
         children: [
           SizedBox(
             width: 50,
-            child: Text(label, style: AppTextStyles.meta.copyWith(fontSize: 11)),
+            child:
+                Text(label, style: AppTextStyles.meta.copyWith(fontSize: 11)),
           ),
           Expanded(child: StatBar(fraction: value / 100, height: 7)),
         ],
@@ -358,8 +359,7 @@ class _CampBottom extends StatelessWidget {
                 child: _ActionCard(
                   asset: GameAssets.sceneMercenary,
                   label: 'Pazara Uğra',
-                  onTap: () =>
-                      HomeScreen.push(context, const MarketScreen()),
+                  onTap: () => HomeScreen.push(context, const MarketScreen()),
                 ),
               ),
               Expanded(

@@ -51,8 +51,7 @@ class _FollowersPanel extends StatelessWidget {
               ),
               Text(
                 'Yandaşlık $bond / 1000',
-                style:
-                    AppTextStyles.meta.copyWith(color: AppColors.goldBright),
+                style: AppTextStyles.meta.copyWith(color: AppColors.goldBright),
               ),
             ],
           ),

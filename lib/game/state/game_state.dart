@@ -188,8 +188,7 @@ class GameState {
   final bool landScouted;
 
   /// Named figures whose bond has grown into a sworn follower (relation ≥ 75).
-  int get swornFollowers =>
-      npcRelations.values.where((v) => v >= 75).length;
+  int get swornFollowers => npcRelations.values.where((v) => v >= 75).length;
 
   /// Bond with [npcId], defaulting to a neutral 50 when never spoken to.
   int relationWith(String npcId) => npcRelations[npcId] ?? 50;
