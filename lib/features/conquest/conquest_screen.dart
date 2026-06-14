@@ -176,20 +176,92 @@ class _NationBlock extends StatelessWidget {
     final policyId = state.nationPolicies[nation.id];
     final policy = policyId == null ? null : NationPolicyInfo.byId(policyId);
 
+    final held = policy != null && policy != NationPolicy.yik;
+    final loyalty = state.loyaltyOf(nation.id);
+
     return Column(
       children: [
         SectionPlaque('${nation.name} • ${nation.ruler}'),
         if (policy != null)
           OrnatePanel(
-            child: Row(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Icon(Icons.flag, color: AppColors.success, size: 18),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text('Bu il senin: ${policy.label}',
-                      style: AppTextStyles.body
-                          .copyWith(color: AppColors.success)),
+                Row(
+                  children: [
+                    Icon(
+                        policy == NationPolicy.yik
+                            ? Icons.local_fire_department
+                            : Icons.flag,
+                        color: AppColors.success,
+                        size: 18),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text('Bu il senin: ${policy.label}',
+                          style: AppTextStyles.body
+                              .copyWith(color: AppColors.success)),
+                    ),
+                  ],
                 ),
+                if (held) ...[
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      const SizedBox(
+                          width: 64,
+                          child: Text('Sadakat', style: AppTextStyles.meta)),
+                      Expanded(
+                        child: StatBar(
+                          fraction: loyalty / 100,
+                          height: 9,
+                          fill: loyalty >= 50
+                              ? AppColors.success
+                              : loyalty >= 25
+                                  ? AppColors.amber
+                                  : AppColors.danger,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text('$loyalty/100', style: AppTextStyles.meta),
+                    ],
+                  ),
+                  if (loyalty < 50)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: Text(
+                        loyalty < 25
+                            ? 'İsyan eşiğinde! Sadakati tazele.'
+                            : 'Huzursuzluk artıyor.',
+                        style: AppTextStyles.meta
+                            .copyWith(color: AppColors.danger),
+                      ),
+                    ),
+                  const SizedBox(height: 8),
+                  SizedBox(
+                    width: 160,
+                    child: DarkButton(
+                      label: 'SADAKAT TAZELE',
+                      height: 34,
+                      onPressed: state.dailyActionPoints > 0 &&
+                              state.resource(ResourceType.gold) >= 60
+                          ? () {
+                              final ok =
+                                  controller.reinforceProvince(nation.id);
+                              AudioService.instance
+                                  .playSfx(ok ? 'coin' : 'denied');
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(ok
+                                      ? '${nation.name} sadakati arttı (60 altın).'
+                                      : 'Aksiyon ya da altın yetersiz.'),
+                                  duration: const Duration(seconds: 2),
+                                ),
+                              );
+                            }
+                          : null,
+                    ),
+                  ),
+                ],
               ],
             ),
           ),

@@ -467,6 +467,22 @@ class GameController extends ChangeNotifier {
       resources = ResourceLogic.apply(resources, {ResourceType.gold: tribute});
     }
 
+    // Held provinces drift in loyalty; the neglected break away in revolt.
+    final drift = _driftProvinces();
+    final nationPolicies = drift.policies;
+    final nationLoyalty = drift.loyalty;
+    var conqueredRegions = _state.conqueredRegions;
+    if (drift.freedCastles.isNotEmpty) {
+      conqueredRegions = [
+        for (final id in conqueredRegions)
+          if (!drift.freedCastles.contains(id)) id,
+      ];
+      resources = ResourceLogic.apply(resources, const {
+        ResourceType.morale: -8,
+        ResourceType.reputation: -4,
+      });
+    }
+
     // The healer's çadırı mends the wounded back into the ranks.
     var army = _state.army;
     var wounded = _state.wounded;
@@ -503,6 +519,11 @@ class GameController extends ChangeNotifier {
           ['Kurultay toplandı; bir karar bekleniyor.', ...log].take(6).toList();
     }
 
+    // A revolt is loud news; it leads the chronicle.
+    if (drift.notes.isNotEmpty) {
+      log = [...drift.notes, ...log].take(6).toList();
+    }
+
     final eventIndex = _state.eventIndex + 1;
     final omenState = _rollOmen(resources);
     _commit(_state.copyWith(
@@ -521,6 +542,9 @@ class GameController extends ChangeNotifier {
       pendingSuccession: pendingSuccession,
       currentKurultay: kurultayId,
       lastKurultayDay: lastKurultay,
+      nationPolicies: nationPolicies,
+      nationLoyalty: nationLoyalty,
+      conqueredRegions: conqueredRegions,
       army: army,
       wounded: wounded,
       quests: quests,
@@ -1399,16 +1423,106 @@ class GameController extends ChangeNotifier {
         vassals += nation.outerCastles.length;
         people += 8;
     }
+    // A razed land holds no people to revolt; the rest start at a loyalty set
+    // by how the conquest was handled.
+    final loyalty = Map<String, int>.from(_state.nationLoyalty);
+    final startLoyalty = switch (policy) {
+      NationPolicy.vali => 70,
+      NationPolicy.vassal => 78,
+      NationPolicy.yagma => 35,
+      NationPolicy.yik => 0,
+    };
+    if (policy == NationPolicy.yik) {
+      loyalty.remove(nationId);
+    } else {
+      loyalty[nationId] = startLoyalty;
+    }
     _commit(_state.copyWith(
       resources: resources,
       peopleApproval: people,
       councilApproval: council,
       vassalObas: vassals,
       nationPolicies: {..._state.nationPolicies, nationId: policy.id},
+      nationLoyalty: loyalty,
       clearPendingNation: true,
       log: _prependLog('${nation.name}: ${policy.label} kararı verildi.'),
     ));
     return true;
+  }
+
+  /// Whether [nationId] is a held province that can revolt (razed lands cannot).
+  bool _isHeldProvince(String nationId) {
+    final policy = NationPolicyInfo.byId(_state.nationPolicies[nationId] ?? '');
+    return policy != null && policy != NationPolicy.yik;
+  }
+
+  /// Reinforces a restless province: an action point and gold buy back loyalty.
+  bool reinforceProvince(String nationId) {
+    if (!_isHeldProvince(nationId) ||
+        _state.dailyActionPoints < 1 ||
+        _state.resource(ResourceType.gold) < 60) {
+      return false;
+    }
+    final next = (_state.loyaltyOf(nationId) + 25).clamp(0, 100).toInt();
+    final nation = Nations.byId(nationId);
+    _commit(_state.copyWith(
+      dailyActionPoints: _state.dailyActionPoints - 1,
+      resources: ResourceLogic.apply(_state.resources, const {
+        ResourceType.gold: -60,
+      }),
+      nationLoyalty: {..._state.nationLoyalty, nationId: next},
+      log: _prependLog(
+          '${nation?.name ?? 'İl'} sadakati tazelendi ($next/100).'),
+    ));
+    return true;
+  }
+
+  /// Daily loyalty drift for every held province. A respected, popular khan
+  /// holds his lands; a neglectful one watches them slip toward revolt. When
+  /// loyalty hits zero the province rebels and breaks free. Returns the new
+  /// policy and loyalty maps, the freed castle ids, and any rebellion notes.
+  ({
+    Map<String, String> policies,
+    Map<String, int> loyalty,
+    List<String> freedCastles,
+    List<String> notes,
+  }) _driftProvinces() {
+    final policies = Map<String, String>.from(_state.nationPolicies);
+    final loyalty = Map<String, int>.from(_state.nationLoyalty);
+    final freed = <String>[];
+    final notes = <String>[];
+    final hold = (_state.peopleApproval >= 60 ? 1 : 0) +
+        (_state.profile.reputation >= 50 ? 1 : 0) +
+        (_state.isKhan ? 1 : 0);
+    for (final entry in policies.entries.toList()) {
+      final policy = NationPolicyInfo.byId(entry.value);
+      if (policy == null || policy == NationPolicy.yik) continue;
+      final order = switch (policy) {
+        NationPolicy.vali => 1, // a governor keeps order
+        NationPolicy.yagma => -1, // the plundered stay resentful
+        _ => 0,
+      };
+      final delta = -2 + hold + order;
+      final next = (_state.loyaltyOf(entry.key) + delta).clamp(0, 100).toInt();
+      if (next <= 0) {
+        // Open revolt: the province throws off your banner.
+        final nation = Nations.byId(entry.key);
+        policies.remove(entry.key);
+        loyalty.remove(entry.key);
+        if (nation != null) {
+          freed.addAll(nation.castles.map((c) => c.id));
+          notes.add('${nation.name} isyan etti ve bağımsızlığını ilan etti!');
+        }
+      } else {
+        loyalty[entry.key] = next;
+      }
+    }
+    return (
+      policies: policies,
+      loyalty: loyalty,
+      freedCastles: freed,
+      notes: notes
+    );
   }
 
   /// Reputation and tent level required before a new oba may be founded.

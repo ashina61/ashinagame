@@ -72,6 +72,7 @@ class GameState {
     this.npcRelations = const {},
     this.nationPolicies = const {},
     this.pendingNationPolicy,
+    this.nationLoyalty = const {},
   });
 
   static const baseDailyActionPoints = 4;
@@ -170,8 +171,15 @@ class GameState {
   /// Nation whose capital just fell and awaits a governance verdict, or null.
   final String? pendingNationPolicy;
 
+  /// How loyal each held province is (nation id → 0–100). Provinces that are
+  /// neglected slide toward rebellion.
+  final Map<String, int> nationLoyalty;
+
   /// Bond with [npcId], defaulting to a neutral 50 when never spoken to.
   int relationWith(String npcId) => npcRelations[npcId] ?? 50;
+
+  /// Loyalty of a held province, 0 when not held.
+  int loyaltyOf(String nationId) => nationLoyalty[nationId] ?? 0;
 
   /// True once every castle of [nationId] flies your tamga.
   bool nationConquered(String nationId) => nationPolicies.containsKey(nationId);
@@ -283,6 +291,7 @@ class GameState {
     Map<String, String>? nationPolicies,
     String? pendingNationPolicy,
     bool clearPendingNation = false,
+    Map<String, int>? nationLoyalty,
   }) {
     final nextMax = maxDailyActionPoints ?? this.maxDailyActionPoints;
     final nextAp = (dailyActionPoints ?? energy ?? this.dailyActionPoints)
@@ -344,6 +353,7 @@ class GameState {
       pendingNationPolicy: clearPendingNation
           ? null
           : pendingNationPolicy ?? this.pendingNationPolicy,
+      nationLoyalty: nationLoyalty ?? this.nationLoyalty,
     );
   }
 }

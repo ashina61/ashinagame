@@ -397,6 +397,44 @@ void main() {
         beforeDay.state.resource(ResourceType.gold), greaterThan(goldDayStart));
   });
 
+  test('a neglected province loses loyalty and finally revolts', () {
+    final base = StarterGameData.create();
+    final oguz = Nations.byId('oguz')!;
+    // A held province on the brink, run by a weak realm so loyalty only falls.
+    final controller = GameController(
+      base.copyWith(
+        nationPolicies: const {'oguz': 'vassal'},
+        nationLoyalty: const {'oguz': 1},
+        conqueredRegions: [for (final c in oguz.castles) c.id],
+        peopleApproval: 20,
+        profile: base.profile.copyWith(reputation: 10),
+        resources: {...base.resources, ResourceType.food: 400},
+      ),
+    );
+
+    controller.endDay(); // loyalty 1 -2 = -1 -> revolt
+    expect(controller.state.nationConquered('oguz'), isFalse);
+    expect(controller.state.loyaltyOf('oguz'), 0);
+    // The capital is freed, so it must be reconquered.
+    expect(controller.state.regionConquered(oguz.center.id), isFalse);
+  });
+
+  test('reinforcing a province buys back loyalty', () {
+    final base = StarterGameData.create();
+    final controller = GameController(
+      base.copyWith(
+        nationPolicies: const {'oguz': 'vali'},
+        nationLoyalty: const {'oguz': 30},
+        resources: {...base.resources, ResourceType.gold: 300},
+      ),
+    );
+    final gold = controller.state.resource(ResourceType.gold);
+    expect(controller.reinforceProvince('oguz'), isTrue);
+    expect(controller.state.loyaltyOf('oguz'), 55);
+    expect(controller.state.resource(ResourceType.gold), gold - 60);
+    expect(controller.state.dailyActionPoints, 3);
+  });
+
   test('equipping crafted gear drives the expedition bonus', () {
     final controller = GameController.starter();
     expect(controller.equipmentBonus, 0);

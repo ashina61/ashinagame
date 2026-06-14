@@ -136,6 +136,7 @@ class GameSerializer {
         'npcRelations': state.npcRelations,
         'nationPolicies': state.nationPolicies,
         'pendingNationPolicy': state.pendingNationPolicy,
+        'nationLoyalty': state.nationLoyalty,
       });
 
   static GameState? decode(String raw) {
@@ -261,6 +262,8 @@ class GameSerializer {
         nationPolicies: (json['nationPolicies'] as Map<String, dynamic>? ?? {})
             .cast<String, String>(),
         pendingNationPolicy: json['pendingNationPolicy'] as String?,
+        nationLoyalty: (json['nationLoyalty'] as Map<String, dynamic>? ?? {})
+            .cast<String, int>(),
       );
     } catch (_) {
       return null;
