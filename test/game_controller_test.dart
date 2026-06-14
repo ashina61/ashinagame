@@ -10,6 +10,8 @@ import 'package:ashinagame/game/models/faith.dart';
 import 'package:ashinagame/game/models/game_day.dart';
 import 'package:ashinagame/game/data/nations.dart';
 import 'package:ashinagame/game/data/npc_dialogues.dart';
+import 'package:ashinagame/game/data/rare_offers.dart';
+import 'package:ashinagame/game/logic/phase_logic.dart';
 import 'package:ashinagame/game/models/household.dart';
 import 'package:ashinagame/game/models/nation.dart';
 import 'package:ashinagame/game/models/npc.dart';
@@ -1007,6 +1009,81 @@ void main() {
     final c = GameController(base);
     c.endDay(); // day 12, but no oba -> no raid
     expect(c.state.raidLooming, isFalse);
+  });
+
+  test('a campaign marches over days and storms the castle on arrival', () {
+    final fresh = StarterGameData.create();
+    final base = fresh.copyWith(
+      obaFounded: true,
+      army: const {'heavy_cav': 60},
+      profile: fresh.profile.copyWith(warfare: 20),
+      resources: {
+        ...fresh.resources,
+        ResourceType.food: 800,
+        ResourceType.population: 400,
+      },
+    );
+    final c = GameController(base, random: _FixedRandom(0));
+    expect(c.startMarch('otuken'), isTrue);
+    expect(c.marchStatus, 'Yolda');
+    expect(c.state.marchDaysLeft, 2);
+    // Only one campaign at a time.
+    expect(c.startMarch('orhun'), isFalse);
+
+    c.endDay(); // one day closer
+    expect(c.state.marchDaysLeft, 1);
+    expect(c.state.marching, isTrue);
+
+    c.endDay(); // arrives and storms the walls
+    expect(c.state.marching, isFalse);
+    expect(c.state.regionConquered('otuken'), isTrue);
+  });
+
+  test('province decisions raise loyalty; suppression scares the people', () {
+    final base = StarterGameData.create().copyWith(
+      obaFounded: true,
+      nationPolicies: const {'oguz': 'vali'},
+      nationLoyalty: const {'oguz': 20},
+      peopleApproval: 60,
+    );
+    final c = GameController(base);
+    expect(c.manageProvince('oguz', 'suppress'), isTrue);
+    expect(c.state.loyaltyOf('oguz'), 40);
+    expect(c.state.peopleApproval, 50);
+  });
+
+  test('an envoy can appease a looming raid', () {
+    final fresh = StarterGameData.create();
+    final base = fresh.copyWith(
+      obaFounded: true,
+      raidCountdown: 3,
+      raidFrom: 'oguz',
+      resources: {...fresh.resources, ResourceType.gold: 200},
+    );
+    final c =
+        GameController(base, random: _FixedRandom(0)); // 0 < 55 -> appeased
+    expect(c.state.raidLooming, isTrue);
+    expect(c.respondToRaid('envoy'), isTrue);
+    expect(c.state.raidLooming, isFalse);
+  });
+
+  test('rare market offers surface every few days', () {
+    expect(RareOffers.forDay(3), isNull);
+    expect(RareOffers.forDay(4), isNotNull);
+    expect(RareOffers.forDay(8), isNotNull);
+    expect(RareOffers.forDay(4)!.id, isNot(RareOffers.forDay(8)!.id));
+  });
+
+  test('the opening-month guide spans day 1 to 30 then stops', () {
+    GameState onDay(int d) => StarterGameData.create()
+        .copyWith(day: GameDay(day: d, season: Season.spring));
+    expect(PhaseLogic.dailyTutorial(onDay(1)), isNotNull);
+    expect(PhaseLogic.dailyTutorial(onDay(26)), isNotNull);
+    expect(PhaseLogic.dailyTutorial(onDay(31)), isNull);
+    expect(
+      PhaseLogic.dailyTutorial(onDay(5).copyWith(obaFounded: true)),
+      isNull,
+    );
   });
 
   test('the merchant role discounts the market', () {

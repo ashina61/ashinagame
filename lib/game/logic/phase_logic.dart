@@ -112,21 +112,29 @@ class PhaseLogic {
   static int requirementsMet(GameState s) =>
       foundingRequirements(s).where((r) => r.met).length;
 
-  /// A gentle first-15-days guide shown as the "Sıradaki adım" line, so a new
-  /// player always has one clear, low-pressure thing to try. Null once the oba
-  /// is founded or the opening fortnight is past.
+  /// A gentle first-30-days guide shown as the "Sıradaki akıllı hamle" line, so
+  /// a new player always has one clear, low-pressure thing to try. Null once
+  /// the oba is founded or the opening month is past. Phrased as an invitation,
+  /// never a chore.
   static String? dailyTutorial(GameState s) {
     if (s.obaFounded) return null;
     final d = s.day.day;
-    if (d > 15) return null;
+    if (d > 30) return null;
     if (d <= 1) return 'Odun kes — ocağın için odun lazım.';
     if (d == 2) return 'Kampı toparla, yorgunluğunu at.';
     if (d == 3) return 'Avlan — erzakını biriktir.';
     if (d == 4) return 'Sandığını aç, neyin var bir bak.';
     if (d == 5) return 'Çadırını güçlendirmeye başla.';
     if (d <= 8) return 'Yakın çevreyi keşfet — toprağı tanı.';
-    if (d <= 11) return 'Biriyle konuş; güven kazanmaya başla.';
-    return 'Adını yükselt, yandaş topla; oba yolu açılıyor.';
+    if (d <= 10) return 'Biriyle konuş; tanıdık edin.';
+    if (d <= 13) return 'Adın ateş başında anılıyor — itibar kazan.';
+    if (d <= 15) return 'Bir yoldaş sana güvenmeye başlasın.';
+    if (d <= 18) return 'Ana Çadırını 2. seviyeye çıkar.';
+    if (d <= 20) return 'Güçlü bir bağ kur — evlilik ya da sadık bir yoldaş.';
+    if (d <= 23) return 'Uygun toprak söylentilerini araştır (Yolculuk).';
+    if (d <= 25) return 'İlk yandaşını bağla; sözün geçsin.';
+    if (d <= 28) return 'Oba kurma şartların görünüyor — eksiği tamamla.';
+    return 'Toprak seni çağırıyor — kendi obanı kurmaya hazırlan.';
   }
 
   /// One short, ordered hint of the next milestone to chase. Null once an oba

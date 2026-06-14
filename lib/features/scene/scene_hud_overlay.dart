@@ -63,12 +63,11 @@ class SceneHudOverlay extends StatelessWidget {
                   AudioService.instance.playSfx('end_day');
                   final next = controller.state.day;
                   showDayTransition(context, 'GÜN ${next.day}');
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        'Gün ${next.day} başladı. ${next.season.atmosphere}',
-                      ),
-                    ),
+                  showDayReport(
+                    context,
+                    title: 'GÜN ${next.day}',
+                    atmosphere: next.season.atmosphere,
+                    lines: controller.state.log,
                   );
                 },
               ),
