@@ -5,6 +5,7 @@ import '../../app/theme/app_text_styles.dart';
 import '../../core/assets/game_assets.dart';
 import '../../core/audio/audio_service.dart';
 import '../../core/widgets/ornate.dart';
+import '../../game/data/companion_roles.dart';
 import '../../game/data/tamgas.dart';
 import '../../game/models/npc.dart';
 import '../../game/models/resource.dart';
@@ -32,13 +33,6 @@ class _FoundObaScreenState extends State<FoundObaScreen> {
     ('Irmak Kıyısı', 'Suyu bol, otlağı yeşil. Sürüler ve ekin için verimli.'),
     ('Otlak Düzü', 'Geniş, açık düzlük. At sürüleri ve talim için ideal.'),
     ('Tepe Eteği', 'Korunaklı, rüzgârdan kuytu. Savunması güçlü bir yurt.'),
-  ];
-
-  static const _roleOptions = [
-    'Savaş Başı',
-    'Ocak Anası',
-    'Sürü Başı',
-    'Gözcü',
   ];
 
   @override
@@ -77,7 +71,6 @@ class _FoundObaScreenState extends State<FoundObaScreen> {
                   ),
                 _ => _RolesStep(
                     followers: followers,
-                    roleOptions: _roleOptions,
                     roles: _roles,
                     onAssign: (id, role) => setState(() => _roles[id] = role),
                   ),
@@ -124,7 +117,7 @@ class _FoundObaScreenState extends State<FoundObaScreen> {
       return;
     }
     final popBefore = controller.state.resource(ResourceType.population);
-    controller.foundNewOba(_name.text, _tamga);
+    controller.foundNewOba(_name.text, _tamga, roles: _roles);
     AudioService.instance.playSfx('reward');
     final after = controller.state;
     final gained = after.resource(ResourceType.population) - popBefore;
@@ -332,14 +325,12 @@ class _LandStep extends StatelessWidget {
 class _RolesStep extends StatelessWidget {
   const _RolesStep({
     required this.followers,
-    required this.roleOptions,
     required this.roles,
     required this.onAssign,
   });
   final List<String> followers;
-  final List<String> roleOptions;
   final Map<String, String> roles;
-  final void Function(String id, String role) onAssign;
+  final void Function(String id, String roleId) onAssign;
 
   @override
   Widget build(BuildContext context) {
@@ -348,8 +339,8 @@ class _RolesStep extends StatelessWidget {
         const SectionPlaque('4 • İLK YANDAŞ ROLLERİ'),
         const OrnatePanel(
           child: Text(
-            'Yanına aldığın yandaşlara obanda birer görev ver. Roller obanın '
-            'ilk düzenini kurar.',
+            'Yandaşlarına birer görev ver — her rol obana küçük ama gerçek '
+            'bir bonus katar.',
             style: AppTextStyles.body,
           ),
         ),
@@ -360,31 +351,35 @@ class _RolesStep extends StatelessWidget {
               children: [
                 Text(NpcCharacters.byId(id)?.name ?? id,
                     style: AppTextStyles.bodyStrong),
+                if (roles[id] != null)
+                  Text(CompanionRoles.byId(roles[id]!)?.effect ?? '',
+                      style: AppTextStyles.meta
+                          .copyWith(color: AppColors.goldBright)),
                 const SizedBox(height: 6),
                 Wrap(
                   spacing: 6,
                   runSpacing: 6,
                   children: [
-                    for (final role in roleOptions)
+                    for (final role in CompanionRoles.all)
                       GestureDetector(
-                        onTap: () => onAssign(id, role),
+                        onTap: () => onAssign(id, role.id),
                         child: Container(
                           padding: const EdgeInsets.symmetric(
                               horizontal: 10, vertical: 5),
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(8),
-                            color: roles[id] == role
+                            color: roles[id] == role.id
                                 ? AppColors.gold.withValues(alpha: 0.25)
                                 : AppColors.leatherDeep.withValues(alpha: 0.8),
                             border: Border.all(
-                              color: roles[id] == role
+                              color: roles[id] == role.id
                                   ? AppColors.goldBright
                                   : AppColors.goldDim.withValues(alpha: 0.5),
                             ),
                           ),
-                          child: Text(role,
+                          child: Text(role.name,
                               style: AppTextStyles.meta.copyWith(
-                                color: roles[id] == role
+                                color: roles[id] == role.id
                                     ? AppColors.goldBright
                                     : AppColors.sand,
                               )),

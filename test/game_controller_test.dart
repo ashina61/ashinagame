@@ -943,4 +943,53 @@ void main() {
     expect(controller.talkTo('alis_hatun', choice), isFalse);
     expect(controller.state.relationWith('alis_hatun'), 50);
   });
+
+  test('companion roles grant standing bonuses and survive a save', () {
+    final controller = GameController(_foundableState());
+    controller.foundNewOba(
+      'Test Obası',
+      'wolf',
+      roles: const {'kaya_atabek': 'merchant', 'alis_hatun': 'hunter'},
+    );
+    expect(controller.state.companionRoles['kaya_atabek'], 'merchant');
+    expect(controller.companionMarketDiscount, 15);
+    final bonus = controller.companionDailyBonus;
+    expect(bonus[ResourceType.gold], 6); // merchant
+    expect(bonus[ResourceType.food], 5); // hunter
+
+    final decoded =
+        GameSerializer.decode(GameSerializer.encode(controller.state));
+    expect(decoded, isNotNull);
+    expect(decoded!.companionRoles['alis_hatun'], 'hunter');
+  });
+
+  test('a warleader companion lifts war strength', () {
+    final base = _foundableState().copyWith(army: const {'foot_sword': 10});
+    final plain = GameController(base.copyWith(obaFounded: true));
+    final led = GameController(
+      base.copyWith(obaFounded: true, companionRoles: const {'a': 'warleader'}),
+    );
+    expect(led.warStrength, greaterThan(plain.warStrength));
+  });
+
+  test('the merchant role discounts the market', () {
+    final base = _foundableState().copyWith(
+      obaFounded: true,
+      resources: {
+        ...StarterGameData.create().resources,
+        ResourceType.gold: 600,
+      },
+    );
+    final plain = GameController(base);
+    final withMerchant =
+        GameController(base.copyWith(companionRoles: const {'a': 'merchant'}));
+    final goldA = plain.state.resource(ResourceType.gold);
+    final goldB = withMerchant.state.resource(ResourceType.gold);
+    expect(plain.buyGood('salt'), isTrue);
+    expect(withMerchant.buyGood('salt'), isTrue);
+    final spentPlain = goldA - plain.state.resource(ResourceType.gold);
+    final spentMerchant =
+        goldB - withMerchant.state.resource(ResourceType.gold);
+    expect(spentMerchant, lessThan(spentPlain));
+  });
 }

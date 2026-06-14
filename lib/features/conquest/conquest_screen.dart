@@ -75,6 +75,7 @@ class _ConquestScreenState extends State<ConquestScreen> {
               ),
             ),
             if (pending != null) _GovernancePanel(nation: pending),
+            const _RaidThreatBanner(),
             Expanded(
               child: ListView(
                 padding: const EdgeInsets.only(top: 4, bottom: 16),
@@ -86,6 +87,92 @@ class _ConquestScreenState extends State<ConquestScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// A small pulsing red dot marking a province on the brink of revolt.
+class _RebellionPulse extends StatefulWidget {
+  const _RebellionPulse();
+
+  @override
+  State<_RebellionPulse> createState() => _RebellionPulseState();
+}
+
+class _RebellionPulseState extends State<_RebellionPulse>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _c = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 900),
+  )..repeat(reverse: true);
+
+  @override
+  void dispose() {
+    _c.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _c,
+      builder: (context, _) => Container(
+        width: 12,
+        height: 12,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: AppColors.danger,
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.danger.withValues(alpha: 0.3 + _c.value * 0.5),
+              blurRadius: 4 + _c.value * 8,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// A banner naming the strongest still-free nation as a looming raid threat,
+/// so the map feels watched rather than inert.
+class _RaidThreatBanner extends StatelessWidget {
+  const _RaidThreatBanner();
+
+  @override
+  Widget build(BuildContext context) {
+    final state = GameScope.of(context).state;
+    Nation? threat;
+    var best = -1;
+    for (final n in Nations.all) {
+      if (state.nationConquered(n.id)) continue;
+      if (n.center.power > best) {
+        best = n.center.power;
+        threat = n;
+      }
+    }
+    if (threat == null) return const SizedBox.shrink();
+    return Container(
+      margin: const EdgeInsets.fromLTRB(12, 0, 12, 8),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: AppColors.leatherDeep.withValues(alpha: 0.85),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: AppColors.danger.withValues(alpha: 0.6)),
+      ),
+      child: Row(
+        children: [
+          const _RebellionPulse(),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              'Sınırda hareket var: ${threat.name} (${threat.ruler}) '
+              'akına hazırlanıyor.',
+              style: AppTextStyles.meta,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -227,12 +314,22 @@ class _NationBlock extends StatelessWidget {
                   if (loyalty < 50)
                     Padding(
                       padding: const EdgeInsets.only(top: 4),
-                      child: Text(
-                        loyalty < 25
-                            ? 'İsyan eşiğinde! Sadakati tazele.'
-                            : 'Huzursuzluk artıyor.',
-                        style: AppTextStyles.meta
-                            .copyWith(color: AppColors.danger),
+                      child: Row(
+                        children: [
+                          if (loyalty < 25) ...[
+                            const _RebellionPulse(),
+                            const SizedBox(width: 6),
+                          ],
+                          Expanded(
+                            child: Text(
+                              loyalty < 25
+                                  ? 'İSYAN EŞİĞİNDE! Sadakati tazele.'
+                                  : 'Huzursuzluk artıyor.',
+                              style: AppTextStyles.meta
+                                  .copyWith(color: AppColors.danger),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   const SizedBox(height: 8),
