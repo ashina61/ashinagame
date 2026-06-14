@@ -5,8 +5,8 @@ import '../../app/theme/app_text_styles.dart';
 import '../../core/assets/game_assets.dart';
 import '../../core/audio/audio_service.dart';
 import '../../core/widgets/ornate.dart';
-import '../../game/data/conquest_regions.dart';
-import '../../game/models/conquest_region.dart';
+import '../../game/data/nations.dart';
+import '../../game/models/nation.dart';
 import '../../game/models/resource.dart';
 import '../../game/state/game_scope.dart';
 
@@ -17,9 +17,11 @@ class ConquestScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final controller = GameScope.of(context);
     final state = controller.state;
-    final conquered = state.conqueredRegions.length;
-    final total = ConquestRegions.all.length;
-    final unified = conquered >= total;
+    final castles = Nations.allCastles.length;
+    final taken = state.conqueredRegions
+        .where((id) => Nations.castleById(id) != null)
+        .length;
+    final pending = controller.pendingNation;
 
     return Scaffold(
       body: OrnateScaffold(
@@ -30,21 +32,23 @@ class ConquestScreen extends StatelessWidget {
             OrnatePanel(
               child: Row(
                 children: [
-                  Expanded(
+                  const Expanded(
                     child: Text(
-                      unified
-                          ? 'Bütün bozkır senin tamganın altında!'
-                          : 'Diplomasiyle kazan ya da kılıçla al. Amaç: '
-                              'bozkırı birleştirmek.',
+                      'Her elin dört kalesini al, sonra başkentini kuşat. '
+                      'Başkent düşünce ilin kaderine sen karar verirsin.',
                       style: AppTextStyles.body,
                     ),
                   ),
                   Column(
                     children: [
-                      const Text('Fethedilen', style: AppTextStyles.meta),
-                      Text('$conquered/$total',
+                      const Text('Kaleler', style: AppTextStyles.meta),
+                      Text('$taken/$castles',
                           style: AppTextStyles.value
                               .copyWith(color: AppColors.goldBright)),
+                      Text(
+                          'İl ${controller.conqueredNations}/'
+                          '${Nations.all.length}',
+                          style: AppTextStyles.meta),
                       Text('Güç ${controller.warStrength}',
                           style: AppTextStyles.meta),
                     ],
@@ -52,12 +56,13 @@ class ConquestScreen extends StatelessWidget {
                 ],
               ),
             ),
+            if (pending != null) _GovernancePanel(nation: pending),
             Expanded(
               child: ListView(
                 padding: const EdgeInsets.only(top: 4, bottom: 16),
                 children: [
-                  for (final region in ConquestRegions.all)
-                    _RegionPanel(region: region),
+                  for (final nation in Nations.all)
+                    _NationBlock(nation: nation),
                 ],
               ),
             ),
@@ -68,20 +73,128 @@ class ConquestScreen extends StatelessWidget {
   }
 }
 
-class _RegionPanel extends StatelessWidget {
-  const _RegionPanel({required this.region});
+/// Where the verdict for a freshly fallen capital is rendered.
+class _GovernancePanel extends StatelessWidget {
+  const _GovernancePanel({required this.nation});
 
-  final ConquestRegion region;
+  final Nation nation;
+
+  @override
+  Widget build(BuildContext context) {
+    return OrnatePanel(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('${nation.name} dize geldi',
+              style: AppTextStyles.bodyStrong
+                  .copyWith(color: AppColors.goldBright, fontSize: 16)),
+          const SizedBox(height: 4),
+          const Text('İlin kaderini belirle:', style: AppTextStyles.meta),
+          const SizedBox(height: 8),
+          for (final policy in NationPolicy.values) ...[
+            _PolicyButton(nation: nation, policy: policy),
+            const SizedBox(height: 8),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _PolicyButton extends StatelessWidget {
+  const _PolicyButton({required this.nation, required this.policy});
+
+  final Nation nation;
+  final NationPolicy policy;
+
+  @override
+  Widget build(BuildContext context) {
+    final controller = GameScope.of(context);
+    return GestureDetector(
+      onTap: () {
+        final ok = controller.decideNationPolicy(nation.id, policy);
+        if (ok) AudioService.instance.playSfx('victory');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+                ok ? '${nation.name}: ${policy.label}.' : 'Karar verilemedi.'),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      },
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          color: AppColors.leatherDeep.withValues(alpha: 0.7),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: AppColors.gold.withValues(alpha: 0.5)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(policy.label,
+                style: AppTextStyles.bodyStrong
+                    .copyWith(color: AppColors.goldBright)),
+            const SizedBox(height: 2),
+            Text(policy.blurb, style: AppTextStyles.meta),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _NationBlock extends StatelessWidget {
+  const _NationBlock({required this.nation});
+
+  final Nation nation;
 
   @override
   Widget build(BuildContext context) {
     final controller = GameScope.of(context);
     final state = controller.state;
-    final conquered = state.regionConquered(region.id);
-    final relation = controller.regionRelation(region);
-    final canAnnex = controller.canAnnex(region);
+    final policyId = state.nationPolicies[nation.id];
+    final policy = policyId == null ? null : NationPolicyInfo.byId(policyId);
+
+    return Column(
+      children: [
+        SectionPlaque('${nation.name} • ${nation.ruler}'),
+        if (policy != null)
+          OrnatePanel(
+            child: Row(
+              children: [
+                const Icon(Icons.flag, color: AppColors.success, size: 18),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text('Bu il senin: ${policy.label}',
+                      style: AppTextStyles.body
+                          .copyWith(color: AppColors.success)),
+                ),
+              ],
+            ),
+          ),
+        for (final castle in nation.castles) _CastlePanel(castle: castle),
+      ],
+    );
+  }
+}
+
+class _CastlePanel extends StatelessWidget {
+  const _CastlePanel({required this.castle});
+
+  final Castle castle;
+
+  @override
+  Widget build(BuildContext context) {
+    final controller = GameScope.of(context);
+    final state = controller.state;
+    final conquered = state.regionConquered(castle.id);
+    final locked = controller.centerLocked(castle);
+    final relation = controller.regionRelation(castle);
+    final canAnnex = controller.canAnnex(castle);
     final hasAp = state.dailyActionPoints > 0;
-    final chance = controller.warChanceFor(region);
+    final chance = controller.warChanceFor(castle);
 
     return OrnatePanel(
       child: Column(
@@ -89,22 +202,43 @@ class _RegionPanel extends StatelessWidget {
         children: [
           Row(
             children: [
+              if (castle.isCenter)
+                const Padding(
+                  padding: EdgeInsets.only(right: 6),
+                  child:
+                      Icon(Icons.castle, color: AppColors.goldBright, size: 18),
+                ),
               Expanded(
-                child: Text(region.name,
-                    style: AppTextStyles.bodyStrong.copyWith(fontSize: 16)),
+                child: Text(
+                  castle.isCenter ? '${castle.name} (Başkent)' : castle.name,
+                  style: AppTextStyles.bodyStrong.copyWith(fontSize: 16),
+                ),
               ),
               Text(
-                conquered ? 'Senin' : 'Bağımsız',
+                conquered
+                    ? 'Senin'
+                    : locked
+                        ? 'Kilitli'
+                        : 'Bağımsız',
                 style: AppTextStyles.value.copyWith(
                   fontSize: 14,
-                  color: conquered ? AppColors.success : AppColors.goldBright,
+                  color: conquered
+                      ? AppColors.success
+                      : locked
+                          ? AppColors.stone
+                          : AppColors.goldBright,
                 ),
               ),
             ],
           ),
-          Text('Bey: ${region.holder} • Garnizon ${region.power}',
-              style: AppTextStyles.meta),
-          if (!conquered) ...[
+          Text('Garnizon ${castle.power}', style: AppTextStyles.meta),
+          if (!conquered && locked)
+            const Padding(
+              padding: EdgeInsets.only(top: 6),
+              child: Text('Önce ilin dört kalesini al.',
+                  style: AppTextStyles.meta),
+            ),
+          if (!conquered && !locked) ...[
             const SizedBox(height: 6),
             Row(
               children: [
@@ -129,7 +263,7 @@ class _RegionPanel extends StatelessWidget {
                     onPressed: hasAp && state.resource(ResourceType.gold) >= 80
                         ? () => _act(
                             context,
-                            controller.improveRegionRelation(region.id),
+                            controller.improveRegionRelation(castle.id),
                             'İlişki geliştirildi.')
                         : null,
                   ),
@@ -140,8 +274,8 @@ class _RegionPanel extends StatelessWidget {
                     label: 'İlhak',
                     height: 34,
                     onPressed: canAnnex
-                        ? () => _act(context, controller.annexRegion(region.id),
-                            '${region.name} barışla alındı.')
+                        ? () => _act(context, controller.annexRegion(castle.id),
+                            '${castle.name} barışla alındı.')
                         : null,
                   ),
                 ),
@@ -152,13 +286,13 @@ class _RegionPanel extends StatelessWidget {
                     height: 34,
                     onPressed: hasAp
                         ? () {
-                            final won = controller.attackRegion(region.id);
+                            final won = controller.attackRegion(castle.id);
                             AudioService.instance
                                 .playSfx(won ? 'victory' : 'defeat');
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                 content: Text(won
-                                    ? '${region.name} fethedildi!'
+                                    ? '${castle.name} fethedildi!'
                                     : 'Saldırı püskürtüldü; kayıp verdin.'),
                               ),
                             );

@@ -3,13 +3,13 @@ import 'dart:math';
 import 'package:flutter/foundation.dart';
 
 import '../data/achievements.dart';
-import '../data/conquest_regions.dart';
 import '../data/craft_recipes.dart';
 import '../data/equipment.dart';
 import '../data/expedition_sites.dart';
 import '../data/faith_paths.dart';
 import '../data/kurultay_decisions.dart';
 import '../data/market_goods.dart';
+import '../data/nations.dart';
 import '../data/npc_dialogues.dart';
 import '../data/recruitment.dart';
 import '../data/starter_game_data.dart';
@@ -21,11 +21,11 @@ import '../logic/resource_logic.dart';
 import '../logic/season_logic.dart';
 import '../models/achievement.dart';
 import '../models/clan.dart';
-import '../models/conquest_region.dart';
 import '../models/craft.dart';
 import '../models/event_choice.dart';
 import '../models/faith.dart';
 import '../models/expedition.dart';
+import '../models/nation.dart';
 import '../models/npc.dart';
 import '../models/quest.dart';
 import '../models/resource.dart';
@@ -444,6 +444,12 @@ class GameController extends ChangeNotifier {
       resources = ResourceLogic.apply(resources, const {
         ResourceType.morale: -3,
       });
+    }
+
+    // Provinces and bound states pour tribute into the treasury each day.
+    final tribute = _dailyNationIncome();
+    if (tribute > 0) {
+      resources = ResourceLogic.apply(resources, {ResourceType.gold: tribute});
     }
 
     // The healer's çadırı mends the wounded back into the ranks.
@@ -1130,85 +1136,94 @@ class GameController extends ChangeNotifier {
       _state.vassalObas * 20 +
       (_state.isKhan ? 50 : 0);
 
-  /// Current relation with a conquest region.
-  int regionRelation(ConquestRegion region) =>
-      _state.regionRelations[region.id] ?? region.baseRelation;
+  /// Current relation with a castle.
+  int regionRelation(Castle castle) =>
+      _state.regionRelations[castle.id] ?? castle.baseRelation;
 
-  /// War success chance against a region, 10–90 percent.
-  int warChanceFor(ConquestRegion region) {
+  /// War success chance against a castle, 10–90 percent.
+  int warChanceFor(Castle castle) {
     final s = warStrength;
-    return (s * 100 / (s + region.power)).round().clamp(10, 90);
+    return (s * 100 / (s + castle.power)).round().clamp(10, 90);
   }
 
-  bool canAnnex(ConquestRegion region) =>
-      !_state.regionConquered(region.id) &&
-      regionRelation(region) >= ConquestRegions.annexRelation;
+  /// A center castle is sealed until its nation's outer castles all fall.
+  bool centerLocked(Castle castle) {
+    if (!castle.isCenter) return false;
+    final nation = Nations.nationOf(castle.id);
+    if (nation == null) return false;
+    return nation.outerCastles.any((c) => !_state.regionConquered(c.id));
+  }
 
-  /// Diplomacy: gold and an action point to warm a region toward you.
-  bool improveRegionRelation(String regionId) {
-    final region = ConquestRegions.byId(regionId);
-    if (region == null ||
-        _state.regionConquered(regionId) ||
+  bool canAnnex(Castle castle) =>
+      !_state.regionConquered(castle.id) &&
+      !centerLocked(castle) &&
+      regionRelation(castle) >= Nations.annexRelation;
+
+  /// Diplomacy: gold and an action point to warm a castle toward you.
+  bool improveRegionRelation(String castleId) {
+    final castle = Nations.castleById(castleId);
+    if (castle == null ||
+        _state.regionConquered(castleId) ||
         _state.dailyActionPoints < 1 ||
         _state.resource(ResourceType.gold) < 80) {
       return false;
     }
-    final next = (regionRelation(region) + 12).clamp(0, 100).toInt();
+    final next = (regionRelation(castle) + 12).clamp(0, 100).toInt();
     _commit(_state.copyWith(
       dailyActionPoints: _state.dailyActionPoints - 1,
       resources: ResourceLogic.apply(_state.resources, const {
         ResourceType.gold: -80,
       }),
-      regionRelations: {..._state.regionRelations, regionId: next},
-      log: _prependLog('${region.name} ile ilişkiler ısındı ($next/100).'),
+      regionRelations: {..._state.regionRelations, castleId: next},
+      log: _prependLog('${castle.name} ile ilişkiler ısındı ($next/100).'),
     ));
     return true;
   }
 
-  /// Annex a friendly region peacefully once relations are high enough.
-  bool annexRegion(String regionId) {
-    final region = ConquestRegions.byId(regionId);
-    if (region == null || !canAnnex(region)) {
+  /// Annex a friendly castle peacefully once relations are high enough.
+  bool annexRegion(String castleId) {
+    final castle = Nations.castleById(castleId);
+    if (castle == null || !canAnnex(castle)) {
       return false;
     }
-    _commit(_state.copyWith(
-      conqueredRegions: [..._state.conqueredRegions, regionId],
-      vassalObas: _state.vassalObas + 1,
-      resources: ResourceLogic.apply(_state.resources, {
-        ResourceType.reputation: region.rewardReputation,
-        ResourceType.gold: region.rewardGold ~/ 2,
+    _commit(_takeCastle(
+      castle,
+      ResourceLogic.apply(_state.resources, {
+        ResourceType.reputation: castle.rewardReputation,
+        ResourceType.gold: castle.rewardGold ~/ 2,
       }),
-      log: _prependLog('${region.name} barışla tamganın altına girdi.'),
+      '${castle.name} barışla tamganın altına girdi.',
+      _state.dailyActionPoints,
     ));
     return true;
   }
 
-  /// Wage war for a region. Win to seize it, lose and bleed for it.
-  bool attackRegion(String regionId) {
-    final region = ConquestRegions.byId(regionId);
-    if (region == null ||
-        _state.regionConquered(regionId) ||
+  /// Wage war for a castle. Win to seize it, lose and bleed for it.
+  bool attackRegion(String castleId) {
+    final castle = Nations.castleById(castleId);
+    if (castle == null ||
+        _state.regionConquered(castleId) ||
+        centerLocked(castle) ||
         _state.dailyActionPoints < 1) {
       return false;
     }
-    final success = _random.nextInt(100) < warChanceFor(region);
+    final success = _random.nextInt(100) < warChanceFor(castle);
     // Winning costs fewer soldiers; a rout wounds and kills many more.
     final (army, wounded) =
         _battleCasualties(success ? 0.10 : 0.25, success ? 0.04 : 0.12);
     if (success) {
-      _commit(_state.copyWith(
-        dailyActionPoints: _state.dailyActionPoints - 1,
-        conqueredRegions: [..._state.conqueredRegions, regionId],
-        vassalObas: _state.vassalObas + 1,
-        army: army,
-        wounded: wounded,
-        resources: ResourceLogic.apply(_state.resources, {
-          ResourceType.gold: region.rewardGold,
-          ResourceType.reputation: region.rewardReputation,
+      _commit(_takeCastle(
+        castle,
+        ResourceLogic.apply(_state.resources, {
+          ResourceType.gold: castle.rewardGold,
+          ResourceType.reputation: castle.rewardReputation,
           ResourceType.morale: 6,
           ResourceType.food: -15,
         }),
-        log: _prependLog('${region.name} kılıçla fethedildi!'),
+        '${castle.name} kılıçla fethedildi!',
+        _state.dailyActionPoints - 1,
+        army: army,
+        wounded: wounded,
       ));
     } else {
       _commit(_state.copyWith(
@@ -1221,10 +1236,119 @@ class GameController extends ChangeNotifier {
           ResourceType.food: -15,
         }),
         log:
-            _prependLog('${region.name} kuşatması püskürtüldü; kayıp verildi.'),
+            _prependLog('${castle.name} kuşatması püskürtüldü; kayıp verildi.'),
       ));
     }
     return success;
+  }
+
+  /// Commits a castle takeover, flagging a governance verdict when the seized
+  /// castle is the capital that completes its nation.
+  GameState _takeCastle(
+    Castle castle,
+    Map<ResourceType, int> resources,
+    String logLine,
+    int actionPoints, {
+    Map<String, int>? army,
+    Map<String, int>? wounded,
+  }) {
+    final conquered = [..._state.conqueredRegions, castle.id];
+    final nation = Nations.nationOf(castle.id);
+    final nationDone = castle.isCenter &&
+        nation != null &&
+        nation.castles.every((c) => conquered.contains(c.id));
+    return _state.copyWith(
+      dailyActionPoints: actionPoints,
+      conqueredRegions: conquered,
+      army: army,
+      wounded: wounded,
+      resources: resources,
+      pendingNationPolicy: nationDone ? nation.id : null,
+      log: _prependLog(nationDone
+          ? '$logLine ${nation.name} dize geldi — kaderine sen karar ver.'
+          : logLine),
+    );
+  }
+
+  /// Whether a governance verdict is awaited for a fallen capital.
+  Nation? get pendingNation => _state.pendingNationPolicy == null
+      ? null
+      : Nations.byId(_state.pendingNationPolicy!);
+
+  /// Number of nations fully under your banner.
+  int get conqueredNations => _state.nationPolicies.length;
+
+  /// Daily gold from governed nations: a province (vali) pays most, a bound
+  /// state (vassal) less; plundered or razed lands yield nothing lasting.
+  int _dailyNationIncome() {
+    var gold = 0;
+    for (final policyId in _state.nationPolicies.values) {
+      switch (NationPolicyInfo.byId(policyId)) {
+        case NationPolicy.vali:
+          gold += 14;
+        case NationPolicy.vassal:
+          gold += 8;
+        case _:
+          break;
+      }
+    }
+    return gold;
+  }
+
+  /// Decides the fate of a freshly conquered nation. Each policy trades lasting
+  /// income, glory and the people's regard differently.
+  bool decideNationPolicy(String nationId, NationPolicy policy) {
+    final nation = Nations.byId(nationId);
+    if (nation == null || _state.pendingNationPolicy != nationId) {
+      return false;
+    }
+    final reward = nation.center.rewardGold;
+    final rep = nation.center.rewardReputation;
+    var resources = _state.resources;
+    var people = _state.peopleApproval;
+    var council = _state.councilApproval;
+    var vassals = _state.vassalObas;
+    switch (policy) {
+      case NationPolicy.vali:
+        resources = ResourceLogic.apply(resources, {
+          ResourceType.gold: reward ~/ 2,
+          ResourceType.reputation: rep,
+        });
+        people += 4;
+        council += 2;
+      case NationPolicy.yagma:
+        resources = ResourceLogic.apply(resources, {
+          ResourceType.gold: reward * 2,
+          ResourceType.reputation: rep + 4,
+        });
+        people -= 12;
+        council += 8;
+      case NationPolicy.yik:
+        resources = ResourceLogic.apply(resources, {
+          ResourceType.gold: reward,
+          ResourceType.reputation: rep + 8,
+          ResourceType.morale: 8,
+        });
+        people -= 16;
+        council += 4;
+      case NationPolicy.vassal:
+        resources = ResourceLogic.apply(resources, {
+          ResourceType.gold: reward ~/ 2,
+          ResourceType.reputation: rep,
+        });
+        vassals += nation.outerCastles.length;
+        people += 8;
+    }
+    _commit(_state.copyWith(
+      resources: resources,
+      peopleApproval: people,
+      councilApproval: council,
+      vassalObas: vassals,
+      nationPolicies: {..._state.nationPolicies, nationId: policy.id},
+      clearPendingNation: true,
+      log: _prependLog('${nation.name}: ${policy.label} kararı verildi.'),
+    ));
+    return true;
   }
 
   /// Reputation and tent level required before a new oba may be founded.

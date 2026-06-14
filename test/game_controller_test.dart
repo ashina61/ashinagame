@@ -8,8 +8,10 @@ import 'package:ashinagame/game/logic/market_logic.dart';
 import 'package:ashinagame/game/logic/unlock_logic.dart';
 import 'package:ashinagame/game/models/faith.dart';
 import 'package:ashinagame/game/models/game_day.dart';
+import 'package:ashinagame/game/data/nations.dart';
 import 'package:ashinagame/game/data/npc_dialogues.dart';
 import 'package:ashinagame/game/models/household.dart';
+import 'package:ashinagame/game/models/nation.dart';
 import 'package:ashinagame/game/models/resource.dart';
 import 'package:ashinagame/game/models/season.dart';
 import 'package:ashinagame/game/state/game_controller.dart';
@@ -302,6 +304,64 @@ void main() {
       loser.state.resource(ResourceType.morale),
       lessThan(moraleBefore),
     );
+  });
+
+  test('a capital is sealed until its outer castles fall', () {
+    final base = StarterGameData.create();
+    final controller = GameController(
+      base.copyWith(
+        resources: {...base.resources, ResourceType.population: 400},
+        profile: base.profile.copyWith(warfare: 20),
+      ),
+      random: _FixedRandom(0),
+    );
+
+    // The Oğuz capital cannot be touched while outer castles stand.
+    final capital = Nations.byId('oguz')!.center;
+    expect(controller.centerLocked(capital), isTrue);
+    expect(controller.attackRegion(capital.id), isFalse);
+
+    // Take all four outer castles; the capital then opens.
+    for (final castle in Nations.byId('oguz')!.outerCastles) {
+      expect(controller.attackRegion(castle.id), isTrue);
+    }
+    expect(controller.centerLocked(capital), isFalse);
+  });
+
+  test('taking a capital forces a governance verdict with lasting income', () {
+    final base = StarterGameData.create();
+    final oguz = Nations.byId('oguz')!;
+    // Pre-seize the four outer castles so only the capital remains.
+    final controller = GameController(
+      base.copyWith(
+        conqueredRegions: [for (final c in oguz.outerCastles) c.id],
+        resources: {...base.resources, ResourceType.population: 600},
+        profile: base.profile.copyWith(warfare: 30),
+      ),
+      random: _FixedRandom(0),
+    );
+
+    expect(controller.attackRegion(oguz.center.id), isTrue);
+    expect(controller.pendingNation?.id, 'oguz');
+
+    final goldBefore = controller.state.resource(ResourceType.gold);
+    expect(controller.decideNationPolicy('oguz', NationPolicy.vali), isTrue);
+    expect(controller.pendingNation, isNull);
+    expect(controller.state.nationConquered('oguz'), isTrue);
+    expect(controller.conqueredNations, 1);
+    expect(
+        controller.state.resource(ResourceType.gold), greaterThan(goldBefore));
+
+    // A governed province pays tribute each day.
+    final beforeDay = GameController(
+      controller.state.copyWith(
+        resources: {...controller.state.resources, ResourceType.food: 400},
+      ),
+    );
+    final goldDayStart = beforeDay.state.resource(ResourceType.gold);
+    beforeDay.endDay();
+    expect(
+        beforeDay.state.resource(ResourceType.gold), greaterThan(goldDayStart));
   });
 
   test('equipping crafted gear drives the expedition bonus', () {

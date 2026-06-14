@@ -70,6 +70,8 @@ class GameState {
     this.army = const {},
     this.wounded = const {},
     this.npcRelations = const {},
+    this.nationPolicies = const {},
+    this.pendingNationPolicy,
   });
 
   static const baseDailyActionPoints = 4;
@@ -162,8 +164,17 @@ class GameState {
   /// How each named figure feels about the leader (0–100), 50 by default.
   final Map<String, int> npcRelations;
 
+  /// Governance choice taken for each fully-conquered nation (id → policy id).
+  final Map<String, String> nationPolicies;
+
+  /// Nation whose capital just fell and awaits a governance verdict, or null.
+  final String? pendingNationPolicy;
+
   /// Bond with [npcId], defaulting to a neutral 50 when never spoken to.
   int relationWith(String npcId) => npcRelations[npcId] ?? 50;
+
+  /// True once every castle of [nationId] flies your tamga.
+  bool nationConquered(String nationId) => nationPolicies.containsKey(nationId);
 
   int resource(ResourceType type) => resources[type] ?? 0;
 
@@ -269,6 +280,9 @@ class GameState {
     Map<String, int>? army,
     Map<String, int>? wounded,
     Map<String, int>? npcRelations,
+    Map<String, String>? nationPolicies,
+    String? pendingNationPolicy,
+    bool clearPendingNation = false,
   }) {
     final nextMax = maxDailyActionPoints ?? this.maxDailyActionPoints;
     final nextAp = (dailyActionPoints ?? energy ?? this.dailyActionPoints)
@@ -326,6 +340,10 @@ class GameState {
       army: army ?? this.army,
       wounded: wounded ?? this.wounded,
       npcRelations: npcRelations ?? this.npcRelations,
+      nationPolicies: nationPolicies ?? this.nationPolicies,
+      pendingNationPolicy: clearPendingNation
+          ? null
+          : pendingNationPolicy ?? this.pendingNationPolicy,
     );
   }
 }
