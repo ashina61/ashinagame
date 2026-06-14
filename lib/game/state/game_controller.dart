@@ -20,6 +20,7 @@ import '../logic/progression_logic.dart';
 import '../logic/resource_logic.dart';
 import '../logic/season_logic.dart';
 import '../models/achievement.dart';
+import '../models/battle_report.dart';
 import '../models/clan.dart';
 import '../models/craft.dart';
 import '../models/event_choice.dart';
@@ -1121,27 +1122,61 @@ class GameController extends ChangeNotifier {
     return true;
   }
 
-  /// Moves a fraction of each unit type to the wounded pool, losing a
-  /// smaller fraction outright. Returns the new army and wounded maps.
-  (Map<String, int>, Map<String, int>) _battleCasualties(
-    double woundFrac,
-    double lostFrac,
-  ) {
+  /// Reference defence: a unit tougher than this bleeds less, a frailer one
+  /// more, so army composition decides who survives a battle.
+  static const _refDefense = 6;
+
+  /// Resolves casualties unit by unit. Each kind's losses scale with how its
+  /// defence compares to [_refDefense]: heavy cavalry endure where scouts fall.
+  /// Returns the surviving army, the new wounded pool, and per-unit tallies of
+  /// the slain and the freshly wounded.
+  ({
+    Map<String, int> army,
+    Map<String, int> wounded,
+    Map<String, int> lost,
+    Map<String, int> hurt,
+  }) _battleCasualties(double woundFrac, double lostFrac) {
     final army = <String, int>{};
     final wounded = Map<String, int>.from(_state.wounded);
+    final lostMap = <String, int>{};
+    final hurtMap = <String, int>{};
     for (final entry in _state.army.entries) {
-      final hurt = (entry.value * woundFrac).round();
-      final lost = (entry.value * lostFrac).round();
-      final left = (entry.value - hurt - lost).clamp(0, entry.value).toInt();
+      final unit = UnitTypes.byId(entry.key);
+      final defense = unit?.defense ?? _refDefense;
+      final frailty = (_refDefense / defense).clamp(0.5, 2.0);
+      final hurt = (entry.value * woundFrac * frailty).round();
+      final lost = (entry.value * lostFrac * frailty).round();
+      final cappedLost = lost.clamp(0, entry.value).toInt();
+      final cappedHurt = hurt.clamp(0, entry.value - cappedLost).toInt();
+      final left = entry.value - cappedHurt - cappedLost;
       if (left > 0) army[entry.key] = left;
-      if (hurt > 0) wounded[entry.key] = (wounded[entry.key] ?? 0) + hurt;
+      if (cappedHurt > 0) {
+        wounded[entry.key] = (wounded[entry.key] ?? 0) + cappedHurt;
+        hurtMap[entry.key] = cappedHurt;
+      }
+      if (cappedLost > 0) lostMap[entry.key] = cappedLost;
     }
-    return (army, wounded);
+    return (army: army, wounded: wounded, lost: lostMap, hurt: hurtMap);
   }
 
-  /// Military weight thrown behind a regional war.
+  /// Combined defence of every battle-ready unit.
+  int get armyDefense {
+    var total = 0;
+    for (final entry in _state.army.entries) {
+      total += (UnitTypes.byId(entry.key)?.defense ?? 0) * entry.value;
+    }
+    return total;
+  }
+
+  /// The most recent battle's outcome, for the UI to recount. Transient — not
+  /// part of the saved state.
+  BattleReport? lastBattle;
+
+  /// Military weight thrown behind a regional war. Attack drives the punch,
+  /// defence steadies the line, and the leader and realm add their weight.
   int get warStrength =>
       armyStrength * 4 +
+      armyDefense * 2 +
       _state.resource(ResourceType.population) +
       _state.profile.warfare * 8 +
       _state.profile.courage * 3 +
@@ -1221,10 +1256,21 @@ class GameController extends ChangeNotifier {
         _state.dailyActionPoints < 1) {
       return false;
     }
-    final success = _random.nextInt(100) < warChanceFor(castle);
-    // Winning costs fewer soldiers; a rout wounds and kills many more.
-    final (army, wounded) =
+    final chance = warChanceFor(castle);
+    final success = _random.nextInt(100) < chance;
+    // Winning costs fewer soldiers; a rout wounds and kills many more. Each
+    // unit's share of the loss is then weighed by its own toughness.
+    final casualties =
         _battleCasualties(success ? 0.10 : 0.25, success ? 0.04 : 0.12);
+    final army = casualties.army;
+    final wounded = casualties.wounded;
+    lastBattle = BattleReport(
+      won: success,
+      castleName: castle.name,
+      chance: chance,
+      lost: casualties.lost,
+      wounded: casualties.hurt,
+    );
     if (success) {
       _commit(_takeCastle(
         castle,

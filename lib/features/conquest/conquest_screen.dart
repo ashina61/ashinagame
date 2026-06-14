@@ -6,8 +6,10 @@ import '../../core/assets/game_assets.dart';
 import '../../core/audio/audio_service.dart';
 import '../../core/widgets/ornate.dart';
 import '../../game/data/nations.dart';
+import '../../game/models/battle_report.dart';
 import '../../game/models/nation.dart';
 import '../../game/models/resource.dart';
+import '../../game/models/unit_type.dart';
 import '../../game/state/game_scope.dart';
 
 class ConquestScreen extends StatefulWidget {
@@ -306,13 +308,13 @@ class _CastlePanel extends StatelessWidget {
                             final won = controller.attackRegion(castle.id);
                             AudioService.instance
                                 .playSfx(won ? 'victory' : 'defeat');
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(won
-                                    ? '${castle.name} fethedildi!'
-                                    : 'Saldırı püskürtüldü; kayıp verdin.'),
-                              ),
-                            );
+                            final report = controller.lastBattle;
+                            if (report != null) {
+                              showDialog<void>(
+                                context: context,
+                                builder: (_) => _BattleReportDialog(report),
+                              );
+                            }
                           }
                         : null,
                   ),
@@ -332,6 +334,70 @@ class _CastlePanel extends StatelessWidget {
         content:
             Text(ok ? okMsg : 'Koşullar uygun değil (aksiyon/altın/ilişki).'),
         duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+}
+
+/// Recounts a battle's outcome unit by unit, so the player sees which kinds of
+/// soldiers fell and which merely bled.
+class _BattleReportDialog extends StatelessWidget {
+  const _BattleReportDialog(this.report);
+
+  final BattleReport report;
+
+  @override
+  Widget build(BuildContext context) {
+    final unitIds = {...report.lost.keys, ...report.wounded.keys}.toList();
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      child: OrnatePanel(
+        margin: EdgeInsets.zero,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              report.won ? 'ZAFER' : 'BOZGUN',
+              style: AppTextStyles.display.copyWith(
+                fontSize: 26,
+                color: report.won ? AppColors.success : AppColors.danger,
+              ),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              '${report.castleName} • Galibiyet şansı %${report.chance}',
+              style: AppTextStyles.meta,
+            ),
+            const SizedBox(height: 10),
+            if (unitIds.isEmpty)
+              const Text('Kayıp verilmedi.', style: AppTextStyles.body)
+            else ...[
+              Text(
+                  'Kayıp: ${report.totalLost} • Yaralı: ${report.totalWounded}',
+                  style: AppTextStyles.bodyStrong
+                      .copyWith(color: AppColors.goldBright)),
+              const SizedBox(height: 6),
+              for (final id in unitIds)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 2),
+                  child: Text(
+                    '${UnitTypes.byId(id)?.name ?? id}: '
+                    '${(report.lost[id] ?? 0) > 0 ? '${report.lost[id]} şehit' : ''}'
+                    '${(report.lost[id] ?? 0) > 0 && (report.wounded[id] ?? 0) > 0 ? ', ' : ''}'
+                    '${(report.wounded[id] ?? 0) > 0 ? '${report.wounded[id]} yaralı' : ''}',
+                    style: AppTextStyles.body,
+                  ),
+                ),
+            ],
+            const SizedBox(height: 12),
+            GoldButton(
+              label: 'KAPAT',
+              height: 40,
+              onPressed: () => Navigator.of(context).maybePop(),
+            ),
+          ],
+        ),
       ),
     );
   }

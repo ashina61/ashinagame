@@ -306,6 +306,39 @@ void main() {
     );
   });
 
+  test('battle casualties favour tougher units and fill a report', () {
+    final base = StarterGameData.create();
+    // Equal numbers of frail scouts (def 2) and stout heavy cavalry (def 10).
+    final controller = GameController(
+      base.copyWith(
+        army: const {'scout': 20, 'heavy_cav': 20},
+        resources: {...base.resources, ResourceType.population: 50},
+      ),
+      random: _FixedRandom(99), // force a loss: heavier casualties
+    );
+
+    expect(controller.attackRegion('otuken'), isFalse);
+    final report = controller.lastBattle!;
+    expect(report.won, isFalse);
+    expect(report.castleName, 'Ötüken Yaylağı');
+
+    // Frail scouts should bleed more than the armoured heavy cavalry.
+    final scoutCasualties =
+        (report.lost['scout'] ?? 0) + (report.wounded['scout'] ?? 0);
+    final cavCasualties =
+        (report.lost['heavy_cav'] ?? 0) + (report.wounded['heavy_cav'] ?? 0);
+    expect(scoutCasualties, greaterThan(cavCasualties));
+  });
+
+  test('army defence lifts war strength', () {
+    final base = StarterGameData.create();
+    final plain = GameController(base.copyWith(army: const {}));
+    final defended =
+        GameController(base.copyWith(army: const {'spear': 10})); // def 8
+    expect(defended.warStrength, greaterThan(plain.warStrength));
+    expect(defended.armyDefense, 80);
+  });
+
   test('a capital is sealed until its outer castles fall', () {
     final base = StarterGameData.create();
     final controller = GameController(
