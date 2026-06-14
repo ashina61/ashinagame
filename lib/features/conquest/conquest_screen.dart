@@ -10,8 +10,25 @@ import '../../game/models/nation.dart';
 import '../../game/models/resource.dart';
 import '../../game/state/game_scope.dart';
 
-class ConquestScreen extends StatelessWidget {
+class ConquestScreen extends StatefulWidget {
   const ConquestScreen({super.key});
+
+  @override
+  State<ConquestScreen> createState() => _ConquestScreenState();
+}
+
+class _ConquestScreenState extends State<ConquestScreen> {
+  @override
+  void initState() {
+    super.initState();
+    AudioService.instance.playMusic('battle');
+  }
+
+  @override
+  void dispose() {
+    AudioService.instance.playMusic('theme');
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -309,6 +326,7 @@ class _CastlePanel extends StatelessWidget {
   }
 
   void _act(BuildContext context, bool ok, String okMsg) {
+    if (!ok) AudioService.instance.playSfx('denied');
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content:

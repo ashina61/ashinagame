@@ -7,8 +7,25 @@ import '../../core/widgets/ornate.dart';
 import '../../game/models/unit_type.dart';
 import '../../game/state/game_scope.dart';
 
-class ArmyScreen extends StatelessWidget {
+class ArmyScreen extends StatefulWidget {
   const ArmyScreen({super.key});
+
+  @override
+  State<ArmyScreen> createState() => _ArmyScreenState();
+}
+
+class _ArmyScreenState extends State<ArmyScreen> {
+  @override
+  void initState() {
+    super.initState();
+    AudioService.instance.playMusic('battle');
+  }
+
+  @override
+  void dispose() {
+    AudioService.instance.playMusic('theme');
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -133,7 +150,7 @@ class _UnitPanel extends StatelessWidget {
                   onPressed: hasAp && affordable
                       ? () {
                           final ok = controller.recruitUnit(unit.id, 1);
-                          if (ok) AudioService.instance.playSfx('coin');
+                          AudioService.instance.playSfx(ok ? 'coin' : 'denied');
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: Text(ok

@@ -284,7 +284,7 @@ class _MarketScreenState extends State<MarketScreen> {
                       '$amount ${type.label} satışı',
                       {type: -amount, ResourceType.gold: price},
                     );
-                    if (done) AudioService.instance.playSfx('coin');
+                    AudioService.instance.playSfx(done ? 'coin' : 'denied');
                     _notify(
                       context,
                       done
@@ -441,7 +441,7 @@ class _BuyRow extends StatelessWidget {
                 return;
               }
               final done = controller.buyGood(good.id);
-              if (done) AudioService.instance.playSfx('coin');
+              AudioService.instance.playSfx(done ? 'coin' : 'denied');
               _MarketScreenState._notify(
                 context,
                 done

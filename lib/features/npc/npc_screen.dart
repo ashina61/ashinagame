@@ -181,7 +181,7 @@ class _DialogueSheet extends StatelessWidget {
                     onPressed: () {
                       final ok = controller.talkTo(npc.id, choice);
                       Navigator.of(context).maybePop();
-                      if (ok) AudioService.instance.playSfx('coin');
+                      AudioService.instance.playSfx(ok ? 'coin' : 'denied');
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                           content: Text(ok

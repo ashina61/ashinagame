@@ -30,6 +30,7 @@ class _AshinaAppState extends State<AshinaApp> {
     // Only start ambient music for a real launch (storage present), not in
     // widget tests that construct the app directly.
     if (storage != null) {
+      _controller.onSfx = (name) => AudioService.instance.playSfx(name);
       AudioService.instance.playMusic('theme');
     }
   }

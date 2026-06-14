@@ -56,6 +56,10 @@ class GameController extends ChangeNotifier {
   GameState _state;
   GameState get state => _state;
 
+  /// Optional sound hook the app wires to the audio service. Kept as a callback
+  /// so the pure game logic stays decoupled from audio and remains testable.
+  void Function(String name)? onSfx;
+
   /// Percent added to expedition rolls by gear the leader has equipped.
   int get equipmentBonus {
     var bonus = 0;
@@ -113,6 +117,9 @@ class GameController extends ChangeNotifier {
   }
 
   void _commit(GameState next) {
+    if (next.profile.level > _state.profile.level) {
+      onSfx?.call('level_up');
+    }
     _state = next;
     _storage?.save(next);
     notifyListeners();
