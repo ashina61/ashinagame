@@ -121,21 +121,23 @@ class _ExpeditionsScreenState extends State<ExpeditionsScreen> {
         ),
       );
     }
+    final state = controller.state;
+    final lands = '${state.conqueredRegions.length}';
+    final soldiers = '${state.totalSoldiers}';
+    final strength = '${controller.armyStrength}';
+    final food = '${state.resource(ResourceType.food)}';
+    final morale = '${state.resource(ResourceType.morale)}';
     return OrnateScaffold(
       child: Column(
         children: [
           const OrnateHeader(title: 'Seferler'),
           ResourceBar(
             entries: [
-              (GameAssets.iconFortStone,
-                  '${controller.state.conqueredRegions.length}'),
-              (GameAssets.iconArmyEmblem,
-                  '${controller.state.totalSoldiers}'),
-              (GameAssets.iconSwordsCrossedGold, '${controller.armyStrength}'),
-              (GameAssets.iconFood,
-                  '${controller.state.resource(ResourceType.food)}'),
-              (GameAssets.iconMoraleEmblem,
-                  '${controller.state.resource(ResourceType.morale)}'),
+              (GameAssets.iconFortStone, lands),
+              (GameAssets.iconArmyEmblem, soldiers),
+              (GameAssets.iconSwordsCrossedGold, strength),
+              (GameAssets.iconFood, food),
+              (GameAssets.iconMoraleEmblem, morale),
             ],
           ),
           OrnatePanel(
