@@ -33,6 +33,8 @@ class DialogueChoice {
     this.peopleEffect = 0,
     this.councilEffect = 0,
     this.resourceEffects = const {},
+    this.triggersKurultay,
+    this.raidPower = 0,
   });
 
   final String label;
@@ -41,6 +43,13 @@ class DialogueChoice {
   final int peopleEffect;
   final int councilEffect;
   final Map<ResourceType, int> resourceEffects;
+
+  /// Id of a kurultay decision to convene at once, if any.
+  final String? triggersKurultay;
+
+  /// When above zero, the choice launches a raid against a foe of this
+  /// garrison strength, fought with the army and resolved into a battle report.
+  final int raidPower;
 }
 
 /// A single exchange offered by an NPC: their line and the leader's options.

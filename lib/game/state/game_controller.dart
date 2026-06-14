@@ -1678,13 +1678,72 @@ class GameController extends ChangeNotifier {
     final relations = Map<String, int>.from(_state.npcRelations);
     relations[npcId] =
         (_state.relationWith(npcId) + choice.relationEffect).clamp(0, 100);
+
+    var resources =
+        ResourceLogic.apply(_state.resources, choice.resourceEffects);
+    var people = _state.peopleApproval + choice.peopleEffect;
+    var council = _state.councilApproval + choice.councilEffect;
+    final notes = <String>[
+      '${npc?.name ?? 'Biri'} ile konuşuldu: ${choice.label}'
+    ];
+
+    // A word can summon the council, if one is not already in session.
+    var kurultayId = _state.currentKurultay;
+    if (choice.triggersKurultay != null &&
+        kurultayId == null &&
+        KurultayDecisions.byId(choice.triggersKurultay!) != null) {
+      kurultayId = choice.triggersKurultay;
+      notes.insert(0, 'Kurultay toplandı; bir karar bekleniyor.');
+    }
+
+    // A defiant or eager word can spill into a raid, fought then and there.
+    var army = _state.army;
+    var wounded = _state.wounded;
+    lastBattle = null;
+    if (choice.raidPower > 0) {
+      final s = warStrength;
+      final chance = (s * 100 / (s + choice.raidPower)).round().clamp(10, 90);
+      final won = _random.nextInt(100) < chance;
+      final cas = _battleCasualties(won ? 0.08 : 0.20, won ? 0.03 : 0.08);
+      army = cas.army;
+      wounded = cas.wounded;
+      lastBattle = BattleReport(
+        won: won,
+        castleName: npc?.name ?? 'Akın',
+        chance: chance,
+        lost: cas.lost,
+        wounded: cas.hurt,
+      );
+      if (won) {
+        resources = ResourceLogic.apply(resources, {
+          ResourceType.gold: choice.raidPower,
+          ResourceType.reputation: 4,
+          ResourceType.morale: 4,
+        });
+        people -= 4;
+        council += 6;
+        notes.insert(0, 'Akın zaferle döndü; ganimet getirildi.');
+      } else {
+        resources = ResourceLogic.apply(resources, const {
+          ResourceType.morale: -6,
+          ResourceType.population: -3,
+        });
+        council -= 4;
+        notes.insert(0, 'Akın bozguna uğradı; kayıp verildi.');
+      }
+    }
+
+    final log = [...notes, ..._state.log].take(6).toList();
     _commit(_state.copyWith(
       dailyActionPoints: _state.dailyActionPoints - 1,
       npcRelations: relations,
-      peopleApproval: _state.peopleApproval + choice.peopleEffect,
-      councilApproval: _state.councilApproval + choice.councilEffect,
-      resources: ResourceLogic.apply(_state.resources, choice.resourceEffects),
-      log: _prependLog('${npc?.name ?? 'Biri'} ile konuşuldu: ${choice.label}'),
+      peopleApproval: people,
+      councilApproval: council,
+      resources: resources,
+      army: army,
+      wounded: wounded,
+      currentKurultay: kurultayId,
+      log: log,
     ));
     return true;
   }

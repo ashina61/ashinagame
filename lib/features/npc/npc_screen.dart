@@ -8,6 +8,7 @@ import '../../core/widgets/ornate.dart';
 import '../../game/models/npc.dart';
 import '../../game/state/game_controller.dart';
 import '../../game/state/game_scope.dart';
+import '../conquest/battle_report_dialog.dart';
 
 /// Roster of named figures the leader can speak with. Each carries a living
 /// relationship that shifts as conversations play out.
@@ -181,6 +182,16 @@ class _DialogueSheet extends StatelessWidget {
                     onPressed: () {
                       final ok = controller.talkTo(npc.id, choice);
                       Navigator.of(context).maybePop();
+                      final report = controller.lastBattle;
+                      if (ok && choice.raidPower > 0 && report != null) {
+                        AudioService.instance
+                            .playSfx(report.won ? 'victory' : 'defeat');
+                        showDialog<void>(
+                          context: context,
+                          builder: (_) => BattleReportDialog(report),
+                        );
+                        return;
+                      }
                       AudioService.instance.playSfx(ok ? 'coin' : 'denied');
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(

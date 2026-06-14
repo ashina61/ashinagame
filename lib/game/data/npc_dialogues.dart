@@ -87,11 +87,11 @@ class NpcDialogues {
       choices: [
         DialogueChoice(
           label: 'Akına çık.',
-          reply: 'Yağma getirilir; beyler sevinir, halk savaştan ürker.',
+          reply: 'Atlılar akına çıktı; çarpışmanın sonucu birazdan belli olur.',
           relationEffect: 8,
-          councilEffect: 8,
-          peopleEffect: -8,
-          resourceEffects: {ResourceType.gold: 70},
+          councilEffect: 6,
+          peopleEffect: -6,
+          raidPower: 90,
         ),
         DialogueChoice(
           label: 'Kan dökmeyiz.',
@@ -99,6 +99,25 @@ class NpcDialogues {
           relationEffect: -5,
           councilEffect: -4,
           peopleEffect: 8,
+        ),
+      ],
+    ),
+    Dialogue(
+      id: 'kaya_council',
+      npcId: 'kaya_atabek',
+      line: 'Beyler sefer için söyleniyor, bey. Meclisi toplayıp divan '
+          'kuralım mı?',
+      choices: [
+        DialogueChoice(
+          label: 'Meclisi topla.',
+          reply: 'Davul çalındı; beyler divana çağrıldı.',
+          relationEffect: 6,
+          triggersKurultay: 'war_council',
+        ),
+        DialogueChoice(
+          label: 'Vakti değil.',
+          reply: 'Kaya homurdanır ama emre uyar.',
+          relationEffect: -4,
         ),
       ],
     ),
@@ -158,10 +177,11 @@ class NpcDialogues {
       choices: [
         DialogueChoice(
           label: 'Bir karış bile vermem.',
-          reply: 'Tugan dişlerini gıcırdatır; halk dik duruşunu sever.',
-          relationEffect: -10,
+          reply: 'Tugan kılıcına davrandı; sınır boyunda çarpışma başladı!',
+          relationEffect: -12,
           peopleEffect: 6,
           councilEffect: 4,
+          raidPower: 120,
         ),
         DialogueChoice(
           label: 'Otlağı paylaşalım.',

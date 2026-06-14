@@ -12,6 +12,7 @@ import 'package:ashinagame/game/data/nations.dart';
 import 'package:ashinagame/game/data/npc_dialogues.dart';
 import 'package:ashinagame/game/models/household.dart';
 import 'package:ashinagame/game/models/nation.dart';
+import 'package:ashinagame/game/models/npc.dart';
 import 'package:ashinagame/game/models/resource.dart';
 import 'package:ashinagame/game/models/season.dart';
 import 'package:ashinagame/game/state/game_controller.dart';
@@ -822,6 +823,40 @@ void main() {
         (50 + choice.relationEffect).clamp(0, 100));
     expect(controller.state.peopleApproval, people + choice.peopleEffect);
     expect(controller.state.councilApproval, council + choice.councilEffect);
+  });
+
+  test('a dialogue can summon the council', () {
+    final controller = GameController.starter();
+    expect(controller.state.currentKurultay, isNull);
+    const summon = DialogueChoice(
+      label: 'Meclisi topla.',
+      reply: '',
+      triggersKurultay: 'war_council',
+    );
+    expect(controller.talkTo('kaya_atabek', summon), isTrue);
+    expect(controller.state.currentKurultay, 'war_council');
+  });
+
+  test('a defiant dialogue launches a raid with a battle report', () {
+    final base = StarterGameData.create();
+    final controller = GameController(
+      base.copyWith(
+        army: const {'heavy_cav': 40},
+        resources: {...base.resources, ResourceType.population: 300},
+      ),
+      random: _FixedRandom(0), // wins the raid
+    );
+    const raid = DialogueChoice(
+      label: 'Bir karış bile vermem.',
+      reply: '',
+      raidPower: 120,
+    );
+    final goldBefore = controller.state.resource(ResourceType.gold);
+    expect(controller.talkTo('tugan_bey', raid), isTrue);
+    expect(controller.lastBattle, isNotNull);
+    expect(controller.lastBattle!.won, isTrue);
+    expect(
+        controller.state.resource(ResourceType.gold), greaterThan(goldBefore));
   });
 
   test('npc relations survive a serializer round-trip', () {
