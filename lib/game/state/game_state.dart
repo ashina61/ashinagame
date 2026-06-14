@@ -73,6 +73,8 @@ class GameState {
     this.nationPolicies = const {},
     this.pendingNationPolicy,
     this.nationLoyalty = const {},
+    this.obaFounded = false,
+    this.landScouted = false,
   });
 
   static const baseDailyActionPoints = 4;
@@ -174,6 +176,19 @@ class GameState {
   /// How loyal each held province is (nation id → 0–100). Provinces that are
   /// neglected slide toward rebellion.
   final Map<String, int> nationLoyalty;
+
+  /// False while the player is still a lone traveller with a single tent.
+  /// Becomes true the moment the player names and raises their own oba — this
+  /// is the spine of the phase system: it flips navigation, unlocks the oba,
+  /// boy and campaign scenes, and lets the world begin to grow around you.
+  final bool obaFounded;
+
+  /// True once the player has scouted nearby lands and found ground fit to
+  /// settle an oba on. One of the conditions for founding an oba.
+  final bool landScouted;
+
+  /// Named figures whose bond has grown into a sworn follower (relation ≥ 75).
+  int get swornFollowers => npcRelations.values.where((v) => v >= 75).length;
 
   /// Bond with [npcId], defaulting to a neutral 50 when never spoken to.
   int relationWith(String npcId) => npcRelations[npcId] ?? 50;
@@ -292,6 +307,8 @@ class GameState {
     String? pendingNationPolicy,
     bool clearPendingNation = false,
     Map<String, int>? nationLoyalty,
+    bool? obaFounded,
+    bool? landScouted,
   }) {
     final nextMax = maxDailyActionPoints ?? this.maxDailyActionPoints;
     final nextAp = (dailyActionPoints ?? energy ?? this.dailyActionPoints)
@@ -354,6 +371,8 @@ class GameState {
           ? null
           : pendingNationPolicy ?? this.pendingNationPolicy,
       nationLoyalty: nationLoyalty ?? this.nationLoyalty,
+      obaFounded: obaFounded ?? this.obaFounded,
+      landScouted: landScouted ?? this.landScouted,
     );
   }
 }

@@ -16,6 +16,7 @@ import '../data/starter_game_data.dart';
 import '../logic/event_logic.dart';
 import '../logic/life_logic.dart';
 import '../logic/market_logic.dart';
+import '../logic/phase_logic.dart';
 import '../logic/progression_logic.dart';
 import '../logic/resource_logic.dart';
 import '../logic/season_logic.dart';
@@ -217,6 +218,8 @@ class GameController extends ChangeNotifier {
           16),
       resources: ResourceLogic.apply(_state.resources, effects),
       quests: _trackAction(GameActions.explore),
+      // Scouting the near country is how you find ground fit to settle on.
+      landScouted: true,
       log: _prependLog('$title keşfi tamamlandı.'),
     ));
     return true;
@@ -432,11 +435,13 @@ class GameController extends ChangeNotifier {
       }
     }
 
-    // A content, well-fed oba steadily draws and raises new people.
+    // A content, well-fed oba steadily draws and raises new people. A lone
+    // traveller with no oba yet draws no one — the world stays quiet.
     final growMorale = resources[ResourceType.morale] ?? 0;
     final growFood = resources[ResourceType.food] ?? 0;
     final growPop = resources[ResourceType.population] ?? 0;
-    if (growMorale >= 55 &&
+    if (_state.obaFounded &&
+        growMorale >= 55 &&
         growFood >= 40 &&
         growPop < 220 &&
         nextDay.day % 8 == 0) {
@@ -503,10 +508,12 @@ class GameController extends ChangeNotifier {
       log = ['Şifacı çadırında yaralılar iyileşiyor.', ...log].take(6).toList();
     }
 
-    // The council convenes on a fixed cadence when one is not already due.
+    // The council convenes on a fixed cadence — but only once there is an oba
+    // and a people to convene. A lone traveller holds no kurultay.
     var kurultayId = _state.currentKurultay;
     var lastKurultay = _state.lastKurultayDay;
-    if (kurultayId == null &&
+    if (_state.obaFounded &&
+        kurultayId == null &&
         !pendingSuccession &&
         nextDay.day - lastKurultay >= KurultayDecisions.period) {
       final pool = [
@@ -1310,17 +1317,23 @@ class GameController extends ChangeNotifier {
         wounded: wounded,
       ));
     } else {
+      // A rout can wound the leader too — health bleeds and fatigue mounts.
+      final hurtLeader = _state.profile.copyWith(
+        health: _state.profile.health - 8,
+        fatigue: _state.profile.fatigue + 10,
+      );
       _commit(_state.copyWith(
         dailyActionPoints: _state.dailyActionPoints - 1,
         army: army,
         wounded: wounded,
+        profile: hurtLeader,
         resources: ResourceLogic.apply(_state.resources, const {
           ResourceType.morale: -10,
           ResourceType.population: -5,
           ResourceType.food: -15,
         }),
-        log:
-            _prependLog('${castle.name} kuşatması püskürtüldü; kayıp verildi.'),
+        log: _prependLog(
+            '${castle.name} kuşatması püskürtüldü; sen de yara aldın.'),
       ));
     }
     return success;
@@ -1368,6 +1381,8 @@ class GameController extends ChangeNotifier {
     var gold = 0;
     for (final policyId in _state.nationPolicies.values) {
       switch (NationPolicyInfo.byId(policyId)) {
+        case NationPolicy.directRule:
+          gold += 20;
         case NationPolicy.vali:
           gold += 14;
         case NationPolicy.vassal:
@@ -1422,6 +1437,13 @@ class GameController extends ChangeNotifier {
         });
         vassals += nation.outerCastles.length;
         people += 8;
+      case NationPolicy.directRule:
+        resources = ResourceLogic.apply(resources, {
+          ResourceType.gold: reward,
+          ResourceType.reputation: rep + 2,
+        });
+        people -= 8;
+        council += 6;
     }
     // A razed land holds no people to revolt; the rest start at a loyalty set
     // by how the conquest was handled.
@@ -1429,6 +1451,7 @@ class GameController extends ChangeNotifier {
     final startLoyalty = switch (policy) {
       NationPolicy.vali => 70,
       NationPolicy.vassal => 78,
+      NationPolicy.directRule => 55,
       NationPolicy.yagma => 35,
       NationPolicy.yik => 0,
     };
@@ -1500,6 +1523,7 @@ class GameController extends ChangeNotifier {
       final order = switch (policy) {
         NationPolicy.vali => 1, // a governor keeps order
         NationPolicy.yagma => -1, // the plundered stay resentful
+        NationPolicy.directRule => -1, // no local lord to calm the land
         _ => 0,
       };
       final delta = -2 + hold + order;
@@ -1525,15 +1549,10 @@ class GameController extends ChangeNotifier {
     );
   }
 
-  /// Reputation and tent level required before a new oba may be founded.
-  static const foundObaReputation = 30;
-  static const foundObaTentLevel = 2;
-
-  /// You may only strike out on your own once your tent and name carry
-  /// weight: a raised main tent and enough reputation.
-  bool get canFoundNewOba =>
-      (_state.building('main_tent')?.level ?? 1) >= foundObaTentLevel &&
-      _state.profile.reputation >= foundObaReputation;
+  /// You may only found your oba once the full set of early-game milestones
+  /// is behind you: name, followers, a raised tent, a strong bond and a
+  /// scouted patch of land. See [PhaseLogic.foundingRequirements].
+  bool get canFoundNewOba => PhaseLogic.canFoundOba(_state);
 
   /// Gathers new people into the oba from a recruitment source. A respected
   /// bey (reputation) draws extra followers. Returns false without an action
@@ -1562,26 +1581,36 @@ class GameController extends ChangeNotifier {
     return true;
   }
 
-  /// Founds a brand-new oba under a chosen name and tamga, bound to the
-  /// khanate. A fresh young founder takes over; a small share of the old
-  /// treasury carries forward as a founding legacy.
+  /// Founds the player's own oba under a chosen name and tamga. The same young
+  /// founder carries on — this is not a generational reset; their sworn
+  /// followers now form the first households of a living settlement, so the
+  /// camp gains people and morale. This flips the game into the oba phase,
+  /// changing navigation and opening the oba, boy and campaign scenes.
   void foundNewOba(String name, String tamgaId) {
-    final fresh = StarterGameData.create();
+    if (_state.obaFounded || !canFoundNewOba) {
+      return;
+    }
     final trimmed = name.trim();
-    final legacyGold = _state.resource(ResourceType.gold) ~/ 10;
-    _commit(fresh.copyWith(
+    // The followers and their kin become the oba's founding population.
+    final founders = 8 + _state.swornFollowers * 4;
+    _commit(_state.copyWith(
+      obaFounded: true,
       clan: Clan(
-        name: trimmed.isEmpty ? fresh.clan.name : trimmed,
-        motto: fresh.clan.motto,
+        name: trimmed.isEmpty ? '${_state.profile.name} Obası' : trimmed,
+        motto: _state.clan.motto,
       ),
       tamga: tamgaId,
-      resources: ResourceLogic.apply(
-        fresh.resources,
-        {ResourceType.gold: legacyGold},
+      profile: _state.profile.copyWith(
+        title: 'Oba Beyi',
+        reputation: _state.profile.reputation + 5,
       ),
+      resources: ResourceLogic.apply(_state.resources, {
+        ResourceType.population: founders,
+        ResourceType.morale: 10,
+      }),
       log: [
-        '${trimmed.isEmpty ? fresh.clan.name : trimmed} obası kuruldu, '
-            'kağanlığa bağlandı.',
+        '${trimmed.isEmpty ? '${_state.profile.name} Obası' : trimmed} '
+            'kuruldu! Yandaşların ilk haneleri otağ kurdu.',
       ],
     ));
   }
@@ -1748,13 +1777,15 @@ class GameController extends ChangeNotifier {
     return true;
   }
 
-  /// Finishes first-run onboarding: names the oba and leader and opens play.
+  /// Finishes first-run onboarding: names the traveller (and the oba, if one
+  /// is supplied) and opens play.
   void completeOnboarding({
     required String obaName,
     required String leaderName,
   }) {
     final oba = obaName.trim();
     final leader = leaderName.trim();
+    final who = leader.isEmpty ? _state.profile.name : leader;
     _commit(_state.copyWith(
       onboarded: true,
       clan:
@@ -1762,7 +1793,7 @@ class GameController extends ChangeNotifier {
       profile: leader.isEmpty
           ? _state.profile
           : _state.profile.copyWith(name: leader),
-      log: _prependLog('$oba obasının ocağı yakıldı. Yeni bir ömür başladı.'),
+      log: _prependLog('$who tek çadırını kurdu. Yeni bir ömür başladı.'),
     ));
   }
 

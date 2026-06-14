@@ -38,7 +38,6 @@ class GameAssets {
   static const uiPanelAnnouncement = 'assets/images/ui/panel_announcement.png';
   static const uiPanelTitleWide = 'assets/images/ui/panel_title_wide.png';
   static const uiPanelField = 'assets/images/ui/panel_field.png';
-  static const navClan = 'assets/images/icons/nav_clan.png';
   static const iconCoinsMedallion = 'assets/images/icons/coins_medallion.png';
   static const iconMedallionHorse = 'assets/images/icons/medallion_horse.png';
   static const iconChestMedallion = 'assets/images/icons/chest_medallion.png';
@@ -120,8 +119,6 @@ class GameAssets {
       'assets/images/icons/item_shield_plain.png';
   static const uiButtonHazirlik = 'assets/images/ui/button_hazirlik.png';
   static const uiButtonYardimIste = 'assets/images/ui/button_yardim_iste.png';
-  static const uiButtonKlanMagazasi =
-      'assets/images/ui/button_klan_magazasi.png';
   static const iconCraftEmblem = 'assets/images/icons/craft_emblem.png';
   static const iconDaggersCrossed = 'assets/images/icons/daggers_crossed.png';
   static const iconYurtGold = 'assets/images/icons/yurt_gold.png';

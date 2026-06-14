@@ -14,12 +14,10 @@ class OnboardingScreen extends StatefulWidget {
 }
 
 class _OnboardingScreenState extends State<OnboardingScreen> {
-  final _oba = TextEditingController(text: 'Ashina Obası');
   final _leader = TextEditingController(text: 'Bumin');
 
   @override
   void dispose() {
-    _oba.dispose();
     _leader.dispose();
     super.dispose();
   }
@@ -54,16 +52,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             const SizedBox(height: 18),
             const OrnatePanel(
               child: Text(
-                'Gök sonsuz, bozkır geniş. Tek bir çadır, bir avuç insanla '
-                'başlıyorsun. Çalış, güçlen, evlen, soyunu büyüt; obanı kur, '
-                'kağana bağlan ya da kendi tahtını kovala.\n\n'
-                'Önce bir ad ver ocağına.',
+                'Gök sonsuz, bozkır geniş. 14 yaşında, tek bir çadır ve bir '
+                'atla yola çıkıyorsun. Çalış, güçlen, ad yap, yandaş topla, '
+                'evlen; sonra kendi obanı kur, kağana bağlan ya da kendi '
+                'tahtını kovala.\n\nÖnce kendine bir ad ver.',
                 style: AppTextStyles.body,
               ),
             ),
-            const SectionPlaque('OBA ADI'),
-            _Field(controller: _oba, hint: 'Örn. Ashina Obası', maxLen: 20),
-            const SectionPlaque('LİDER ADI'),
+            const SectionPlaque('ADIN'),
             _Field(controller: _leader, hint: 'Örn. Bumin', maxLen: 16),
             const SizedBox(height: 18),
             Padding(
@@ -72,8 +68,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 label: 'OCAĞI YAK',
                 onPressed: () {
                   AudioService.instance.playSfx('reward');
+                  // No oba yet — only the traveller is named here. The oba name
+                  // is chosen later, when one is founded.
                   controller.completeOnboarding(
-                    obaName: _oba.text,
+                    obaName: '',
                     leaderName: _leader.text,
                   );
                 },
