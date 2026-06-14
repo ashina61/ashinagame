@@ -580,6 +580,70 @@ class GameController extends ChangeNotifier {
       log = [...drift.notes, ...log].take(6).toList();
     }
 
+    // Enemy raids make the map feel alive: a free nation musters, a countdown
+    // ticks down over days, then the raid strikes — repelled by a strong host,
+    // costly to a weak one. The looming raid is shown so the player can arm up.
+    var raidCountdown = _state.raidCountdown;
+    var raidFrom = _state.raidFrom;
+    if (_state.obaFounded) {
+      if (raidCountdown > 0) {
+        raidCountdown -= 1;
+        if (raidCountdown <= 0) {
+          final nation = Nations.byId(raidFrom);
+          final raidPower = ((nation?.center.power ?? 80) * 0.6).round();
+          final s = warStrength;
+          final chance = (s * 100 / (s + raidPower)).round().clamp(10, 95);
+          final repelled = _random.nextInt(100) < chance;
+          if (repelled) {
+            resources = ResourceLogic.apply(resources, const {
+              ResourceType.reputation: 3,
+              ResourceType.morale: 3,
+              ResourceType.gold: 30,
+            });
+            log = ['${nation?.name ?? 'Düşman'} akını püskürtüldü!', ...log]
+                .take(6)
+                .toList();
+          } else {
+            resources = ResourceLogic.apply(resources, const {
+              ResourceType.gold: -40,
+              ResourceType.food: -20,
+              ResourceType.morale: -8,
+              ResourceType.population: -4,
+            });
+            log = [
+              '${nation?.name ?? 'Düşman'} akını obayı vurdu; kayıp verildi.',
+              ...log
+            ].take(6).toList();
+          }
+          raidFrom = '';
+          raidCountdown = 0;
+        } else {
+          log = [
+            '${Nations.byId(raidFrom)?.name ?? 'Düşman'} akını '
+                '$raidCountdown gün uzakta.',
+            ...log
+          ].take(6).toList();
+        }
+      } else if (nextDay.day % 12 == 0) {
+        Nation? src;
+        var best = -1;
+        for (final n in Nations.all) {
+          if (_state.nationConquered(n.id)) continue;
+          if (n.center.power > best) {
+            best = n.center.power;
+            src = n;
+          }
+        }
+        if (src != null) {
+          raidCountdown = 3;
+          raidFrom = src.id;
+          log = ['${src.name} sınıra akın için toplanıyor (3 gün).', ...log]
+              .take(6)
+              .toList();
+        }
+      }
+    }
+
     final eventIndex = _state.eventIndex + 1;
     var omenState = _rollOmen(resources);
     // A Kam (kam role) steadies the camp: a bad omen is read away to neutral.
@@ -618,6 +682,8 @@ class GameController extends ChangeNotifier {
       currentEvent: pendingSuccession ? null : EventLogic.nextEvent(eventIndex),
       clearEvent: pendingSuccession,
       eventIndex: eventIndex,
+      raidCountdown: raidCountdown,
+      raidFrom: raidFrom,
       log: log,
     ));
   }

@@ -76,6 +76,8 @@ class GameState {
     this.obaFounded = false,
     this.landScouted = false,
     this.companionRoles = const {},
+    this.raidCountdown = 0,
+    this.raidFrom = '',
   });
 
   static const baseDailyActionPoints = 4;
@@ -191,6 +193,15 @@ class GameState {
   /// Roles assigned to sworn followers when the oba is founded (npc id → role
   /// id, see [CompanionRoles]). Each role grants a small standing bonus.
   final Map<String, String> companionRoles;
+
+  /// Days until a gathering enemy raid strikes the oba, 0 when none looms.
+  final int raidCountdown;
+
+  /// Id of the nation mustering the looming raid, empty when none.
+  final String raidFrom;
+
+  /// True while an enemy raid is on its way to the oba.
+  bool get raidLooming => raidCountdown > 0 && raidFrom.isNotEmpty;
 
   /// Named figures whose bond has grown into a sworn follower (relation ≥ 75).
   int get swornFollowers => npcRelations.values.where((v) => v >= 75).length;
@@ -315,6 +326,8 @@ class GameState {
     bool? obaFounded,
     bool? landScouted,
     Map<String, String>? companionRoles,
+    int? raidCountdown,
+    String? raidFrom,
   }) {
     final nextMax = maxDailyActionPoints ?? this.maxDailyActionPoints;
     final nextAp = (dailyActionPoints ?? energy ?? this.dailyActionPoints)
@@ -380,6 +393,8 @@ class GameState {
       obaFounded: obaFounded ?? this.obaFounded,
       landScouted: landScouted ?? this.landScouted,
       companionRoles: companionRoles ?? this.companionRoles,
+      raidCountdown: raidCountdown ?? this.raidCountdown,
+      raidFrom: raidFrom ?? this.raidFrom,
     );
   }
 }

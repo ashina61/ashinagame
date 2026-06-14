@@ -143,6 +143,17 @@ class _RaidThreatBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final state = GameScope.of(context).state;
+
+    // An active, counting-down raid takes priority over the idle threat line.
+    if (state.raidLooming) {
+      final nation = Nations.byId(state.raidFrom);
+      return _banner(
+        '${nation?.name ?? 'Düşman'} akını ${state.raidCountdown} gün sonra '
+        'geliyor! Ordunu hazırla.',
+        strong: true,
+      );
+    }
+
     Nation? threat;
     var best = -1;
     for (final n in Nations.all) {
@@ -153,13 +164,23 @@ class _RaidThreatBanner extends StatelessWidget {
       }
     }
     if (threat == null) return const SizedBox.shrink();
+    return _banner(
+      'Sınırda hareket var: ${threat.name} (${threat.ruler}) akına '
+      'hazırlanıyor.',
+    );
+  }
+
+  Widget _banner(String text, {bool strong = false}) {
     return Container(
       margin: const EdgeInsets.fromLTRB(12, 0, 12, 8),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
         color: AppColors.leatherDeep.withValues(alpha: 0.85),
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: AppColors.danger.withValues(alpha: 0.6)),
+        border: Border.all(
+          color: AppColors.danger.withValues(alpha: strong ? 0.9 : 0.6),
+          width: strong ? 1.6 : 1,
+        ),
       ),
       child: Row(
         children: [
@@ -167,9 +188,9 @@ class _RaidThreatBanner extends StatelessWidget {
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-              'Sınırda hareket var: ${threat.name} (${threat.ruler}) '
-              'akına hazırlanıyor.',
-              style: AppTextStyles.meta,
+              text,
+              style: AppTextStyles.meta
+                  .copyWith(color: strong ? AppColors.danger : null),
             ),
           ),
         ],
