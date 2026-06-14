@@ -503,13 +503,18 @@ class OrnateNavBar extends StatelessWidget {
   const OrnateNavBar({
     required this.index,
     required this.onChanged,
+    this.items = defaultItems,
     super.key,
   });
 
   final int index;
   final ValueChanged<int> onChanged;
 
-  static const _items = [
+  /// Each entry is (icon asset, label). The router swaps the set as the game
+  /// moves from the lone-tent phase into the oba phase.
+  final List<(String, String)> items;
+
+  static const defaultItems = [
     (GameAssets.navHome, 'Ana Sayfa'),
     (GameAssets.iconPopulationMedallion, 'Karakter'),
     (GameAssets.navAtelier, 'Oba'),
@@ -527,7 +532,7 @@ class OrnateNavBar extends StatelessWidget {
       ),
       child: Row(
         children: [
-          for (var i = 0; i < _items.length; i++)
+          for (var i = 0; i < items.length; i++)
             Expanded(
               child: GestureDetector(
                 onTap: () => onChanged(i),
@@ -548,14 +553,14 @@ class OrnateNavBar extends StatelessWidget {
                             )
                           : null,
                       child: Image.asset(
-                        _items[i].$1,
+                        items[i].$1,
                         width: i == index ? 42 : 36,
                         height: i == index ? 42 : 36,
                       ),
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      _items[i].$2,
+                      items[i].$2,
                       style: i == index
                           ? AppTextStyles.navLabel
                               .copyWith(color: AppColors.goldBright)

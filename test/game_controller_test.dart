@@ -17,6 +17,7 @@ import 'package:ashinagame/game/models/resource.dart';
 import 'package:ashinagame/game/models/season.dart';
 import 'package:ashinagame/game/state/game_controller.dart';
 import 'package:ashinagame/game/state/game_serializer.dart';
+import 'package:ashinagame/game/state/game_state.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 class _FixedRandom implements Random {
@@ -28,6 +29,23 @@ class _FixedRandom implements Random {
   bool nextBool() => false;
   @override
   double nextDouble() => 0;
+}
+
+/// A state that satisfies every milestone for founding an oba: a name worth
+/// 55 reputation, three sworn followers, a raised tent, a marriage, and
+/// scouted land.
+GameState _foundableState() {
+  final base = StarterGameData.create();
+  return base.copyWith(
+    landScouted: true,
+    household: const Household(spouseName: 'Aybüke'),
+    npcRelations: const {'kaya_atabek': 80, 'alis_hatun': 85, 'bori_bey': 90},
+    profile: base.profile.copyWith(reputation: 55),
+    buildings: [
+      for (final b in base.buildings)
+        if (b.id == 'main_tent') b.copyWith(level: 2) else b,
+    ],
+  );
 }
 
 void main() {
@@ -97,11 +115,20 @@ void main() {
   });
 
   test('building upgrade spends resources and insufficient resources fail', () {
-    final controller = GameController.starter();
+    final base = StarterGameData.create();
+    // Exactly enough for the storage upgrade (wood 35, stone 20), leaving the
+    // watchtower (wood 45, stone 15) unaffordable afterwards.
+    final controller = GameController(
+      base.copyWith(resources: {
+        ...base.resources,
+        ResourceType.wood: 35,
+        ResourceType.stone: 20,
+      }),
+    );
     expect(controller.upgradeBuilding('storage'), isTrue);
     expect(controller.state.building('storage')!.level, 2);
-    expect(controller.state.resource(ResourceType.wood), 25);
-    expect(controller.state.resource(ResourceType.stone), 10);
+    expect(controller.state.resource(ResourceType.wood), 0);
+    expect(controller.state.resource(ResourceType.stone), 0);
     expect(controller.upgradeBuilding('watchtower'), isFalse);
     expect(controller.state.building('watchtower')!.level, 1);
   });
@@ -174,7 +201,10 @@ void main() {
   });
 
   test('ritual spends resources and cooldown blocks repeat', () {
-    final controller = GameController.starter();
+    final base = StarterGameData.create();
+    final controller = GameController(
+      base.copyWith(resources: {...base.resources, ResourceType.gold: 200}),
+    );
     final beforeGold = controller.state.resource(ResourceType.gold);
     expect(controller.performRitual('sky_oath'), isTrue);
     expect(controller.state.resource(ResourceType.gold), beforeGold - 80);
@@ -456,20 +486,24 @@ void main() {
     expect(controller.equipmentBonus, 0);
   });
 
-  test('founding a new oba is gated behind tent level and reputation', () {
+  test('founding an oba is gated behind the full early-game milestone set', () {
     final base = StarterGameData.create();
     final weak = GameController(base);
     expect(weak.canFoundNewOba, isFalse);
 
-    final ready = GameController(
+    // Reputation and a raised tent alone are not enough any more.
+    final halfway = GameController(
       base.copyWith(
         buildings: [
           for (final b in base.buildings)
             if (b.id == 'main_tent') b.copyWith(level: 2) else b,
         ],
-        profile: base.profile.copyWith(reputation: 40),
+        profile: base.profile.copyWith(reputation: 55),
       ),
     );
+    expect(halfway.canFoundNewOba, isFalse);
+
+    final ready = GameController(_foundableState());
     expect(ready.canFoundNewOba, isTrue);
   });
 
@@ -533,6 +567,7 @@ void main() {
     final base = StarterGameData.create();
     final controller = GameController(
       base.copyWith(
+        obaFounded: true, // a lone tent draws no one; an oba does
         day: const GameDay(day: 7, season: Season.spring),
         resources: {
           ...base.resources,
@@ -546,10 +581,28 @@ void main() {
     expect(controller.state.resource(ResourceType.population), 42);
   });
 
+  test('a lone traveller draws no new people before founding an oba', () {
+    final base = StarterGameData.create();
+    final controller = GameController(
+      base.copyWith(
+        day: const GameDay(day: 7, season: Season.spring),
+        resources: {
+          ...base.resources,
+          ResourceType.morale: 80,
+          ResourceType.food: 400,
+          ResourceType.population: 40,
+        },
+      ),
+    );
+    controller.endDay(); // no oba yet -> population holds
+    expect(controller.state.resource(ResourceType.population), 40);
+  });
+
   test('the council convenes on schedule and decisions shift approval', () {
     final base = StarterGameData.create();
     final controller = GameController(
       base.copyWith(
+        obaFounded: true, // the council only convenes once there is an oba
         day: const GameDay(day: 9, season: Season.spring),
         resources: {...base.resources, ResourceType.food: 400},
       ),
@@ -651,7 +704,10 @@ void main() {
   });
 
   test('khanate duties shift standing and resources', () {
-    final controller = GameController.starter();
+    final base = StarterGameData.create();
+    final controller = GameController(
+      base.copyWith(resources: {...base.resources, ResourceType.gold: 250}),
+    );
     final standing = controller.state.khanateStanding;
 
     expect(controller.payTribute(), isTrue);
@@ -685,26 +741,34 @@ void main() {
     expect(strong.state.profile.title, 'Kağan');
   });
 
-  test('founding a new oba resets the run with chosen name and tamga', () {
-    final controller = GameController.starter();
-    controller.endDay();
-    controller.endDay();
+  test('founding an oba keeps the founder and flips into the oba phase', () {
+    final controller = GameController(_foundableState());
+    expect(controller.state.obaFounded, isFalse);
+    final ageBefore = controller.state.profile.age;
+    final popBefore = controller.state.resource(ResourceType.population);
 
     controller.foundNewOba('Gökböri Obası', 'war');
 
+    expect(controller.state.obaFounded, isTrue);
     expect(controller.state.clan.name, 'Gökböri Obası');
     expect(controller.state.tamga, 'war');
+    // The same young founder carries on — no generational reset.
+    expect(controller.state.profile.age, ageBefore);
     expect(controller.state.generation, 1);
-    expect(controller.state.day.day, 1);
-    expect(controller.state.profile.age, 14);
-    // Falls back to the default name when given blank input.
-    controller.foundNewOba('   ', 'wolf');
-    expect(controller.state.clan.name, isNotEmpty);
-    expect(controller.state.tamga, 'wolf');
+    // Followers form the first households, so the camp gains people.
+    expect(controller.state.resource(ResourceType.population),
+        greaterThan(popBefore));
+  });
+
+  test('founding an oba does nothing while the milestones are unmet', () {
+    final controller = GameController.starter();
+    controller.foundNewOba('Erken Oba', 'war');
+    expect(controller.state.obaFounded, isFalse);
+    expect(controller.state.clan.name, isNot('Erken Oba'));
   });
 
   test('new meta fields survive a serializer round-trip', () {
-    final controller = GameController.starter();
+    final controller = GameController(_foundableState());
     controller.foundNewOba('Test Obası', 'yurt');
     controller.chooseFaithPath('atalar_kultu');
 

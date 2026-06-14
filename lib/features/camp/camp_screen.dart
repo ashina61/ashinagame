@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 
 import '../../app/theme/app_colors.dart';
 import '../../app/theme/app_text_styles.dart';
+import '../../core/assets/game_assets.dart';
 import '../../core/utils/formatters.dart';
 import '../../core/widgets/ornate.dart';
 import '../../game/data/faith_paths.dart';
+import '../../game/data/tamgas.dart';
 import '../../game/models/camp_building.dart';
 import '../../game/models/resource.dart';
 import '../../game/state/game_scope.dart';
@@ -25,15 +27,47 @@ class CampScreen extends StatelessWidget {
               padding: const EdgeInsets.only(top: 4, bottom: 16),
               children: [
                 OrnatePanel(
+                  backgroundAsset: GameAssets.bgSceneCampNight,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('Çadır ve Oba Yönetimi',
-                          style: AppTextStyles.title),
-                      const SizedBox(height: 6),
-                      Text(
-                        'Aksiyon ${state.dailyActionPoints}/${state.maxDailyActionPoints} • Nüfus ${state.resource(ResourceType.population)} • Moral ${state.resource(ResourceType.morale)}/100',
-                        style: AppTextStyles.body,
+                      Row(
+                        children: [
+                          Image.asset(
+                            Tamgas.byId(state.tamga).asset,
+                            width: 48,
+                            height: 48,
+                            errorBuilder: (_, __, ___) =>
+                                const SizedBox(width: 48, height: 48),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(state.clan.name,
+                                    style: AppTextStyles.title),
+                                Text(state.clan.motto,
+                                    style: AppTextStyles.meta),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      Wrap(
+                        spacing: 14,
+                        runSpacing: 4,
+                        children: [
+                          _ObaStat('Nüfus',
+                              state.resource(ResourceType.population)),
+                          _ObaStat(
+                              'Moral', state.resource(ResourceType.morale)),
+                          _ObaStat('Sadakat', state.peopleApproval),
+                          _ObaStat('Güvenlik', state.councilApproval),
+                          _ObaStat('Erzak', state.resource(ResourceType.food)),
+                          _ObaStat('At', state.resource(ResourceType.horse)),
+                        ],
                       ),
                       const SizedBox(height: 10),
                       GoldButton(
@@ -62,6 +96,26 @@ class CampScreen extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _ObaStat extends StatelessWidget {
+  const _ObaStat(this.label, this.value);
+
+  final String label;
+  final int value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text('$label ',
+            style: AppTextStyles.meta.copyWith(color: AppColors.stone)),
+        Text('$value',
+            style: AppTextStyles.value.copyWith(color: AppColors.goldBright)),
+      ],
     );
   }
 }

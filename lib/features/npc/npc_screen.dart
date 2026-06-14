@@ -11,9 +11,23 @@ import '../../game/state/game_scope.dart';
 import '../conquest/battle_report_dialog.dart';
 
 /// Roster of named figures the leader can speak with. Each carries a living
-/// relationship that shifts as conversations play out.
+/// relationship that shifts as conversations play out. The framing (title,
+/// intro and an optional top panel) is configurable so the same roster serves
+/// both the early-game "Yakınlar" scene and the post-oba "Oba Halkı".
 class NpcScreen extends StatelessWidget {
-  const NpcScreen({super.key});
+  const NpcScreen({
+    this.title = 'Oba Halkı',
+    this.intro = 'Beylerin, ocağın ve komşuların gönlünü konuşarak kazan. Her '
+        'sohbet bir aksiyon harcar; sözlerin halkı ve meclisi de etkiler.',
+    this.topPanel,
+    this.showBack = true,
+    super.key,
+  });
+
+  final String title;
+  final String intro;
+  final Widget? topPanel;
+  final bool showBack;
 
   @override
   Widget build(BuildContext context) {
@@ -27,14 +41,9 @@ class NpcScreen extends StatelessWidget {
       body: OrnateScaffold(
         child: Column(
           children: [
-            const OrnateHeader(title: 'Oba Halkı', showBack: true),
-            const OrnatePanel(
-              child: Text(
-                'Beylerin, ocağın ve komşuların gönlünü konuşarak kazan. Her '
-                'sohbet bir aksiyon harcar; sözlerin halkı ve meclisi de etkiler.',
-                style: AppTextStyles.body,
-              ),
-            ),
+            OrnateHeader(title: title, showBack: showBack),
+            OrnatePanel(child: Text(intro, style: AppTextStyles.body)),
+            if (topPanel != null) topPanel!,
             Expanded(
               child: ListView(
                 padding: const EdgeInsets.only(top: 4, bottom: 16),

@@ -4,7 +4,7 @@ import '../../app/theme/app_colors.dart';
 import '../../app/theme/app_text_styles.dart';
 import '../../core/widgets/ornate.dart';
 import '../../game/data/tamgas.dart';
-import '../../game/state/game_controller.dart';
+import '../../game/logic/phase_logic.dart';
 import '../../game/state/game_scope.dart';
 
 class FoundObaScreen extends StatefulWidget {
@@ -39,27 +39,49 @@ class _FoundObaScreenState extends State<FoundObaScreen> {
                 children: [
                   const OrnatePanel(
                     child: Text(
-                      'Soyun bir kenara çekilip kendi obanı kuruyorsun. '
-                      'Obana bir ad ve bir tamga seç; kağanlığa bağlı yeni '
-                      'bir ocak yakılacak.',
+                      'Tek çadırla başladığın yolun sonuna geldin. Artık kendi '
+                      'obanı kuruyorsun. Obana bir ad ve bir tamga seç; '
+                      'yandaşlarınla ilk otağ kurulacak.',
                       style: AppTextStyles.body,
                     ),
                   ),
-                  if (!canFound)
-                    OrnatePanel(
-                      child: Text(
-                        'Kendi obanı kurmak için önce ana çadırını '
-                        '${GameController.foundObaTentLevel}. seviyeye '
-                        'yükselt ve itibarını '
-                        '${GameController.foundObaReputation}’a çıkar. '
-                        '(Şu an çadır '
-                        '${controller.state.building('main_tent')?.level ?? 1}, '
-                        'itibar ${controller.state.profile.reputation}.)',
-                        style: AppTextStyles.meta.copyWith(
-                          color: AppColors.danger,
-                        ),
-                      ),
+                  OrnatePanel(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text('OBA KURMA ŞARTLARI',
+                            style: AppTextStyles.section),
+                        const SizedBox(height: 8),
+                        for (final r in PhaseLogic.foundingRequirements(
+                            controller.state))
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 3),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  r.met
+                                      ? Icons.check_circle
+                                      : Icons.radio_button_unchecked,
+                                  size: 16,
+                                  color: r.met
+                                      ? AppColors.success
+                                      : AppColors.danger,
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(r.label,
+                                      style: AppTextStyles.meta),
+                                ),
+                                Text(r.progress,
+                                    style: AppTextStyles.meta.copyWith(
+                                      color: AppColors.goldBright,
+                                    )),
+                              ],
+                            ),
+                          ),
+                      ],
                     ),
+                  ),
                   const SectionPlaque('OBA ADI'),
                   OrnatePanel(
                     child: TextField(
