@@ -21,7 +21,11 @@ class BoyScreen extends StatelessWidget {
     return OrnateScaffold(
       child: Column(
         children: [
-          const OrnateHeader(title: 'Boy'),
+          const OrnateHeader(
+            title: 'Boy',
+            subtitle: 'Boy Üyeleri ve Diplomasi',
+            showBack: true,
+          ),
           Expanded(
             child: ListView(
               padding: const EdgeInsets.only(top: 4, bottom: 16),

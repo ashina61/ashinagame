@@ -27,7 +27,10 @@ String goodIcon(String goodId) => switch (goodId) {
     };
 
 class MarketScreen extends StatefulWidget {
-  const MarketScreen({super.key});
+  const MarketScreen({this.isTab = false, super.key});
+
+  /// True when shown as the bottom-nav "Han" tab (no back button).
+  final bool isTab;
 
   @override
   State<MarketScreen> createState() => _MarketScreenState();
@@ -64,34 +67,27 @@ class _MarketScreenState extends State<MarketScreen> {
   @override
   Widget build(BuildContext context) {
     final controller = GameScope.of(context);
-    final gold = controller.state.resource(ResourceType.gold);
+    final state = controller.state;
 
     return Scaffold(
       body: OrnateScaffold(
         child: Column(
           children: [
-            const OrnateHeader(title: 'Pazar', showBack: true),
-            Align(
-              alignment: Alignment.centerLeft,
-              child: Container(
-                height: 34,
-                margin: const EdgeInsets.fromLTRB(12, 2, 0, 4),
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                decoration: const BoxDecoration(
-                  image: DecorationImage(
-                    image: AssetImage(GameAssets.uiPanelPill),
-                    fit: BoxFit.fill,
-                  ),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Image.asset(GameAssets.iconCoinGold, width: 18, height: 18),
-                    const SizedBox(width: 6),
-                    Text('$gold', style: AppTextStyles.value),
-                  ],
-                ),
-              ),
+            OrnateHeader(
+              title: 'Han',
+              subtitle: 'Tüccarlar, Askerler ve Söylentiler',
+              showBack: !widget.isTab,
+            ),
+            ResourceBar(
+              entries: [
+                (GameAssets.iconCoinGold, '${state.resource(ResourceType.gold)}'),
+                (GameAssets.iconFood, '${state.resource(ResourceType.food)}'),
+                (GameAssets.iconItemHorse,
+                    '${state.resource(ResourceType.horse)}'),
+                (GameAssets.iconArmyEmblem, '${controller.armyStrength}'),
+                (GameAssets.iconScrollMedallion,
+                    '${state.resource(ResourceType.reputation)}'),
+              ],
             ),
             OrnateTabs(
               tabs: const ['Satın Al', 'Sat', 'Teklifler'],

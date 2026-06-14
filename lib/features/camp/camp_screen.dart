@@ -8,6 +8,8 @@ import '../../game/data/faith_paths.dart';
 import '../../game/models/camp_building.dart';
 import '../../game/models/resource.dart';
 import '../../game/state/game_scope.dart';
+import '../boy/boy_screen.dart';
+import '../khanate/khanate_screen.dart';
 import '../npc/npc_screen.dart';
 
 class CampScreen extends StatelessWidget {
@@ -44,6 +46,32 @@ class CampScreen extends StatelessWidget {
                             builder: (_) => const NpcScreen(),
                           ),
                         ),
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: DarkButton(
+                              label: 'BOY / DİPLOMASİ',
+                              onPressed: () => Navigator.of(context).push(
+                                MaterialPageRoute<void>(
+                                  builder: (_) => const BoyScreen(),
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: DarkButton(
+                              label: 'KAĞANLIK',
+                              onPressed: () => Navigator.of(context).push(
+                                MaterialPageRoute<void>(
+                                  builder: (_) => const KhanateScreen(),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),

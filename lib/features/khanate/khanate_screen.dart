@@ -22,7 +22,11 @@ class KhanateScreen extends StatelessWidget {
         backgroundAsset: GameAssets.bgSceneFortressNight,
         child: Column(
           children: [
-            const OrnateHeader(title: 'Kağanlık', showBack: true),
+            const OrnateHeader(
+              title: 'Kağanlık',
+              subtitle: 'Kağan ve Boylar Arasındaki Gücü Yönet',
+              showBack: true,
+            ),
             Expanded(
               child: ListView(
                 padding: const EdgeInsets.only(top: 4, bottom: 16),
