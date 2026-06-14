@@ -45,8 +45,13 @@ class GameSerializer {
         },
         'clan': {'name': state.clan.name, 'motto': state.clan.motto},
         'day': {'day': state.day.day, 'season': state.day.season.name},
-        'resources': {for (final e in state.resources.entries) e.key.name: e.value},
-        'quests': [for (final q in state.quests) {'id': q.id, 'progress': q.progress, 'completed': q.completed}],
+        'resources': {
+          for (final e in state.resources.entries) e.key.name: e.value
+        },
+        'quests': [
+          for (final q in state.quests)
+            {'id': q.id, 'progress': q.progress, 'completed': q.completed}
+        ],
         'eventId': state.currentEvent?.id,
         'eventIndex': state.eventIndex,
         'log': state.log,
@@ -56,12 +61,25 @@ class GameSerializer {
         'collapseDays': state.collapseDays,
         'gameOver': state.gameOver,
         'gameOverReason': state.gameOverReason,
-        'craftQueue': [for (final j in state.craftQueue) {'recipeId': j.recipeId, 'daysLeft': j.daysLeft}],
+        'craftQueue': [
+          for (final j in state.craftQueue)
+            {'recipeId': j.recipeId, 'daysLeft': j.daysLeft}
+        ],
         'craftedItems': state.craftedItems,
         'completedExpeditions': state.completedExpeditions,
         'marketStock': state.marketStock,
-        'buildings': [for (final b in state.buildings) {'id': b.id, 'level': b.level}],
-        'tribes': [for (final t in state.tribes) {'id': t.id, 'relation': t.relation, 'tradeOpen': t.tradeOpen, 'marriageTie': t.marriageTie}],
+        'buildings': [
+          for (final b in state.buildings) {'id': b.id, 'level': b.level}
+        ],
+        'tribes': [
+          for (final t in state.tribes)
+            {
+              'id': t.id,
+              'relation': t.relation,
+              'tradeOpen': t.tradeOpen,
+              'marriageTie': t.marriageTie
+            }
+        ],
         'household': {
           'spouseName': state.household.spouseName,
           'spouseBonus': state.household.spouseBonus,
@@ -69,7 +87,15 @@ class GameSerializer {
           'childrenCount': state.household.childrenCount,
           'familyPrestige': state.household.familyPrestige,
         },
-        'marriageCandidates': [for (final c in state.marriageCandidates) {'id': c.id, 'relation': c.relation, 'isAvailable': c.isAvailable, 'isMarriedToPlayer': c.isMarriedToPlayer}],
+        'marriageCandidates': [
+          for (final c in state.marriageCandidates)
+            {
+              'id': c.id,
+              'relation': c.relation,
+              'isAvailable': c.isAvailable,
+              'isMarriedToPlayer': c.isMarriedToPlayer
+            }
+        ],
         'faithState': {
           'faith': state.faithState.faith,
           'kut': state.faithState.kut,
@@ -88,6 +114,29 @@ class GameSerializer {
           'level': state.spiritualAdvisor.level,
         },
         'ritualCooldowns': state.ritualCooldowns,
+        'generation': state.generation,
+        'pendingSuccession': state.pendingSuccession,
+        'leaderLifespan': state.leaderLifespan,
+        'claimedAchievements': state.claimedAchievements,
+        'faithPath': state.faithPath,
+        'tamga': state.tamga,
+        'khanateStanding': state.khanateStanding,
+        'isKhan': state.isKhan,
+        'vassalObas': state.vassalObas,
+        'equipped': state.equipped,
+        'regionRelations': state.regionRelations,
+        'conqueredRegions': state.conqueredRegions,
+        'onboarded': state.onboarded,
+        'peopleApproval': state.peopleApproval,
+        'councilApproval': state.councilApproval,
+        'currentKurultay': state.currentKurultay,
+        'lastKurultayDay': state.lastKurultayDay,
+        'army': state.army,
+        'wounded': state.wounded,
+        'npcRelations': state.npcRelations,
+        'nationPolicies': state.nationPolicies,
+        'pendingNationPolicy': state.pendingNationPolicy,
+        'nationLoyalty': state.nationLoyalty,
       });
 
   static GameState? decode(String raw) {
@@ -121,35 +170,100 @@ class GameSerializer {
           familyStatus: profile['familyStatus'] as String? ?? 'Bekâr hane',
           marriageStatus: profile['marriageStatus'] as String? ?? 'Bekâr',
         ),
-        clan: Clan(name: clan['name'] as String, motto: clan['motto'] as String),
-        day: GameDay(day: day['day'] as int, season: Season.values.byName(day['season'] as String)),
-        resources: {for (final e in (json['resources'] as Map<String, dynamic>).entries) ResourceType.values.byName(e.key): e.value as int},
+        clan:
+            Clan(name: clan['name'] as String, motto: clan['motto'] as String),
+        day: GameDay(
+            day: day['day'] as int,
+            season: Season.values.byName(day['season'] as String)),
+        resources: {
+          for (final e in (json['resources'] as Map<String, dynamic>).entries)
+            ResourceType.values.byName(e.key): e.value as int
+        },
         quests: _decodeQuests(json['quests'] as List<dynamic>),
-        currentEvent: eventId == null ? null : StarterGameData.events.firstWhere((e) => e.id == eventId),
+        currentEvent: eventId == null
+            ? null
+            : StarterGameData.events.firstWhere((e) => e.id == eventId),
         eventIndex: json['eventIndex'] as int,
         log: (json['log'] as List<dynamic>).cast<String>(),
-        dailyActionPoints: json['dailyActionPoints'] as int? ?? json['energy'] as int? ?? GameState.baseDailyActionPoints,
-        maxDailyActionPoints: json['maxDailyActionPoints'] as int? ?? GameState.baseDailyActionPoints,
+        dailyActionPoints: json['dailyActionPoints'] as int? ??
+            json['energy'] as int? ??
+            GameState.baseDailyActionPoints,
+        maxDailyActionPoints: json['maxDailyActionPoints'] as int? ??
+            GameState.baseDailyActionPoints,
         energy: json['energy'] as int? ?? GameState.baseDailyActionPoints,
         collapseDays: json['collapseDays'] as int,
         gameOver: json['gameOver'] as bool,
         gameOverReason: json['gameOverReason'] as String?,
-        craftQueue: [for (final job in (json['craftQueue'] as List<dynamic>? ?? []).cast<Map<String, dynamic>>()) CraftJob(recipeId: job['recipeId'] as String, daysLeft: job['daysLeft'] as int)],
-        craftedItems: (json['craftedItems'] as Map<String, dynamic>? ?? {}).cast<String, int>(),
-        completedExpeditions: (json['completedExpeditions'] as List<dynamic>? ?? []).cast<String>(),
-        marketStock: switch ((json['marketStock'] as Map<String, dynamic>? ?? {}).cast<String, int>()) { final stock when stock.isEmpty => MarketGoods.startingStock(), final stock => stock },
+        craftQueue: [
+          for (final job in (json['craftQueue'] as List<dynamic>? ?? [])
+              .cast<Map<String, dynamic>>())
+            CraftJob(
+                recipeId: job['recipeId'] as String,
+                daysLeft: job['daysLeft'] as int)
+        ],
+        craftedItems: (json['craftedItems'] as Map<String, dynamic>? ?? {})
+            .cast<String, int>(),
+        completedExpeditions:
+            (json['completedExpeditions'] as List<dynamic>? ?? [])
+                .cast<String>(),
+        marketStock: switch (
+            (json['marketStock'] as Map<String, dynamic>? ?? {})
+                .cast<String, int>()) {
+          final stock when stock.isEmpty => MarketGoods.startingStock(),
+          final stock => stock
+        },
         buildings: _decodeBuildings(json['buildings'] as List<dynamic>?),
         tribes: _decodeTribes(json['tribes'] as List<dynamic>?),
         household: _decodeHousehold(json['household'] as Map<String, dynamic>?),
-        marriageCandidates: _decodeCandidates(json['marriageCandidates'] as List<dynamic>?),
-        faithState: _decodeFaithState(json['faithState'] as Map<String, dynamic>?),
+        marriageCandidates:
+            _decodeCandidates(json['marriageCandidates'] as List<dynamic>?),
+        faithState:
+            _decodeFaithState(json['faithState'] as Map<String, dynamic>?),
         spiritualAdvisor: StarterGameData.spiritualAdvisor.copyWith(
-          level: (json['spiritualAdvisor'] as Map<String, dynamic>?)?['level'] as int?,
-          lastConsultDay: (json['spiritualAdvisor'] as Map<String, dynamic>?)?['lastConsultDay'] as int?,
+          level: (json['spiritualAdvisor'] as Map<String, dynamic>?)?['level']
+              as int?,
+          lastConsultDay: (json['spiritualAdvisor']
+              as Map<String, dynamic>?)?['lastConsultDay'] as int?,
         ),
         rituals: StarterGameData.rituals,
         sacredPlaces: StarterGameData.sacredPlaces,
-        ritualCooldowns: (json['ritualCooldowns'] as Map<String, dynamic>? ?? {}).cast<String, int>(),
+        ritualCooldowns:
+            (json['ritualCooldowns'] as Map<String, dynamic>? ?? {})
+                .cast<String, int>(),
+        generation: json['generation'] as int? ?? 1,
+        pendingSuccession: json['pendingSuccession'] as bool? ?? false,
+        leaderLifespan: json['leaderLifespan'] as int? ?? 64,
+        claimedAchievements:
+            (json['claimedAchievements'] as List<dynamic>? ?? [])
+                .cast<String>(),
+        faithPath: json['faithPath'] as String? ?? '',
+        tamga: json['tamga'] as String? ?? 'wolf',
+        khanateStanding: json['khanateStanding'] as int? ?? 20,
+        isKhan: json['isKhan'] as bool? ?? false,
+        vassalObas: json['vassalObas'] as int? ?? 0,
+        equipped: (json['equipped'] as Map<String, dynamic>? ?? {})
+            .cast<String, String>(),
+        regionRelations:
+            (json['regionRelations'] as Map<String, dynamic>? ?? {})
+                .cast<String, int>(),
+        conqueredRegions:
+            (json['conqueredRegions'] as List<dynamic>? ?? []).cast<String>(),
+        // Existing saves predate onboarding, so treat them as done.
+        onboarded: json['onboarded'] as bool? ?? true,
+        peopleApproval: json['peopleApproval'] as int? ?? 60,
+        councilApproval: json['councilApproval'] as int? ?? 60,
+        currentKurultay: json['currentKurultay'] as String?,
+        lastKurultayDay: json['lastKurultayDay'] as int? ?? 0,
+        army: (json['army'] as Map<String, dynamic>? ?? {}).cast<String, int>(),
+        wounded: (json['wounded'] as Map<String, dynamic>? ?? {})
+            .cast<String, int>(),
+        npcRelations: (json['npcRelations'] as Map<String, dynamic>? ?? {})
+            .cast<String, int>(),
+        nationPolicies: (json['nationPolicies'] as Map<String, dynamic>? ?? {})
+            .cast<String, String>(),
+        pendingNationPolicy: json['pendingNationPolicy'] as String?,
+        nationLoyalty: (json['nationLoyalty'] as Map<String, dynamic>? ?? {})
+            .cast<String, int>(),
       );
     } catch (_) {
       return null;
@@ -157,25 +271,65 @@ class GameSerializer {
   }
 
   static List<Quest> _decodeQuests(List<dynamic> entries) {
-    final catalog = {for (final q in StarterGameData.dailyQuestPool) q.id: q, for (final q in StarterGameData.storyQuests) q.id: q};
-    return [for (final e in entries.cast<Map<String, dynamic>>()) if (catalog.containsKey(e['id'])) catalog[e['id']]!.copyWith(progress: e['progress'] as int, completed: e['completed'] as bool)];
+    final catalog = {
+      for (final q in StarterGameData.dailyQuestPool) q.id: q,
+      for (final q in StarterGameData.storyQuests) q.id: q
+    };
+    return [
+      for (final e in entries.cast<Map<String, dynamic>>())
+        if (catalog.containsKey(e['id']))
+          catalog[e['id']]!.copyWith(
+              progress: e['progress'] as int, completed: e['completed'] as bool)
+    ];
   }
 
   static List<CampBuilding> _decodeBuildings(List<dynamic>? entries) {
-    final levels = {for (final e in (entries ?? []).cast<Map<String, dynamic>>()) e['id'] as String: e['level'] as int};
-    return [for (final b in StarterGameData.campBuildings) b.copyWith(level: levels[b.id] ?? b.level)];
+    final levels = {
+      for (final e in (entries ?? []).cast<Map<String, dynamic>>())
+        e['id'] as String: e['level'] as int
+    };
+    return [
+      for (final b in StarterGameData.campBuildings)
+        b.copyWith(level: levels[b.id] ?? b.level)
+    ];
   }
 
   static List<TribeRelation> _decodeTribes(List<dynamic>? entries) {
-    final data = {for (final e in (entries ?? []).cast<Map<String, dynamic>>()) e['id'] as String: e};
-    return [for (final t in StarterGameData.tribes) t.copyWith(relation: data[t.id]?['relation'] as int? ?? t.relation, tradeOpen: data[t.id]?['tradeOpen'] as bool? ?? t.tradeOpen, marriageTie: data[t.id]?['marriageTie'] as bool? ?? t.marriageTie)];
+    final data = {
+      for (final e in (entries ?? []).cast<Map<String, dynamic>>())
+        e['id'] as String: e
+    };
+    return [
+      for (final t in StarterGameData.tribes)
+        t.copyWith(
+            relation: data[t.id]?['relation'] as int? ?? t.relation,
+            tradeOpen: data[t.id]?['tradeOpen'] as bool? ?? t.tradeOpen,
+            marriageTie: data[t.id]?['marriageTie'] as bool? ?? t.marriageTie)
+    ];
   }
 
-  static Household _decodeHousehold(Map<String, dynamic>? h) => h == null ? const Household() : Household(spouseName: h['spouseName'] as String?, spouseBonus: h['spouseBonus'] as String? ?? 'Yok', householdMorale: h['householdMorale'] as int? ?? 50, childrenCount: h['childrenCount'] as int? ?? 0, familyPrestige: h['familyPrestige'] as int? ?? 0);
+  static Household _decodeHousehold(Map<String, dynamic>? h) => h == null
+      ? const Household()
+      : Household(
+          spouseName: h['spouseName'] as String?,
+          spouseBonus: h['spouseBonus'] as String? ?? 'Yok',
+          householdMorale: h['householdMorale'] as int? ?? 50,
+          childrenCount: h['childrenCount'] as int? ?? 0,
+          familyPrestige: h['familyPrestige'] as int? ?? 0);
 
   static List<MarriageCandidate> _decodeCandidates(List<dynamic>? entries) {
-    final data = {for (final e in (entries ?? []).cast<Map<String, dynamic>>()) e['id'] as String: e};
-    return [for (final c in StarterGameData.marriageCandidates) c.copyWith(relation: data[c.id]?['relation'] as int? ?? c.relation, isAvailable: data[c.id]?['isAvailable'] as bool? ?? c.isAvailable, isMarriedToPlayer: data[c.id]?['isMarriedToPlayer'] as bool? ?? c.isMarriedToPlayer)];
+    final data = {
+      for (final e in (entries ?? []).cast<Map<String, dynamic>>())
+        e['id'] as String: e
+    };
+    return [
+      for (final c in StarterGameData.marriageCandidates)
+        c.copyWith(
+            relation: data[c.id]?['relation'] as int? ?? c.relation,
+            isAvailable: data[c.id]?['isAvailable'] as bool? ?? c.isAvailable,
+            isMarriedToPlayer: data[c.id]?['isMarriedToPlayer'] as bool? ??
+                c.isMarriedToPlayer)
+    ];
   }
 
   static FaithState _decodeFaithState(Map<String, dynamic>? data) {
@@ -191,10 +345,13 @@ class GameSerializer {
       ),
       lastRitualDay: data['lastRitualDay'] as int? ?? -99,
       ritualCooldownDays: data['ritualCooldownDays'] as int? ?? 3,
-      activeBlessings: (data['activeBlessings'] as List<dynamic>? ?? []).cast<String>(),
-      activeWarnings: (data['activeWarnings'] as List<dynamic>? ?? []).cast<String>(),
-      visitedSacredPlaces: (data['visitedSacredPlaces'] as Map<String, dynamic>? ?? {}).cast<String, int>(),
+      activeBlessings:
+          (data['activeBlessings'] as List<dynamic>? ?? []).cast<String>(),
+      activeWarnings:
+          (data['activeWarnings'] as List<dynamic>? ?? []).cast<String>(),
+      visitedSacredPlaces:
+          (data['visitedSacredPlaces'] as Map<String, dynamic>? ?? {})
+              .cast<String, int>(),
     );
   }
-
 }

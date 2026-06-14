@@ -1,3 +1,4 @@
+import '../models/achievement.dart';
 import '../models/camp_building.dart';
 import '../models/clan.dart';
 import '../models/craft.dart';
@@ -43,11 +44,35 @@ class GameState {
       level: 1,
       effect: 'Alametleri yorumlar, kötü olay riskini azaltır.',
       cooldownDays: 1,
-      description: 'Gök, ateş ve rüzgâr işaretlerini obaya sade bir dille açıklar.',
+      description:
+          'Gök, ateş ve rüzgâr işaretlerini obaya sade bir dille açıklar.',
     ),
     this.rituals = const [],
     this.sacredPlaces = const [],
     this.ritualCooldowns = const {},
+    this.generation = 1,
+    this.pendingSuccession = false,
+    this.leaderLifespan = 64,
+    this.claimedAchievements = const [],
+    this.faithPath = '',
+    this.tamga = 'wolf',
+    this.khanateStanding = 20,
+    this.isKhan = false,
+    this.vassalObas = 0,
+    this.equipped = const {},
+    this.regionRelations = const {},
+    this.conqueredRegions = const [],
+    this.onboarded = false,
+    this.peopleApproval = 60,
+    this.councilApproval = 60,
+    this.currentKurultay,
+    this.lastKurultayDay = 0,
+    this.army = const {},
+    this.wounded = const {},
+    this.npcRelations = const {},
+    this.nationPolicies = const {},
+    this.pendingNationPolicy,
+    this.nationLoyalty = const {},
   });
 
   static const baseDailyActionPoints = 4;
@@ -84,7 +109,110 @@ class GameState {
   final List<SacredPlace> sacredPlaces;
   final Map<String, int> ritualCooldowns;
 
+  /// How many leaders have ruled this clan, the founder counted as one.
+  final int generation;
+
+  /// True once the leader has died of old age and an heir awaits the seat.
+  final bool pendingSuccession;
+
+  /// Age at which the current leader dies of old age.
+  final int leaderLifespan;
+
+  /// Ids of achievements whose reward has been collected.
+  final List<String> claimedAchievements;
+
+  /// Chosen belief path id, empty until the leader commits to one.
+  final String faithPath;
+
+  /// Seal/banner id marking the oba (see [Tamgas]).
+  final String tamga;
+
+  /// Standing within the khanate the oba is bound to (0–100).
+  final int khanateStanding;
+
+  /// True once the leader has overthrown the khan and taken the throne.
+  final bool isKhan;
+
+  /// Number of nearby obas rallied under this banner.
+  final int vassalObas;
+
+  /// Equipped gear keyed by slot id (see [EquipmentData]); value is recipe id.
+  final Map<String, String> equipped;
+
+  /// Per-region diplomatic relation overrides (id → relation).
+  final Map<String, int> regionRelations;
+
+  /// Ids of conquest regions now under your banner.
+  final List<String> conqueredRegions;
+
+  /// False until the player has named the oba and seen the opening.
+  final bool onboarded;
+
+  /// Approval of the common folk and of the council beys (0–100).
+  final int peopleApproval;
+  final int councilApproval;
+
+  /// Id of the kurultay decision awaiting a verdict, or null when none.
+  final String? currentKurultay;
+
+  /// Day the last council convened, to space them out.
+  final int lastKurultayDay;
+
+  /// Battle-ready soldiers and those recovering from wounds, by unit id.
+  final Map<String, int> army;
+  final Map<String, int> wounded;
+
+  /// How each named figure feels about the leader (0–100), 50 by default.
+  final Map<String, int> npcRelations;
+
+  /// Governance choice taken for each fully-conquered nation (id → policy id).
+  final Map<String, String> nationPolicies;
+
+  /// Nation whose capital just fell and awaits a governance verdict, or null.
+  final String? pendingNationPolicy;
+
+  /// How loyal each held province is (nation id → 0–100). Provinces that are
+  /// neglected slide toward rebellion.
+  final Map<String, int> nationLoyalty;
+
+  /// Bond with [npcId], defaulting to a neutral 50 when never spoken to.
+  int relationWith(String npcId) => npcRelations[npcId] ?? 50;
+
+  /// Loyalty of a held province, 0 when not held.
+  int loyaltyOf(String nationId) => nationLoyalty[nationId] ?? 0;
+
+  /// True once every castle of [nationId] flies your tamga.
+  bool nationConquered(String nationId) => nationPolicies.containsKey(nationId);
+
   int resource(ResourceType type) => resources[type] ?? 0;
+
+  int unitCount(String id) => army[id] ?? 0;
+  int woundedCount(String id) => wounded[id] ?? 0;
+  int get totalSoldiers => army.values.fold(0, (s, n) => s + n);
+  int get totalWounded => wounded.values.fold(0, (s, n) => s + n);
+
+  String? equippedIn(String slotId) => equipped[slotId];
+
+  bool regionConquered(String id) => conqueredRegions.contains(id);
+
+  bool achievementClaimed(String id) => claimedAchievements.contains(id);
+
+  /// The live figure an achievement measures.
+  int achievementProgress(Achievement achievement) =>
+      switch (achievement.metric) {
+        AchievementMetric.population => resource(ResourceType.population),
+        AchievementMetric.gold => resource(ResourceType.gold),
+        AchievementMetric.conquered => completedExpeditions.length,
+        AchievementMetric.crafted =>
+          craftedItems.values.fold(0, (sum, n) => sum + n),
+        AchievementMetric.generation => generation,
+        AchievementMetric.reputation => profile.reputation,
+        AchievementMetric.daysSurvived => day.day,
+      };
+
+  bool achievementReady(Achievement achievement) =>
+      !achievementClaimed(achievement.id) &&
+      achievementProgress(achievement) >= achievement.target;
   int craftedCount(String recipeId) => craftedItems[recipeId] ?? 0;
   int stockOf(String goodId) => marketStock[goodId] ?? 0;
   bool expeditionDone(String siteId) => completedExpeditions.contains(siteId);
@@ -139,6 +267,31 @@ class GameState {
     List<Ritual>? rituals,
     List<SacredPlace>? sacredPlaces,
     Map<String, int>? ritualCooldowns,
+    int? generation,
+    bool? pendingSuccession,
+    int? leaderLifespan,
+    List<String>? claimedAchievements,
+    String? faithPath,
+    String? tamga,
+    int? khanateStanding,
+    bool? isKhan,
+    int? vassalObas,
+    Map<String, String>? equipped,
+    Map<String, int>? regionRelations,
+    List<String>? conqueredRegions,
+    bool? onboarded,
+    int? peopleApproval,
+    int? councilApproval,
+    String? currentKurultay,
+    bool clearKurultay = false,
+    int? lastKurultayDay,
+    Map<String, int>? army,
+    Map<String, int>? wounded,
+    Map<String, int>? npcRelations,
+    Map<String, String>? nationPolicies,
+    String? pendingNationPolicy,
+    bool clearPendingNation = false,
+    Map<String, int>? nationLoyalty,
   }) {
     final nextMax = maxDailyActionPoints ?? this.maxDailyActionPoints;
     final nextAp = (dailyActionPoints ?? energy ?? this.dailyActionPoints)
@@ -172,6 +325,35 @@ class GameState {
       rituals: rituals ?? this.rituals,
       sacredPlaces: sacredPlaces ?? this.sacredPlaces,
       ritualCooldowns: ritualCooldowns ?? this.ritualCooldowns,
+      generation: generation ?? this.generation,
+      pendingSuccession: pendingSuccession ?? this.pendingSuccession,
+      leaderLifespan: leaderLifespan ?? this.leaderLifespan,
+      claimedAchievements: claimedAchievements ?? this.claimedAchievements,
+      faithPath: faithPath ?? this.faithPath,
+      tamga: tamga ?? this.tamga,
+      khanateStanding:
+          (khanateStanding ?? this.khanateStanding).clamp(0, 100).toInt(),
+      isKhan: isKhan ?? this.isKhan,
+      vassalObas: vassalObas ?? this.vassalObas,
+      equipped: equipped ?? this.equipped,
+      regionRelations: regionRelations ?? this.regionRelations,
+      conqueredRegions: conqueredRegions ?? this.conqueredRegions,
+      onboarded: onboarded ?? this.onboarded,
+      peopleApproval:
+          (peopleApproval ?? this.peopleApproval).clamp(0, 100).toInt(),
+      councilApproval:
+          (councilApproval ?? this.councilApproval).clamp(0, 100).toInt(),
+      currentKurultay:
+          clearKurultay ? null : currentKurultay ?? this.currentKurultay,
+      lastKurultayDay: lastKurultayDay ?? this.lastKurultayDay,
+      army: army ?? this.army,
+      wounded: wounded ?? this.wounded,
+      npcRelations: npcRelations ?? this.npcRelations,
+      nationPolicies: nationPolicies ?? this.nationPolicies,
+      pendingNationPolicy: clearPendingNation
+          ? null
+          : pendingNationPolicy ?? this.pendingNationPolicy,
+      nationLoyalty: nationLoyalty ?? this.nationLoyalty,
     );
   }
 }

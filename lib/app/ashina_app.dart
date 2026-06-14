@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../core/audio/audio_service.dart';
 import '../game/state/game_controller.dart';
 import '../game/state/game_scope.dart';
 import '../game/state/game_storage.dart';
@@ -26,6 +27,12 @@ class _AshinaAppState extends State<AshinaApp> {
     _controller = storage == null
         ? GameController.starter()
         : GameController.restored(storage);
+    // Only start ambient music for a real launch (storage present), not in
+    // widget tests that construct the app directly.
+    if (storage != null) {
+      _controller.onSfx = (name) => AudioService.instance.playSfx(name);
+      AudioService.instance.playMusic('theme');
+    }
   }
 
   @override

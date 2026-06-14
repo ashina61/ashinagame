@@ -3,13 +3,17 @@ import 'package:flutter/material.dart';
 import '../../app/theme/app_colors.dart';
 import '../../app/theme/app_text_styles.dart';
 import '../../core/assets/game_assets.dart';
+import '../../core/audio/audio_service.dart';
 import '../../core/utils/formatters.dart';
 import '../../core/widgets/ornate.dart';
 import '../../game/data/expedition_sites.dart';
+import '../../game/logic/unlock_logic.dart';
 import '../../game/models/expedition.dart';
 import '../../game/models/resource.dart';
 import '../../game/state/game_controller.dart';
 import '../../game/state/game_scope.dart';
+import '../army/army_screen.dart';
+import '../conquest/conquest_screen.dart';
 import 'expedition_result_screen.dart';
 
 class _Region {
@@ -95,21 +99,77 @@ class _ExpeditionsScreenState extends State<ExpeditionsScreen> {
   Widget build(BuildContext context) {
     final controller = GameScope.of(context);
     final energy = controller.state.dailyActionPoints;
+    if (!UnlockLogic.expeditions(controller.state)) {
+      return const OrnateScaffold(
+        child: Column(
+          children: [
+            OrnateHeader(title: 'Seferler'),
+            Expanded(
+              child: Center(
+                child: OrnatePanel(
+                  child: Text(
+                    'Sefer henüz kapalı.\n\nAtölyede bir silah ve bir kalkan '
+                    'üret, Karakter → Kuşam’dan kuşan; ondan sonra bozkıra '
+                    'sefere çıkabilirsin.',
+                    style: AppTextStyles.body,
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
     return OrnateScaffold(
       child: Column(
         children: [
           const OrnateHeader(title: 'Seferler'),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(12, 0, 12, 2),
-            child: Row(
+          OrnatePanel(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            child: Column(
               children: [
-                Image.asset(GameAssets.iconEnergyBolt, width: 16, height: 16),
-                const SizedBox(width: 4),
-                Text(
-                  'Aksiyon $energy/${controller.state.maxDailyActionPoints}  •  '
-                  'Keşif ${GameController.exploreCost}  •  '
-                  'Sefer ${GameController.expeditionCost}',
-                  style: AppTextStyles.meta.copyWith(fontSize: 11),
+                Row(
+                  children: [
+                    Image.asset(GameAssets.iconEnergyBolt,
+                        width: 18, height: 18),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        'Aksiyon $energy/${controller.state.maxDailyActionPoints}'
+                        '  •  Ordu Gücü ${controller.armyStrength}',
+                        style: AppTextStyles.body.copyWith(fontSize: 13),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Expanded(
+                      child: DarkButton(
+                        label: 'ORDU',
+                        height: 36,
+                        onPressed: () => Navigator.of(context).push(
+                          MaterialPageRoute<void>(
+                            builder: (_) => const ArmyScreen(),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: GoldButton(
+                        label: 'FETİH HARİTASI',
+                        height: 36,
+                        onPressed: () => Navigator.of(context).push(
+                          MaterialPageRoute<void>(
+                            builder: (_) => const ConquestScreen(),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -274,8 +334,10 @@ class _ExpeditionsScreenState extends State<ExpeditionsScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(place.name, style: AppTextStyles.bodyStrong),
-                      Text('Risk: ${place.risk} • Ödül: ${place.reward}', style: AppTextStyles.meta),
-                      Text(place.description, style: AppTextStyles.body.copyWith(fontSize: 13)),
+                      Text('Risk: ${place.risk} • Ödül: ${place.reward}',
+                          style: AppTextStyles.meta),
+                      Text(place.description,
+                          style: AppTextStyles.body.copyWith(fontSize: 13)),
                     ],
                   ),
                 ),
@@ -286,7 +348,10 @@ class _ExpeditionsScreenState extends State<ExpeditionsScreen> {
                       ? () {
                           final done = controller.visitSacredPlace(place.id);
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text(done ? '${place.name} ziyaret edildi.' : 'Ziyaret için cooldown/AP uygun değil.')),
+                            SnackBar(
+                                content: Text(done
+                                    ? '${place.name} ziyaret edildi.'
+                                    : 'Ziyaret için cooldown/AP uygun değil.')),
                           );
                         }
                       : null,
@@ -320,6 +385,7 @@ class _ExpeditionsScreenState extends State<ExpeditionsScreen> {
     if (outcome == null) {
       return;
     }
+    AudioService.instance.playSfx(outcome.success ? 'victory' : 'defeat');
     Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (context) => ExpeditionResultScreen(outcome: outcome),

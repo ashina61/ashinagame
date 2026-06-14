@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 
 import '../core/widgets/ornate.dart';
-import '../features/camp/camp_screen.dart';
 import '../features/boy/boy_screen.dart';
+import '../features/camp/camp_screen.dart';
+import '../features/character/character_screen.dart';
 import '../features/expeditions/expeditions_screen.dart';
 import '../features/game_over/game_over_screen.dart';
 import '../features/home/home_screen.dart';
-import '../features/settings/settings_screen.dart';
+import '../features/kurultay/kurultay_screen.dart';
+import '../features/onboarding/onboarding_screen.dart';
+import '../features/succession/succession_screen.dart';
 import '../game/state/game_scope.dart';
 
 class AshinaRouter extends StatefulWidget {
@@ -21,16 +24,26 @@ class _AshinaRouterState extends State<AshinaRouter> {
 
   static const _screens = [
     HomeScreen(),
-    BoyScreen(),
+    CharacterScreen(),
     CampScreen(),
+    BoyScreen(),
     ExpeditionsScreen(),
-    SettingsScreen(),
   ];
 
   @override
   Widget build(BuildContext context) {
-    if (GameScope.of(context).state.gameOver) {
+    final state = GameScope.of(context).state;
+    if (!state.onboarded) {
+      return const Scaffold(body: OnboardingScreen());
+    }
+    if (state.gameOver) {
       return const Scaffold(body: GameOverScreen());
+    }
+    if (state.pendingSuccession) {
+      return const Scaffold(body: SuccessionScreen());
+    }
+    if (state.currentKurultay != null) {
+      return const Scaffold(body: KurultayScreen());
     }
     return Scaffold(
       body: IndexedStack(index: _index, children: _screens),

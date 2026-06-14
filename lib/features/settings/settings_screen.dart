@@ -3,8 +3,10 @@ import 'package:flutter/material.dart';
 import '../../app/theme/app_colors.dart';
 import '../../app/theme/app_text_styles.dart';
 import '../../core/assets/game_assets.dart';
+import '../../core/audio/audio_service.dart';
 import '../../core/widgets/ornate.dart';
 import '../../game/state/game_scope.dart';
+import '../found_oba/found_oba_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -14,8 +16,8 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-  bool _music = true;
-  bool _sfx = true;
+  bool _music = AudioService.instance.musicOn;
+  bool _sfx = AudioService.instance.sfxOn;
   bool _notifications = true;
   bool _powerSave = false;
 
@@ -24,7 +26,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return OrnateScaffold(
       child: Column(
         children: [
-          const OrnateHeader(title: 'Ayarlar'),
+          const OrnateHeader(title: 'Ayarlar', showBack: true),
           Expanded(
             child: ListView(
               padding: const EdgeInsets.only(top: 4, bottom: 16),
@@ -46,6 +48,34 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ],
                   ),
                 ),
+                const SectionPlaque('OBA & LİDER'),
+                Builder(
+                  builder: (context) {
+                    final state = GameScope.of(context).state;
+                    return OrnatePanel(
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('Oba: ${state.clan.name}',
+                                    style: AppTextStyles.bodyStrong),
+                                Text('Lider: ${state.profile.name}',
+                                    style: AppTextStyles.meta),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          DarkButton(
+                            label: 'İSİM DEĞİŞTİR',
+                            onPressed: () => _renameDialog(context),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
                 const SectionPlaque('OYUN'),
                 OrnatePanel(
                   padding: const EdgeInsets.symmetric(
@@ -57,12 +87,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       _Toggle(
                         label: 'Müzik',
                         value: _music,
-                        onChanged: (v) => setState(() => _music = v),
+                        onChanged: (v) {
+                          setState(() => _music = v);
+                          AudioService.instance.setMusicOn(v);
+                        },
                       ),
                       _Toggle(
                         label: 'Ses Efektleri',
                         value: _sfx,
-                        onChanged: (v) => setState(() => _sfx = v),
+                        onChanged: (v) {
+                          setState(() => _sfx = v);
+                          AudioService.instance.setSfxOn(v);
+                        },
                       ),
                       _Toggle(
                         label: 'Bildirimler',
@@ -90,18 +126,43 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
                 const SectionPlaque('OYUN VERİSİ'),
                 OrnatePanel(
-                  child: Row(
+                  child: Column(
                     children: [
-                      const Expanded(
-                        child: Text(
-                          'Obayı baştan kur. Tüm ilerleme silinir.',
-                          style: AppTextStyles.body,
-                        ),
+                      Row(
+                        children: [
+                          const Expanded(
+                            child: Text(
+                              'Kendi tamga ve adınla kağanlığa bağlı yeni bir '
+                              'oba kur.',
+                              style: AppTextStyles.body,
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          DarkButton(
+                            label: 'YENİ OBA KUR',
+                            onPressed: () => Navigator.of(context).push(
+                              MaterialPageRoute<void>(
+                                builder: (_) => const FoundObaScreen(),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(width: 10),
-                      DarkButton(
-                        label: 'OYUNU SIFIRLA',
-                        onPressed: () => _confirmReset(context),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          const Expanded(
+                            child: Text(
+                              'Obayı baştan kur. Tüm ilerleme silinir.',
+                              style: AppTextStyles.body,
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          DarkButton(
+                            label: 'OYUNU SIFIRLA',
+                            onPressed: () => _confirmReset(context),
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -144,6 +205,67 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
               ],
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _renameDialog(BuildContext context) {
+    final controller = GameScope.of(context);
+    final obaCtrl = TextEditingController(text: controller.state.clan.name);
+    final leaderCtrl =
+        TextEditingController(text: controller.state.profile.name);
+    showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: AppColors.leatherDark,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: BorderSide(color: AppColors.gold.withValues(alpha: 0.5)),
+        ),
+        title: const Text('İsim Değiştir', style: AppTextStyles.title),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: obaCtrl,
+              maxLength: 20,
+              style: AppTextStyles.bodyStrong,
+              cursorColor: AppColors.gold,
+              decoration: const InputDecoration(
+                labelText: 'Oba adı',
+                labelStyle: AppTextStyles.meta,
+              ),
+            ),
+            TextField(
+              controller: leaderCtrl,
+              maxLength: 16,
+              style: AppTextStyles.bodyStrong,
+              cursorColor: AppColors.gold,
+              decoration: const InputDecoration(
+                labelText: 'Lider adı',
+                labelStyle: AppTextStyles.meta,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text('Vazgeç', style: AppTextStyles.bodyStrong),
+          ),
+          TextButton(
+            onPressed: () {
+              controller.rename(
+                obaName: obaCtrl.text,
+                leaderName: leaderCtrl.text,
+              );
+              Navigator.of(dialogContext).pop();
+            },
+            child: Text('Kaydet',
+                style: AppTextStyles.bodyStrong
+                    .copyWith(color: AppColors.goldBright)),
           ),
         ],
       ),

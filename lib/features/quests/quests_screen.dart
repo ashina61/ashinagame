@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../app/theme/app_colors.dart';
 import '../../app/theme/app_text_styles.dart';
+import '../../core/audio/audio_service.dart';
 import '../../core/widgets/ornate.dart';
 import '../../game/models/quest.dart';
 import '../../game/state/game_scope.dart';
@@ -23,7 +24,12 @@ class QuestsScreen extends StatelessWidget {
               child: ListView(
                 padding: const EdgeInsets.only(top: 4, bottom: 16),
                 children: [
-                  for (final category in const ['Günlük', 'Hikâye', 'Oba', 'İnanç']) ...[
+                  for (final category in const [
+                    'Günlük',
+                    'Hikâye',
+                    'Oba',
+                    'İnanç'
+                  ]) ...[
                     SectionPlaque('${category.toUpperCase()} GÖREVLERİ'),
                     for (final quest in _questsByCategory(quests, category))
                       _QuestPanel(quest: quest),
@@ -109,6 +115,7 @@ class _QuestPanel extends StatelessWidget {
                     height: 34,
                     onPressed: () {
                       controller.claimQuest(quest.id);
+                      AudioService.instance.playSfx('reward');
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                           content: Text(

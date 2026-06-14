@@ -3,6 +3,15 @@ import 'package:flutter/material.dart';
 import '../../app/theme/app_colors.dart';
 import '../../app/theme/app_text_styles.dart';
 import '../assets/game_assets.dart';
+import '../audio/audio_service.dart';
+
+/// Wraps a button callback so a tap also clicks, unless it is disabled.
+VoidCallback? _tap(VoidCallback? onPressed) => onPressed == null
+    ? null
+    : () {
+        AudioService.instance.playSfx('tap');
+        onPressed();
+      };
 
 /// Full-screen night-steppe background with framed border, per the atlas.
 class OrnateScaffold extends StatelessWidget {
@@ -213,6 +222,7 @@ class SectionPlaque extends StatelessWidget {
             child: Text(
               label,
               style: AppTextStyles.section,
+              textAlign: TextAlign.center,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
@@ -240,7 +250,7 @@ class GoldButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: onPressed,
+      onTap: _tap(onPressed),
       child: Container(
         height: height,
         decoration: _stretchedImage(GameAssets.uiButtonGold),
@@ -267,7 +277,7 @@ class DarkButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: onPressed,
+      onTap: _tap(onPressed),
       child: Container(
         height: height,
         padding: const EdgeInsets.symmetric(horizontal: 14),
@@ -300,7 +310,7 @@ class ImageButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: onPressed,
+      onTap: _tap(onPressed),
       child: Image.asset(asset, height: height, fit: BoxFit.contain),
     );
   }
@@ -501,10 +511,10 @@ class OrnateNavBar extends StatelessWidget {
 
   static const _items = [
     (GameAssets.navHome, 'Ana Sayfa'),
-    (GameAssets.navBoy, 'Boy'),
+    (GameAssets.iconPopulationMedallion, 'Karakter'),
     (GameAssets.navAtelier, 'Oba'),
+    (GameAssets.navBoy, 'Boy'),
     (GameAssets.iconCompassStar, 'Seferler'),
-    (GameAssets.navSettings, 'Ayarlar'),
   ];
 
   @override
