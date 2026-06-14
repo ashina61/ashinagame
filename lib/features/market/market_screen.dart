@@ -8,7 +8,6 @@ import '../../core/widgets/ornate.dart';
 import '../../game/data/market_goods.dart';
 import '../../game/logic/market_logic.dart';
 import '../../game/models/resource.dart';
-import '../../game/models/unit_type.dart';
 import '../../game/state/game_scope.dart';
 
 /// Atlas icons for market goods.
@@ -28,10 +27,7 @@ String goodIcon(String goodId) => switch (goodId) {
     };
 
 class MarketScreen extends StatefulWidget {
-  const MarketScreen({this.isTab = false, super.key});
-
-  /// True when shown as the bottom-nav "Han" tab (no back button).
-  final bool isTab;
+  const MarketScreen({super.key});
 
   @override
   State<MarketScreen> createState() => _MarketScreenState();
@@ -39,41 +35,73 @@ class MarketScreen extends StatefulWidget {
 
 class _MarketScreenState extends State<MarketScreen> {
   int _tab = 0;
+  int _category = 0;
+
+  static const _categories = [
+    'Tümü',
+    'Kaynaklar',
+    'Gıda',
+    'Malzemeler',
+    'Ekipman',
+    'At ve Binicilik',
+    'Diğer',
+  ];
+
+  /// Lots the player can sell back, tied to the matching market good so
+  /// their prices follow the same daily wobble.
+  static const _sellLots = [
+    (ResourceType.food, 10, 'wheat'),
+    (ResourceType.wood, 10, 'wood'),
+    (ResourceType.leather, 5, 'leather'),
+    (ResourceType.horse, 1, 'horse'),
+  ];
+
+  List<MarketGood> get _filtered {
+    if (_category == 0) return MarketGoods.all;
+    return MarketGoods.all.where((g) => g.category == _category).toList();
+  }
 
   @override
   Widget build(BuildContext context) {
     final controller = GameScope.of(context);
-    final state = controller.state;
+    final gold = controller.state.resource(ResourceType.gold);
 
     return Scaffold(
       body: OrnateScaffold(
         child: Column(
           children: [
-            OrnateHeader(
-              title: 'Han',
-              subtitle: 'Tüccarlar, Askerler ve Söylentiler',
-              showBack: !widget.isTab,
-            ),
-            ResourceBar(
-              entries: [
-                (GameAssets.iconCoinGold, '${state.resource(ResourceType.gold)}'),
-                (GameAssets.iconFood, '${state.resource(ResourceType.food)}'),
-                (GameAssets.iconItemHorse,
-                    '${state.resource(ResourceType.horse)}'),
-                (GameAssets.iconArmyEmblem, '${controller.armyStrength}'),
-                (GameAssets.iconScrollMedallion,
-                    '${state.resource(ResourceType.reputation)}'),
-              ],
+            const OrnateHeader(title: 'Pazar', showBack: true),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Container(
+                height: 34,
+                margin: const EdgeInsets.fromLTRB(12, 2, 0, 4),
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                decoration: const BoxDecoration(
+                  image: DecorationImage(
+                    image: AssetImage(GameAssets.uiPanelPill),
+                    fit: BoxFit.fill,
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Image.asset(GameAssets.iconCoinGold, width: 18, height: 18),
+                    const SizedBox(width: 6),
+                    Text('$gold', style: AppTextStyles.value),
+                  ],
+                ),
+              ),
             ),
             OrnateTabs(
-              tabs: const ['Pazar', 'Askere Al', 'Söylentiler'],
+              tabs: const ['Satın Al', 'Sat', 'Teklifler'],
               index: _tab,
               onChanged: (value) => setState(() => _tab = value),
             ),
             Expanded(
               child: switch (_tab) {
-                1 => _buildRecruit(),
-                2 => _buildRumors(),
+                1 => _buildSell(),
+                2 => _buildOffers(),
                 _ => _buildBuy(),
               },
             ),
@@ -111,172 +139,180 @@ class _MarketScreenState extends State<MarketScreen> {
   }
 
   Widget _buildBuy() {
-    return Column(
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Padding(
-          padding: EdgeInsets.fromLTRB(20, 0, 18, 6),
-          child: Row(
-            children: [
-              Expanded(child: Text('ÜRÜN', style: AppTextStyles.meta)),
-              SizedBox(
-                width: 56,
-                child: Text('FİYAT',
-                    textAlign: TextAlign.right, style: AppTextStyles.meta),
-              ),
-              SizedBox(
-                width: 46,
-                child: Text('MEVCUT',
-                    textAlign: TextAlign.right, style: AppTextStyles.meta),
-              ),
-              SizedBox(width: 46),
-            ],
-          ),
-        ),
-        Expanded(
+        SizedBox(
+          width: 104,
           child: ListView(
-            padding: const EdgeInsets.only(right: 12, left: 4, bottom: 8),
+            padding: const EdgeInsets.only(left: 10, bottom: 8),
             children: [
-              for (final good in MarketGoods.all) _BuyRow(good: good),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildRecruit() {
-    final controller = GameScope.of(context);
-    final state = controller.state;
-    return Column(
-      children: [
-        const Padding(
-          padding: EdgeInsets.fromLTRB(20, 0, 18, 6),
-          child: Row(
-            children: [
-              Expanded(child: Text('BİRİM', style: AppTextStyles.meta)),
-              SizedBox(
-                width: 64,
-                child: Text('MALİYET',
-                    textAlign: TextAlign.right, style: AppTextStyles.meta),
-              ),
-              SizedBox(
-                width: 48,
-                child: Text('MEVCUT',
-                    textAlign: TextAlign.right, style: AppTextStyles.meta),
-              ),
-              SizedBox(width: 46),
-            ],
-          ),
-        ),
-        Expanded(
-          child: ListView(
-            padding: const EdgeInsets.only(right: 12, left: 8, bottom: 8),
-            children: [
-              for (final unit in UnitTypes.all)
-                OrnatePanel(
-                  margin: const EdgeInsets.only(bottom: 6),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                  child: Row(
-                    children: [
-                      Image.asset(
-                        _unitIcon(unit.id),
-                        width: 30,
-                        height: 30,
-                        errorBuilder: (context, error, stackTrace) =>
-                            const SizedBox(width: 30),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          unit.name,
-                          style:
-                              AppTextStyles.bodyStrong.copyWith(fontSize: 14),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+              for (var i = 0; i < _categories.length; i++)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 6),
+                  child: GestureDetector(
+                    onTap: () => setState(() => _category = i),
+                    child: Container(
+                      height: 34,
+                      padding: const EdgeInsets.symmetric(horizontal: 6),
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: i == _category
+                            ? AppColors.bronze.withValues(alpha: 0.55)
+                            : AppColors.leatherDeep.withValues(alpha: 0.75),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: i == _category
+                              ? AppColors.gold
+                              : AppColors.goldDim.withValues(alpha: 0.4),
                         ),
                       ),
-                      SizedBox(
-                        width: 64,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Image.asset(GameAssets.iconCoinGold,
-                                    width: 12, height: 12),
-                                const SizedBox(width: 2),
-                                Text('${unit.goldCost}',
-                                    style: AppTextStyles.value
-                                        .copyWith(fontSize: 12)),
-                              ],
-                            ),
-                            if (unit.requiresHorse)
-                              Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Image.asset(GameAssets.iconItemHorse,
-                                      width: 12, height: 12),
-                                  const SizedBox(width: 2),
-                                  Text('1',
-                                      style: AppTextStyles.meta
-                                          .copyWith(fontSize: 11)),
-                                ],
-                              ),
-                          ],
+                      child: Text(
+                        _categories[i],
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppTextStyles.buttonDark.copyWith(
+                          fontSize: 10,
+                          color: i == _category
+                              ? AppColors.goldBright
+                              : AppColors.sand,
                         ),
                       ),
-                      SizedBox(
-                        width: 48,
-                        child: Text(
-                          '${state.unitCount(unit.id)}',
-                          textAlign: TextAlign.right,
-                          style: AppTextStyles.meta,
-                        ),
-                      ),
-                      const SizedBox(width: 6),
-                      DarkButton(
-                        label: 'AL',
-                        height: 30,
-                        onPressed: () {
-                          final done = controller.recruitUnit(unit.id, 1);
-                          AudioService.instance
-                              .playSfx(done ? 'coin' : 'denied');
-                          _notify(
-                            context,
-                            done
-                                ? '${unit.name} saflarına katıldı.'
-                                : 'Altın, at ya da aksiyon yetersiz.',
-                          );
-                        },
-                      ),
-                    ],
+                    ),
                   ),
                 ),
             ],
           ),
         ),
+        Expanded(
+          child: Column(
+            children: [
+              const Padding(
+                padding: EdgeInsets.fromLTRB(8, 0, 12, 6),
+                child: Row(
+                  children: [
+                    Expanded(child: Text('ÜRÜN', style: AppTextStyles.meta)),
+                    SizedBox(
+                      width: 52,
+                      child: Text(
+                        'FİYAT',
+                        textAlign: TextAlign.right,
+                        style: AppTextStyles.meta,
+                      ),
+                    ),
+                    SizedBox(
+                      width: 44,
+                      child: Text(
+                        'STOK',
+                        textAlign: TextAlign.right,
+                        style: AppTextStyles.meta,
+                      ),
+                    ),
+                    SizedBox(width: 46),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: ListView(
+                  padding: const EdgeInsets.only(right: 12, left: 4, bottom: 8),
+                  children: [
+                    for (final good in _filtered) _BuyRow(good: good),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
       ],
     );
   }
 
-  Widget _buildRumors() {
-    final state = GameScope.of(context).state;
-    final rumors = state.log.reversed.take(12).toList();
+  Widget _buildSell() {
+    final controller = GameScope.of(context);
+    final state = controller.state;
+    final day = state.day.day;
     return ListView(
-      padding: const EdgeInsets.fromLTRB(12, 2, 12, 8),
+      padding: const EdgeInsets.only(top: 2, bottom: 8),
+      children: [
+        for (final (type, amount, goodId) in _sellLots)
+          OrnatePanel(
+            margin: const EdgeInsets.fromLTRB(12, 0, 12, 6),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+            child: Row(
+              children: [
+                Image.asset(goodIcon(goodId), width: 30, height: 30),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '$amount ${type.label}',
+                        style: AppTextStyles.bodyStrong.copyWith(fontSize: 14),
+                      ),
+                      Text(
+                        'Depoda: ${state.resource(type)}',
+                        style: AppTextStyles.meta.copyWith(fontSize: 11),
+                      ),
+                    ],
+                  ),
+                ),
+                Row(
+                  children: [
+                    Image.asset(
+                      GameAssets.iconCoinGold,
+                      width: 14,
+                      height: 14,
+                    ),
+                    const SizedBox(width: 3),
+                    Text(
+                      '+${MarketLogic.sellPriceFor(MarketGoods.byId(goodId)!, day)}',
+                      style: AppTextStyles.value.copyWith(fontSize: 14),
+                    ),
+                  ],
+                ),
+                const SizedBox(width: 8),
+                DarkButton(
+                  label: 'SAT',
+                  height: 32,
+                  onPressed: () {
+                    final price = MarketLogic.sellPriceFor(
+                      MarketGoods.byId(goodId)!,
+                      day,
+                    );
+                    final done = controller.tryTrade(
+                      '$amount ${type.label} satışı',
+                      {type: -amount, ResourceType.gold: price},
+                    );
+                    AudioService.instance.playSfx(done ? 'coin' : 'denied');
+                    _notify(
+                      context,
+                      done
+                          ? '$amount ${type.label} satıldı, +$price altın.'
+                          : 'Depoda yeterli ${type.label.toLowerCase()} yok.',
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildOffers() {
+    return ListView(
+      padding: const EdgeInsets.only(top: 2, bottom: 8),
       children: [
         OrnatePanel(
-          margin: const EdgeInsets.only(bottom: 8),
           child: Row(
             children: [
               ClipRRect(
                 borderRadius: BorderRadius.circular(8),
                 child: Image.asset(
                   GameAssets.portraitMerchant,
-                  width: 64,
-                  height: 80,
+                  width: 72,
+                  height: 92,
                   fit: BoxFit.cover,
                   errorBuilder: (context, error, stackTrace) =>
                       const SizedBox.shrink(),
@@ -287,10 +323,11 @@ class _MarketScreenState extends State<MarketScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Tüccarın Kulağı', style: AppTextStyles.bodyStrong),
+                    Text('Kervan Teklifi', style: AppTextStyles.bodyStrong),
                     SizedBox(height: 4),
                     Text(
-                      'Hana gelen kervanlar bozkırın haberlerini taşır.',
+                      'Batıdan gelen kervan yün ve tuz karşılığında at '
+                      'arıyor. Teklifler pazar yenilenince güncellenir.',
                       style: AppTextStyles.body,
                     ),
                   ],
@@ -299,43 +336,23 @@ class _MarketScreenState extends State<MarketScreen> {
             ],
           ),
         ),
-        if (rumors.isEmpty)
-          const OrnatePanel(
-            margin: EdgeInsets.zero,
-            child: Text(
-              'Henüz söylenti yok. Bozkır şimdilik sessiz.',
-              style: AppTextStyles.meta,
-            ),
-          )
-        else
-          for (final line in rumors)
-            OrnatePanel(
-              margin: const EdgeInsets.only(bottom: 6),
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-              child: Row(
-                children: [
-                  const Icon(Icons.campaign,
-                      size: 16, color: AppColors.goldBright),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      line,
-                      style: AppTextStyles.body.copyWith(fontSize: 13),
-                    ),
-                  ),
-                ],
+        const OrnatePanel(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Demirci Loncası', style: AppTextStyles.bodyStrong),
+              SizedBox(height: 4),
+              Text(
+                'Lonca, demir cevheri getirene kılıç başına indirim '
+                'sözü veriyor.',
+                style: AppTextStyles.body,
               ),
-            ),
+            ],
+          ),
+        ),
       ],
     );
   }
-
-  String _unitIcon(String id) => switch (id) {
-        'horse_archer' => GameAssets.iconItemBow,
-        'foot_sword' || 'horse_sword' => GameAssets.iconItemSword,
-        'spear' => GameAssets.iconShieldSwords,
-        _ => GameAssets.iconMedallionHorse,
-      };
 
   static void _notify(BuildContext context, String message) {
     ScaffoldMessenger.of(context).showSnackBar(

@@ -4,15 +4,18 @@ import '../../app/theme/app_colors.dart';
 import '../../app/theme/app_text_styles.dart';
 import '../../core/assets/game_assets.dart';
 import '../../core/utils/formatters.dart';
+import '../../core/utils/resource_visuals.dart';
 import '../../core/audio/audio_service.dart';
 import '../../core/widgets/ornate.dart';
+import '../../game/data/achievements.dart';
+import '../../game/data/expedition_sites.dart';
 import '../../game/data/starter_game_data.dart';
+import '../../game/logic/unlock_logic.dart';
 import '../../game/models/event_choice.dart';
 import '../../game/models/resource.dart';
 import '../../game/state/game_controller.dart';
 import '../../game/state/game_scope.dart';
 import '../achievements/achievements_screen.dart';
-import '../camp/camp_screen.dart';
 import '../character/character_screen.dart';
 import '../expeditions/expeditions_screen.dart';
 import '../inventory/inventory_screen.dart';
@@ -49,13 +52,14 @@ class HomeScreen extends StatelessWidget {
           ),
           ResourceBar(
             entries: [
-              (GameAssets.iconCoinGold, '${state.resource(ResourceType.gold)}'),
-              (GameAssets.iconFood, '${state.resource(ResourceType.food)}'),
-              (GameAssets.iconItemHorse,
-                  '${state.resource(ResourceType.horse)}'),
-              (GameAssets.iconArmyEmblem, '${controller.armyStrength}'),
-              (GameAssets.iconScrollMedallion,
-                  '${state.resource(ResourceType.reputation)}'),
+              for (final type in const [
+                ResourceType.gold,
+                ResourceType.food,
+                ResourceType.wood,
+                ResourceType.horse,
+                ResourceType.reputation,
+              ])
+                (ResourceVisuals.icon(type), '${state.resource(type)}'),
             ],
           ),
           const _DayStrip(),
@@ -64,6 +68,8 @@ class HomeScreen extends StatelessWidget {
               padding: const EdgeInsets.only(top: 6, bottom: 16),
               children: [
                 const _CharacterCard(),
+                const SectionPlaque('YAPILACAKLAR'),
+                const _TodoPanel(),
                 if (state.currentEvent != null) ...[
                   const SectionPlaque('OBA OLAYI'),
                   const _EventPanel(),
@@ -74,15 +80,8 @@ class HomeScreen extends StatelessWidget {
                     Expanded(child: _SuggestedMoveCard()),
                   ],
                 ),
-                const Row(
-                  children: [
-                    Expanded(child: _ObaStatusCard()),
-                    Expanded(child: _TodayTasksCard()),
-                  ],
-                ),
                 const SectionPlaque('GÜNLÜK İŞLER'),
                 const _DailyJobsRow(),
-                const _KhanCallBanner(),
                 Padding(
                   padding: const EdgeInsets.fromLTRB(12, 4, 12, 0),
                   child: Column(
@@ -253,6 +252,8 @@ class _CharacterCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final state = GameScope.of(context).state;
     final profile = state.profile;
+    final morale = state.resource(ResourceType.morale);
+    final reputation = state.resource(ResourceType.reputation);
     return GestureDetector(
       onTap: () => Navigator.of(context).push(
         MaterialPageRoute<void>(
@@ -318,53 +319,28 @@ class _CharacterCard extends StatelessWidget {
                   const SizedBox(height: 8),
                   _StatRow(
                     GameAssets.iconHeartMedallion,
-                    'Sağlık',
-                    profile.health,
+                    'Moral',
+                    morale,
                     100,
-                    fill: AppColors.success,
+                  ),
+                  _StatRow(
+                    GameAssets.iconScrollMedallion,
+                    'İtibar',
+                    reputation,
+                    100,
                   ),
                   _StatRow(
                     GameAssets.iconEnergyBolt,
-                    'Enerji',
-                    profile.energy,
+                    'Sağlık',
+                    profile.health,
                     100,
-                    fill: AppColors.success,
-                  ),
-                  _StatRow(
-                    GameAssets.iconSleepMedallion,
-                    'Yorgunluk',
-                    profile.fatigue,
-                    100,
-                    fill: AppColors.amber,
                   ),
                   const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          'Seviye ${profile.level}',
-                          style: AppTextStyles.value.copyWith(fontSize: 13),
-                        ),
-                      ),
-                      Text(
-                        'XP ${profile.xp}/${profile.xpToNextLevel}',
-                        style: AppTextStyles.meta.copyWith(
-                          color: AppColors.goldBright,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  DarkButton(
-                    label: 'KARAKTER DETAYLARI',
-                    height: 32,
-                    onPressed: () => Navigator.of(context).push(
-                      MaterialPageRoute<void>(
-                        builder: (_) =>
-                            const CharacterScreen(showBack: true),
-                      ),
-                    ),
+                  Text(
+                    'Enerji ${profile.energy}/100 • Yorgunluk ${profile.fatigue}/100 — ${state.day.season.atmosphere}',
+                    style: AppTextStyles.meta.copyWith(fontSize: 12),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ],
               ),
@@ -377,13 +353,12 @@ class _CharacterCard extends StatelessWidget {
 }
 
 class _StatRow extends StatelessWidget {
-  const _StatRow(this.icon, this.label, this.value, this.max, {this.fill});
+  const _StatRow(this.icon, this.label, this.value, this.max);
 
   final String icon;
   final String label;
   final int value;
   final int max;
-  final Color? fill;
 
   @override
   Widget build(BuildContext context) {
@@ -398,7 +373,7 @@ class _StatRow extends StatelessWidget {
             child:
                 Text(label, style: AppTextStyles.body.copyWith(fontSize: 13)),
           ),
-          Expanded(child: StatBar(fraction: value / max, height: 9, fill: fill)),
+          Expanded(child: StatBar(fraction: value / max, height: 9)),
           SizedBox(
             width: 52,
             child: Text(
@@ -413,152 +388,102 @@ class _StatRow extends StatelessWidget {
   }
 }
 
-/// Live oba snapshot card mirroring the home mockup's "Oba Durumu" panel.
-class _ObaStatusCard extends StatelessWidget {
-  const _ObaStatusCard();
-
-  @override
-  Widget build(BuildContext context) {
-    final controller = GameScope.of(context);
-    final state = controller.state;
-    return OrnatePanel(
-      margin: const EdgeInsets.fromLTRB(12, 0, 4, 10),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('OBA DURUMU', style: AppTextStyles.section.copyWith(fontSize: 12)),
-          const SizedBox(height: 6),
-          _HomeStatBar(
-              'Mutluluk', state.resource(ResourceType.morale), 100,
-              AppColors.success),
-          _HomeStatBar('Halk', state.peopleApproval, 100, AppColors.info),
-          _HomeKv('Atlar', '${state.resource(ResourceType.horse)}'),
-          _HomeKv('Savaşçılar', '${controller.armyStrength}'),
-          _HomeKv('Nüfus', '${state.resource(ResourceType.population)}'),
-          const SizedBox(height: 8),
-          DarkButton(
-            label: 'DETAYLARI GÖR',
-            height: 30,
-            onPressed: () => Navigator.of(context).push(
-              MaterialPageRoute<void>(builder: (_) => const CampScreen()),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Daily quest checklist mirroring the home mockup's "Bugünkü Görevler" panel.
-class _TodayTasksCard extends StatelessWidget {
-  const _TodayTasksCard();
+/// Active steppe event with its branching choices.
+/// A live checklist of what the player can do right now.
+class _TodoPanel extends StatelessWidget {
+  const _TodoPanel();
 
   @override
   Widget build(BuildContext context) {
     final state = GameScope.of(context).state;
-    final tasks = state.quests.take(3).toList();
+    final items = <(IconData, String, Widget?)>[];
+
+    // The ordered progression hint comes first, so a new player always knows
+    // the next milestone to chase.
+    final objective = UnlockLogic.nextObjective(state);
+    if (objective != null) {
+      items.add((Icons.flag_circle, objective, null));
+    }
+
+    final readyQuests = state.quests.where(state.questReady).length;
+    if (readyQuests > 0) {
+      items.add((
+        Icons.emoji_events,
+        '$readyQuests görev ödülü almaya hazır',
+        const QuestsScreen(),
+      ));
+    }
+
+    final readyAchievements =
+        Achievements.all.where(state.achievementReady).length;
+    if (readyAchievements > 0) {
+      items.add((
+        Icons.military_tech,
+        '$readyAchievements başarım ödülü hazır',
+        const AchievementsScreen(),
+      ));
+    }
+
+    if (state.currentEvent != null) {
+      items.add((Icons.campaign, 'Oba olayını karara bağla', null));
+    }
+
+    for (final site in ExpeditionSites.all) {
+      if (!state.expeditionDone(site.id)) {
+        items.add((
+          Icons.flag,
+          '${site.name} henüz fethedilmedi',
+          const ExpeditionsScreen(),
+        ));
+        break;
+      }
+    }
+
+    if (state.dailyActionPoints > 0) {
+      items.add((
+        Icons.bolt,
+        '${state.dailyActionPoints} hamle hakkın var — işlere bak',
+        null,
+      ));
+    }
+
+    if (items.isEmpty) {
+      items.add((Icons.bedtime, 'Bugünlük her şey tamam — günü bitir', null));
+    }
+
     return OrnatePanel(
-      margin: const EdgeInsets.fromLTRB(4, 0, 12, 10),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'BUGÜNKÜ GÖREVLER',
-            style: AppTextStyles.section.copyWith(fontSize: 12),
-          ),
-          const SizedBox(height: 6),
-          if (tasks.isEmpty)
-            const Text('Bugünlük görev yok.', style: AppTextStyles.meta)
-          else
-            for (final q in tasks)
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 3),
+          for (final (icon, label, target) in items.take(4))
+            GestureDetector(
+              onTap: target == null
+                  ? null
+                  : () => Navigator.of(context).push(
+                        MaterialPageRoute<void>(builder: (_) => target),
+                      ),
+              behavior: HitTestBehavior.opaque,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
                 child: Row(
                   children: [
+                    Icon(icon, size: 18, color: AppColors.goldBright),
+                    const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        q.title,
-                        style: AppTextStyles.body.copyWith(fontSize: 12),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
+                        label,
+                        style: AppTextStyles.body.copyWith(fontSize: 13),
                       ),
                     ),
-                    const SizedBox(width: 6),
-                    Text(
-                      '${state.questProgress(q)}/${q.goalTarget}',
-                      style: AppTextStyles.meta.copyWith(
-                        fontSize: 11,
-                        color: AppColors.goldBright,
+                    if (target != null)
+                      const Icon(
+                        Icons.chevron_right,
+                        size: 18,
+                        color: AppColors.stone,
                       ),
-                    ),
                   ],
                 ),
               ),
-          const SizedBox(height: 8),
-          DarkButton(
-            label: 'TÜM GÖREVLER',
-            height: 30,
-            onPressed: () => Navigator.of(context).push(
-              MaterialPageRoute<void>(builder: (_) => const QuestsScreen()),
             ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Compact label + bar row for the home Oba Durumu card.
-class _HomeStatBar extends StatelessWidget {
-  const _HomeStatBar(this.label, this.value, this.max, this.fill);
-
-  final String label;
-  final int value;
-  final int max;
-  final Color fill;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 3),
-      child: Row(
-        children: [
-          SizedBox(
-            width: 60,
-            child: Text(label, style: AppTextStyles.body.copyWith(fontSize: 11)),
-          ),
-          Expanded(child: StatBar(fraction: value / max, height: 8, fill: fill)),
-          const SizedBox(width: 4),
-          Text(
-            '$value',
-            style: AppTextStyles.meta.copyWith(fontSize: 10),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Compact label + value row for the home Oba Durumu card.
-class _HomeKv extends StatelessWidget {
-  const _HomeKv(this.label, this.value);
-
-  final String label;
-  final String value;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 3),
-      child: Row(
-        children: [
-          Expanded(
-            child: Text(label, style: AppTextStyles.body.copyWith(fontSize: 11)),
-          ),
-          Text(
-            value,
-            style: AppTextStyles.value.copyWith(fontSize: 12),
-          ),
         ],
       ),
     );
@@ -748,57 +673,6 @@ class _SuggestedMoveCard extends StatelessWidget {
             ],
           ),
         ],
-      ),
-    );
-  }
-}
-
-/// Wide ember-lit banner inviting the player to the next campaign, matching
-/// the "Kağanın Çağrısı" strip at the foot of the home mockup.
-class _KhanCallBanner extends StatelessWidget {
-  const _KhanCallBanner();
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () => Navigator.of(context).push(
-        MaterialPageRoute<void>(builder: (_) => const ExpeditionsScreen()),
-      ),
-      child: OrnatePanel(
-        backgroundAsset: GameAssets.bgSceneFortressNight,
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-        child: Row(
-          children: [
-            const Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'KAĞANIN ÇAĞRISI',
-                    style: AppTextStyles.section,
-                  ),
-                  SizedBox(height: 4),
-                  Text(
-                    'Yeni bir sefer için hazırlan.',
-                    style: AppTextStyles.body,
-                  ),
-                  Text(
-                    'Bozkırda düşman hareketliliği artıyor.',
-                    style: AppTextStyles.meta,
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 10),
-            Image.asset(
-              GameAssets.uiEmblemWolfRound,
-              width: 56,
-              height: 56,
-              errorBuilder: (context, error, stackTrace) =>
-                  const SizedBox.shrink(),
-            ),
-          ],
-        ),
       ),
     );
   }
