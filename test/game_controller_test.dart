@@ -1086,6 +1086,73 @@ void main() {
     );
   });
 
+  test('a han companion joins as a sworn follower in a role', () {
+    final fresh = StarterGameData.create();
+    final c = GameController(
+      fresh.copyWith(resources: {...fresh.resources, ResourceType.gold: 400}),
+    );
+    final before = c.state.swornFollowers;
+    expect(
+      c.recruitCompanion('kaya_atabek', roleId: 'warleader', goldCost: 120),
+      isTrue,
+    );
+    expect(c.state.swornFollowers, before + 1);
+    expect(c.state.companionRoles['kaya_atabek'], 'warleader');
+    expect(c.state.resource(ResourceType.gold), 280);
+  });
+
+  test('recruiting a han companion is denied without the gold', () {
+    final fresh = StarterGameData.create();
+    final c = GameController(
+      fresh.copyWith(resources: {...fresh.resources, ResourceType.gold: 10}),
+    );
+    expect(
+      c.recruitCompanion('kaya_atabek', roleId: 'warleader', goldCost: 120),
+      isFalse,
+    );
+  });
+
+  test('three han companions satisfy the follower founding milestone', () {
+    final fresh = StarterGameData.create();
+    final c = GameController(
+      fresh.copyWith(resources: {...fresh.resources, ResourceType.gold: 600}),
+    );
+    c.recruitCompanion('kaya_atabek', roleId: 'warleader', goldCost: 120);
+    c.recruitCompanion('bori_bey', roleId: 'kam', goldCost: 100);
+    c.recruitCompanion('bezirgan', roleId: 'merchant', goldCost: 110);
+    expect(c.state.swornFollowers, greaterThanOrEqualTo(3));
+  });
+
+  test('a campaign reports progress as the army nears the walls', () {
+    final fresh = StarterGameData.create();
+    final base = fresh.copyWith(
+      obaFounded: true,
+      army: const {'heavy_cav': 40},
+      profile: fresh.profile.copyWith(warfare: 20),
+      resources: {
+        ...fresh.resources,
+        ResourceType.food: 800,
+        ResourceType.population: 300,
+      },
+    );
+    final c = GameController(base, random: _FixedRandom(0));
+    expect(c.startMarch('otuken'), isTrue);
+    expect(c.marchProgress, 0.0);
+    c.endDay();
+    expect(c.marchProgress, greaterThan(0.0));
+  });
+
+  test('completing a craft reports it landed in the inventory', () {
+    final c = GameController(StarterGameData.create(), random: _FixedRandom(0));
+    expect(c.startCraft('wood_shield'), CraftStart.started);
+    c.endDay();
+    expect(c.state.craftedCount('wood_shield'), 1);
+    expect(
+      c.state.log.any((l) => l.contains('envantere eklendi')),
+      isTrue,
+    );
+  });
+
   test('the merchant role discounts the market', () {
     final base = _foundableState().copyWith(
       obaFounded: true,

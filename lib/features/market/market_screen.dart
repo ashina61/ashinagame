@@ -5,8 +5,12 @@ import '../../app/theme/app_text_styles.dart';
 import '../../core/assets/game_assets.dart';
 import '../../core/audio/audio_service.dart';
 import '../../core/widgets/ornate.dart';
+import '../../game/data/companion_roles.dart';
+import '../../game/data/han_offers.dart';
 import '../../game/data/market_goods.dart';
 import '../../game/data/rare_offers.dart';
+import '../../game/models/npc.dart';
+import '../../game/models/unit_type.dart';
 import '../../game/logic/market_logic.dart';
 import '../../game/models/resource.dart';
 import '../../game/state/game_scope.dart';
@@ -32,6 +36,127 @@ class MarketScreen extends StatefulWidget {
 
   @override
   State<MarketScreen> createState() => _MarketScreenState();
+}
+
+/// A would-be follower at the han; winning them over binds a sworn follower in
+/// their role and counts toward founding an oba.
+class _CompanionOffer extends StatelessWidget {
+  const _CompanionOffer({required this.companion});
+
+  final HanCompanion companion;
+
+  @override
+  Widget build(BuildContext context) {
+    final controller = GameScope.of(context);
+    final state = controller.state;
+    final joined = state.relationWith(companion.npcId) >= 75;
+    final name = NpcCharacters.byId(companion.npcId)?.name ?? companion.name;
+    final role = CompanionRoles.byId(companion.roleId);
+    final canAfford = state.resource(ResourceType.gold) >= companion.goldCost &&
+        state.dailyActionPoints > 0;
+    return OrnatePanel(
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('$name — ${role?.name ?? companion.roleId}',
+                    style: AppTextStyles.bodyStrong),
+                Text(role?.effect ?? '',
+                    style: AppTextStyles.meta
+                        .copyWith(color: AppColors.goldBright)),
+                Text('Bedel: ${companion.goldCost} altın',
+                    style: AppTextStyles.meta),
+              ],
+            ),
+          ),
+          const SizedBox(width: 10),
+          SizedBox(
+            width: 96,
+            child: DarkButton(
+              label: joined ? 'Yoldaşın' : 'KATIL',
+              height: 34,
+              onPressed: joined || !canAfford
+                  ? null
+                  : () {
+                      final ok = controller.recruitCompanion(
+                        companion.npcId,
+                        roleId: companion.roleId,
+                        goldCost: companion.goldCost,
+                      );
+                      AudioService.instance.playSfx(ok ? 'reward' : 'denied');
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                        content: Text(ok
+                            ? '$name obana katıldı.'
+                            : 'Altın ya da aksiyon yetersiz.'),
+                        duration: const Duration(seconds: 2),
+                      ));
+                    },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// A sword for hire that joins the army at once for gold (and a horse if it
+/// rides).
+class _MercenaryOffer extends StatelessWidget {
+  const _MercenaryOffer({required this.mercenary});
+
+  final HanMercenary mercenary;
+
+  @override
+  Widget build(BuildContext context) {
+    final controller = GameScope.of(context);
+    final state = controller.state;
+    final unit = UnitTypes.byId(mercenary.unitId);
+    final canAfford = state.resource(ResourceType.gold) >= mercenary.goldCost &&
+        (!mercenary.needsHorse || state.resource(ResourceType.horse) >= 1) &&
+        state.dailyActionPoints > 0;
+    return OrnatePanel(
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(mercenary.name, style: AppTextStyles.bodyStrong),
+                Text(
+                    'Saldırı ${unit?.attack ?? 0} • Savunma ${unit?.defense ?? 0}'
+                    '${mercenary.needsHorse ? ' • At gerekir' : ''}',
+                    style: AppTextStyles.meta),
+                Text('Bedel: ${mercenary.goldCost} altın',
+                    style: AppTextStyles.meta),
+              ],
+            ),
+          ),
+          const SizedBox(width: 10),
+          SizedBox(
+            width: 96,
+            child: DarkButton(
+              label: 'KİRALA',
+              height: 34,
+              onPressed: !canAfford
+                  ? null
+                  : () {
+                      final ok = controller.recruitUnit(mercenary.unitId, 1);
+                      AudioService.instance.playSfx(ok ? 'coin' : 'denied');
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                        content: Text(ok
+                            ? '${mercenary.name} orduya katıldı.'
+                            : 'Altın/at ya da aksiyon yetersiz.'),
+                        duration: const Duration(seconds: 2),
+                      ));
+                    },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 /// A small bazaar flavour strip: the day's featured good and a rotating trader
@@ -362,56 +487,29 @@ class _MarketScreenState extends State<MarketScreen> {
     );
   }
 
+  /// The han: where wandering swords, would-be followers and rumours gather.
   Widget _buildOffers() {
+    final controller = GameScope.of(context);
+    final state = controller.state;
     return ListView(
       padding: const EdgeInsets.only(top: 2, bottom: 8),
       children: [
         OrnatePanel(
           child: Row(
             children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: Image.asset(
-                  GameAssets.portraitMerchant,
-                  width: 72,
-                  height: 92,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) =>
-                      const SizedBox.shrink(),
-                ),
-              ),
-              const SizedBox(width: 12),
-              const Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Kervan Teklifi', style: AppTextStyles.bodyStrong),
-                    SizedBox(height: 4),
-                    Text(
-                      'Batıdan gelen kervan yün ve tuz karşılığında at '
-                      'arıyor. Teklifler pazar yenilenince güncellenir.',
-                      style: AppTextStyles.body,
-                    ),
-                  ],
-                ),
+              const Icon(Icons.campaign, color: AppColors.goldBright),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(HanOffers.rumorForDay(state.day.day),
+                    style: AppTextStyles.body),
               ),
             ],
           ),
         ),
-        const OrnatePanel(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Demirci Loncası', style: AppTextStyles.bodyStrong),
-              SizedBox(height: 4),
-              Text(
-                'Lonca, demir cevheri getirene kılıç başına indirim '
-                'sözü veriyor.',
-                style: AppTextStyles.body,
-              ),
-            ],
-          ),
-        ),
+        const SectionPlaque('YOLDAŞ ADAYLARI'),
+        for (final c in HanOffers.companions) _CompanionOffer(companion: c),
+        const SectionPlaque('PARALI SAVAŞÇILAR'),
+        for (final m in HanOffers.mercenaries) _MercenaryOffer(mercenary: m),
       ],
     );
   }

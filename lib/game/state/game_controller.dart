@@ -421,9 +421,10 @@ class GameController extends ChangeNotifier {
       if (ticked.daysLeft <= 0) {
         crafted[job.recipeId] = (crafted[job.recipeId] ?? 0) + 1;
         final recipe = CraftRecipes.byId(job.recipeId);
-        log = ['${recipe?.name ?? job.recipeId} üretimi tamamlandı.', ...log]
-            .take(6)
-            .toList();
+        log = [
+          '${recipe?.name ?? job.recipeId} tamamlandı, envantere eklendi.',
+          ...log
+        ].take(6).toList();
       } else {
         queue.add(ticked);
       }
@@ -1300,6 +1301,37 @@ class GameController extends ChangeNotifier {
       log: _prependLog('$qty ${unit.name} saflara katıldı.'),
     ));
     return true;
+  }
+
+  /// Wins over a follower waiting at the han: pays gold, binds them as a sworn
+  /// follower (relation 80) in a chosen role. Counts toward the three followers
+  /// an oba needs. Returns false without the action point or the gold.
+  bool recruitCompanion(String npcId,
+      {required String roleId, required int goldCost}) {
+    if (_state.dailyActionPoints < 1 ||
+        _state.relationWith(npcId) >= 75 ||
+        _state.resource(ResourceType.gold) < goldCost) {
+      return false;
+    }
+    final name = NpcCharacters.byId(npcId)?.name ?? npcId;
+    _commit(_state.copyWith(
+      dailyActionPoints: _state.dailyActionPoints - 1,
+      npcRelations: {..._state.npcRelations, npcId: 80},
+      companionRoles: {..._state.companionRoles, npcId: roleId},
+      resources:
+          ResourceLogic.apply(_state.resources, {ResourceType.gold: -goldCost}),
+      log: _prependLog('$name obana katıldı; yoldaşın oldu.'),
+    ));
+    return true;
+  }
+
+  /// How far the marching army has come, 0..1, for the campaign track UI.
+  double get marchProgress {
+    final castle = marchCastle;
+    if (castle == null) return 0;
+    final total = marchDaysTo(castle);
+    if (total <= 0) return 1;
+    return ((total - _state.marchDaysLeft) / total).clamp(0.0, 1.0);
   }
 
   /// Reference defence: a unit tougher than this bleeds less, a frailer one
