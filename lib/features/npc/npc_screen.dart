@@ -47,9 +47,7 @@ class NpcScreen extends StatelessWidget {
             Expanded(
               child: ListView(
                 padding: const EdgeInsets.only(top: 4, bottom: 16),
-                children: [
-                  for (final npc in folk) _NpcCard(npc: npc),
-                ],
+                children: [for (final npc in folk) _NpcCard(npc: npc)],
               ),
             ),
           ],
@@ -95,11 +93,16 @@ class _NpcCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(npc.name,
-                        style: AppTextStyles.bodyStrong.copyWith(fontSize: 16)),
-                    Text(npc.role,
-                        style: AppTextStyles.meta
-                            .copyWith(color: AppColors.goldBright)),
+                    Text(
+                      npc.name,
+                      style: AppTextStyles.bodyStrong.copyWith(fontSize: 16),
+                    ),
+                    Text(
+                      npc.role,
+                      style: AppTextStyles.meta.copyWith(
+                        color: AppColors.goldBright,
+                      ),
+                    ),
                     const SizedBox(height: 4),
                     Text(npc.blurb, style: AppTextStyles.meta),
                   ],
@@ -114,8 +117,10 @@ class _NpcCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('İlişki: ${_relationLabel(relation)} ($relation)',
-                        style: AppTextStyles.meta),
+                    Text(
+                      'İlişki: ${_relationLabel(relation)} ($relation)',
+                      style: AppTextStyles.meta,
+                    ),
                     const SizedBox(height: 4),
                     StatBar(
                       fraction: relation / 100,
@@ -139,8 +144,10 @@ class _NpcCard extends StatelessWidget {
           if (!hasAp)
             Padding(
               padding: const EdgeInsets.only(top: 6),
-              child: Text('Aksiyon kalmadı; günü bitir.',
-                  style: AppTextStyles.meta.copyWith(color: AppColors.danger)),
+              child: Text(
+                'Aksiyon kalmadı; günü bitir.',
+                style: AppTextStyles.meta.copyWith(color: AppColors.danger),
+              ),
             ),
         ],
       ),
@@ -179,9 +186,12 @@ class _DialogueSheet extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('${npc.name} • ${npc.role}',
-                    style: AppTextStyles.bodyStrong
-                        .copyWith(color: AppColors.goldBright)),
+                Text(
+                  '${npc.name} • ${npc.role}',
+                  style: AppTextStyles.bodyStrong.copyWith(
+                    color: AppColors.goldBright,
+                  ),
+                ),
                 const SizedBox(height: 8),
                 Text('“${dialogue.line}”', style: AppTextStyles.body),
                 const SizedBox(height: 12),
@@ -193,8 +203,9 @@ class _DialogueSheet extends StatelessWidget {
                       Navigator.of(context).maybePop();
                       final report = controller.lastBattle;
                       if (ok && choice.raidPower > 0 && report != null) {
-                        AudioService.instance
-                            .playSfx(report.won ? 'victory' : 'defeat');
+                        AudioService.instance.playSfx(
+                          report.won ? 'victory' : 'defeat',
+                        );
                         showDialog<void>(
                           context: context,
                           builder: (_) => BattleReportDialog(report),
@@ -204,9 +215,11 @@ class _DialogueSheet extends StatelessWidget {
                       AudioService.instance.playSfx(ok ? 'coin' : 'denied');
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                          content: Text(ok
-                              ? choice.reply
-                              : 'Konuşmak için aksiyon gerekiyor.'),
+                          content: Text(
+                            ok
+                                ? choice.reply
+                                : 'Konuşmak için aksiyon gerekiyor.',
+                          ),
                           duration: const Duration(seconds: 3),
                         ),
                       );

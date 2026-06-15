@@ -28,7 +28,7 @@ class QuestsScreen extends StatelessWidget {
                     'Günlük',
                     'Hikâye',
                     'Oba',
-                    'İnanç'
+                    'İnanç',
                   ]) ...[
                     SectionPlaque('${category.toUpperCase()} GÖREVLERİ'),
                     for (final quest in _questsByCategory(quests, category))
@@ -95,8 +95,9 @@ class _QuestPanel extends StatelessWidget {
               Expanded(
                 child: Text(
                   'Ödül: ${quest.rewardText}',
-                  style:
-                      AppTextStyles.meta.copyWith(color: AppColors.goldBright),
+                  style: AppTextStyles.meta.copyWith(
+                    color: AppColors.goldBright,
+                  ),
                 ),
               ),
               if (quest.completed)

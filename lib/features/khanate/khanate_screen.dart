@@ -35,8 +35,9 @@ class KhanateScreen extends StatelessWidget {
                           state.isKhan
                               ? '${state.profile.name} — Kağan'
                               : '${state.clan.name} • Kağanlığa bağlı',
-                          style:
-                              AppTextStyles.bodyStrong.copyWith(fontSize: 16),
+                          style: AppTextStyles.bodyStrong.copyWith(
+                            fontSize: 16,
+                          ),
                         ),
                         const SizedBox(height: 8),
                         _Bar('Bağlılık', state.khanateStanding, 100),
@@ -49,8 +50,10 @@ class KhanateScreen extends StatelessWidget {
                                 style: AppTextStyles.value,
                               ),
                             ),
-                            Text('Bağlı oba: ${state.vassalObas}',
-                                style: AppTextStyles.meta),
+                            Text(
+                              'Bağlı oba: ${state.vassalObas}',
+                              style: AppTextStyles.meta,
+                            ),
                           ],
                         ),
                       ],
@@ -92,9 +95,12 @@ class KhanateScreen extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Kağanı Devir',
-                              style: AppTextStyles.bodyStrong
-                                  .copyWith(fontSize: 16)),
+                          Text(
+                            'Kağanı Devir',
+                            style: AppTextStyles.bodyStrong.copyWith(
+                              fontSize: 16,
+                            ),
+                          ),
                           const SizedBox(height: 4),
                           Text(
                             canRebel
@@ -112,13 +118,16 @@ class KhanateScreen extends StatelessWidget {
                             onPressed: canRebel
                                 ? () {
                                     final won = controller.attemptRebellion();
-                                    AudioService.instance
-                                        .playSfx(won ? 'victory' : 'defeat');
+                                    AudioService.instance.playSfx(
+                                      won ? 'victory' : 'defeat',
+                                    );
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(
-                                        content: Text(won
-                                            ? 'Zafer! Tahta sen geçtin.'
-                                            : 'İsyan bastırıldı; ağır kayıp.'),
+                                        content: Text(
+                                          won
+                                              ? 'Zafer! Tahta sen geçtin.'
+                                              : 'İsyan bastırıldı; ağır kayıp.',
+                                        ),
                                       ),
                                     );
                                   }
@@ -173,8 +182,9 @@ class _DutyTile extends StatelessWidget {
                 final ok = onTap();
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content:
-                        Text(ok ? '$label yapıldı.' : 'Koşullar uygun değil.'),
+                    content: Text(
+                      ok ? '$label yapıldı.' : 'Koşullar uygun değil.',
+                    ),
                     duration: const Duration(seconds: 2),
                   ),
                 );

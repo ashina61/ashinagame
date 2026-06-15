@@ -61,15 +61,21 @@ class _ConquestScreenState extends State<ConquestScreen> {
                   Column(
                     children: [
                       const Text('Kaleler', style: AppTextStyles.meta),
-                      Text('$taken/$castles',
-                          style: AppTextStyles.value
-                              .copyWith(color: AppColors.goldBright)),
                       Text(
-                          'İl ${controller.conqueredNations}/'
-                          '${Nations.all.length}',
-                          style: AppTextStyles.meta),
-                      Text('Güç ${controller.warStrength}',
-                          style: AppTextStyles.meta),
+                        '$taken/$castles',
+                        style: AppTextStyles.value.copyWith(
+                          color: AppColors.goldBright,
+                        ),
+                      ),
+                      Text(
+                        'İl ${controller.conqueredNations}/'
+                        '${Nations.all.length}',
+                        style: AppTextStyles.meta,
+                      ),
+                      Text(
+                        'Güç ${controller.warStrength}',
+                        style: AppTextStyles.meta,
+                      ),
                     ],
                   ),
                 ],
@@ -202,8 +208,9 @@ class _RaidThreatBanner extends StatelessWidget {
               Expanded(
                 child: Text(
                   text,
-                  style: AppTextStyles.meta
-                      .copyWith(color: strong ? AppColors.danger : null),
+                  style: AppTextStyles.meta.copyWith(
+                    color: strong ? AppColors.danger : null,
+                  ),
                 ),
               ),
             ],
@@ -239,9 +246,11 @@ class _RaidChoice extends StatelessWidget {
                 AudioService.instance.playSfx(ok ? 'tap' : 'denied');
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text(ok
-                        ? 'Karar verildi: $label.'
-                        : 'Bu karar için aksiyon/kaynak yetersiz.'),
+                    content: Text(
+                      ok
+                          ? 'Karar verildi: $label.'
+                          : 'Bu karar için aksiyon/kaynak yetersiz.',
+                    ),
                     duration: const Duration(seconds: 2),
                   ),
                 );
@@ -324,21 +333,29 @@ class _CampaignTrack extends StatelessWidget {
               const Positioned(
                 right: 0,
                 top: 4,
-                child:
-                    Icon(Icons.castle, size: 16, color: AppColors.goldBright),
+                child: Icon(
+                  Icons.castle,
+                  size: 16,
+                  color: AppColors.goldBright,
+                ),
               ),
               Positioned(
                 left: x,
                 top: 2,
-                child: const Icon(Icons.flag,
-                    size: 18, color: AppColors.goldBright),
+                child: const Icon(
+                  Icons.flag,
+                  size: 18,
+                  color: AppColors.goldBright,
+                ),
               ),
               if (daysLeft > 0)
                 Positioned(
                   left: (x - 6).clamp(0.0, w - 28),
                   top: 18,
-                  child: Text('${daysLeft}g',
-                      style: AppTextStyles.meta.copyWith(fontSize: 10)),
+                  child: Text(
+                    '${daysLeft}g',
+                    style: AppTextStyles.meta.copyWith(fontSize: 10),
+                  ),
                 ),
             ],
           ),
@@ -360,9 +377,13 @@ class _GovernancePanel extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('${nation.name} dize geldi',
-              style: AppTextStyles.bodyStrong
-                  .copyWith(color: AppColors.goldBright, fontSize: 16)),
+          Text(
+            '${nation.name} dize geldi',
+            style: AppTextStyles.bodyStrong.copyWith(
+              color: AppColors.goldBright,
+              fontSize: 16,
+            ),
+          ),
           const SizedBox(height: 4),
           const Text('İlin kaderini belirle:', style: AppTextStyles.meta),
           const SizedBox(height: 8),
@@ -392,7 +413,8 @@ class _PolicyButton extends StatelessWidget {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-                ok ? '${nation.name}: ${policy.label}.' : 'Karar verilemedi.'),
+              ok ? '${nation.name}: ${policy.label}.' : 'Karar verilemedi.',
+            ),
             duration: const Duration(seconds: 2),
           ),
         );
@@ -408,9 +430,12 @@ class _PolicyButton extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(policy.label,
-                style: AppTextStyles.bodyStrong
-                    .copyWith(color: AppColors.goldBright)),
+            Text(
+              policy.label,
+              style: AppTextStyles.bodyStrong.copyWith(
+                color: AppColors.goldBright,
+              ),
+            ),
             const SizedBox(height: 2),
             Text(policy.blurb, style: AppTextStyles.meta),
           ],
@@ -446,16 +471,20 @@ class _NationBlock extends StatelessWidget {
                 Row(
                   children: [
                     Icon(
-                        policy == NationPolicy.yik
-                            ? Icons.local_fire_department
-                            : Icons.flag,
-                        color: AppColors.success,
-                        size: 18),
+                      policy == NationPolicy.yik
+                          ? Icons.local_fire_department
+                          : Icons.flag,
+                      color: AppColors.success,
+                      size: 18,
+                    ),
                     const SizedBox(width: 8),
                     Expanded(
-                      child: Text('Bu il senin: ${policy.label}',
-                          style: AppTextStyles.body
-                              .copyWith(color: AppColors.success)),
+                      child: Text(
+                        'Bu il senin: ${policy.label}',
+                        style: AppTextStyles.body.copyWith(
+                          color: AppColors.success,
+                        ),
+                      ),
                     ),
                   ],
                 ),
@@ -464,8 +493,9 @@ class _NationBlock extends StatelessWidget {
                   Row(
                     children: [
                       const SizedBox(
-                          width: 64,
-                          child: Text('Sadakat', style: AppTextStyles.meta)),
+                        width: 64,
+                        child: Text('Sadakat', style: AppTextStyles.meta),
+                      ),
                       Expanded(
                         child: StatBar(
                           fraction: loyalty / 100,
@@ -495,8 +525,9 @@ class _NationBlock extends StatelessWidget {
                               loyalty < 25
                                   ? 'İSYAN EŞİĞİNDE! Sadakati tazele.'
                                   : 'Huzursuzluk artıyor.',
-                              style: AppTextStyles.meta
-                                  .copyWith(color: AppColors.danger),
+                              style: AppTextStyles.meta.copyWith(
+                                color: AppColors.danger,
+                              ),
                             ),
                           ),
                         ],
@@ -511,15 +542,19 @@ class _NationBlock extends StatelessWidget {
                       onPressed: state.dailyActionPoints > 0 &&
                               state.resource(ResourceType.gold) >= 60
                           ? () {
-                              final ok =
-                                  controller.reinforceProvince(nation.id);
-                              AudioService.instance
-                                  .playSfx(ok ? 'coin' : 'denied');
+                              final ok = controller.reinforceProvince(
+                                nation.id,
+                              );
+                              AudioService.instance.playSfx(
+                                ok ? 'coin' : 'denied',
+                              );
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
-                                  content: Text(ok
-                                      ? '${nation.name} sadakati arttı (60 altın).'
-                                      : 'Aksiyon ya da altın yetersiz.'),
+                                  content: Text(
+                                    ok
+                                        ? '${nation.name} sadakati arttı (60 altın).'
+                                        : 'Aksiyon ya da altın yetersiz.',
+                                  ),
                                   duration: const Duration(seconds: 2),
                                 ),
                               );
@@ -529,8 +564,10 @@ class _NationBlock extends StatelessWidget {
                   ),
                   if (loyalty < 50) ...[
                     const SizedBox(height: 8),
-                    const Text('İsyana karşı kararlar:',
-                        style: AppTextStyles.meta),
+                    const Text(
+                      'İsyana karşı kararlar:',
+                      style: AppTextStyles.meta,
+                    ),
                     const SizedBox(height: 4),
                     Wrap(
                       spacing: 6,
@@ -551,16 +588,24 @@ class _NationBlock extends StatelessWidget {
                               onPressed: state.dailyActionPoints > 0
                                   ? () {
                                       final ok = controller.manageProvince(
-                                          nation.id, action);
-                                      AudioService.instance
-                                          .playSfx(ok ? 'tap' : 'denied');
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(SnackBar(
-                                        content: Text(ok
-                                            ? '$label uygulandı.'
-                                            : 'Aksiyon/kaynak yetersiz.'),
-                                        duration: const Duration(seconds: 2),
-                                      ));
+                                        nation.id,
+                                        action,
+                                      );
+                                      AudioService.instance.playSfx(
+                                        ok ? 'tap' : 'denied',
+                                      );
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        SnackBar(
+                                          content: Text(
+                                            ok
+                                                ? '$label uygulandı.'
+                                                : 'Aksiyon/kaynak yetersiz.',
+                                          ),
+                                          duration: const Duration(seconds: 2),
+                                        ),
+                                      );
                                     }
                                   : null,
                             ),
@@ -603,8 +648,11 @@ class _CastlePanel extends StatelessWidget {
               if (castle.isCenter)
                 const Padding(
                   padding: EdgeInsets.only(right: 6),
-                  child:
-                      Icon(Icons.castle, color: AppColors.goldBright, size: 18),
+                  child: Icon(
+                    Icons.castle,
+                    color: AppColors.goldBright,
+                    size: 18,
+                  ),
                 ),
               Expanded(
                 child: Text(
@@ -633,16 +681,19 @@ class _CastlePanel extends StatelessWidget {
           if (!conquered && locked)
             const Padding(
               padding: EdgeInsets.only(top: 6),
-              child: Text('Önce ilin dört kalesini al.',
-                  style: AppTextStyles.meta),
+              child: Text(
+                'Önce ilin dört kalesini al.',
+                style: AppTextStyles.meta,
+              ),
             ),
           if (!conquered && !locked) ...[
             const SizedBox(height: 6),
             Row(
               children: [
                 const SizedBox(
-                    width: 64,
-                    child: Text('İlişki', style: AppTextStyles.meta)),
+                  width: 64,
+                  child: Text('İlişki', style: AppTextStyles.meta),
+                ),
                 Expanded(child: StatBar(fraction: relation / 100, height: 9)),
                 const SizedBox(width: 8),
                 Text('$relation/100', style: AppTextStyles.meta),
@@ -660,9 +711,10 @@ class _CastlePanel extends StatelessWidget {
                     height: 34,
                     onPressed: hasAp && state.resource(ResourceType.gold) >= 80
                         ? () => _act(
-                            context,
-                            controller.improveRegionRelation(castle.id),
-                            'İlişki geliştirildi.')
+                              context,
+                              controller.improveRegionRelation(castle.id),
+                              'İlişki geliştirildi.',
+                            )
                         : null,
                   ),
                 ),
@@ -672,8 +724,11 @@ class _CastlePanel extends StatelessWidget {
                     label: 'İlhak',
                     height: 34,
                     onPressed: canAnnex
-                        ? () => _act(context, controller.annexRegion(castle.id),
-                            '${castle.name} barışla alındı.')
+                        ? () => _act(
+                              context,
+                              controller.annexRegion(castle.id),
+                              '${castle.name} barışla alındı.',
+                            )
                         : null,
                   ),
                 ),
@@ -685,8 +740,9 @@ class _CastlePanel extends StatelessWidget {
                     onPressed: hasAp
                         ? () {
                             final won = controller.attackRegion(castle.id);
-                            AudioService.instance
-                                .playSfx(won ? 'victory' : 'defeat');
+                            AudioService.instance.playSfx(
+                              won ? 'victory' : 'defeat',
+                            );
                             final report = controller.lastBattle;
                             if (report != null) {
                               showDialog<void>(
@@ -709,8 +765,11 @@ class _CastlePanel extends StatelessWidget {
                             hasAp &&
                             state.resource(ResourceType.food) >=
                                 controller.marchFoodCost(castle)
-                        ? () => _act(context, controller.startMarch(castle.id),
-                            'Ordu ${castle.name} üzerine yürüyüşe geçti.')
+                        ? () => _act(
+                              context,
+                              controller.startMarch(castle.id),
+                              'Ordu ${castle.name} üzerine yürüyüşe geçti.',
+                            )
                         : null,
                   ),
                 ),
@@ -726,8 +785,9 @@ class _CastlePanel extends StatelessWidget {
     if (!ok) AudioService.instance.playSfx('denied');
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content:
-            Text(ok ? okMsg : 'Koşullar uygun değil (aksiyon/altın/ilişki).'),
+        content: Text(
+          ok ? okMsg : 'Koşullar uygun değil (aksiyon/altın/ilişki).',
+        ),
         duration: const Duration(seconds: 2),
       ),
     );

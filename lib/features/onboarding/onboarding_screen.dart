@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../app/theme/app_colors.dart';
 import '../../app/theme/app_text_styles.dart';
+import '../../core/assets/game_assets.dart';
 import '../../core/audio/audio_service.dart';
 import '../../core/widgets/ornate.dart';
 import '../../game/state/game_scope.dart';
@@ -15,6 +16,7 @@ class OnboardingScreen extends StatefulWidget {
 
 class _OnboardingScreenState extends State<OnboardingScreen> {
   final _leader = TextEditingController(text: 'Bumin');
+  String _portrait = GameAssets.playerPortraits.first;
 
   @override
   void dispose() {
@@ -61,6 +63,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             ),
             const SectionPlaque('ADIN'),
             _Field(controller: _leader, hint: 'Örn. Bumin', maxLen: 16),
+            const SectionPlaque('YÜZÜN'),
+            _PortraitPicker(
+              selected: _portrait,
+              onSelect: (p) => setState(() => _portrait = p),
+            ),
             const SizedBox(height: 18),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 28),
@@ -73,12 +80,100 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   controller.completeOnboarding(
                     obaName: '',
                     leaderName: _leader.text,
+                    portrait: _portrait,
                   );
                 },
               ),
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// A horizontal row of selectable leader portraits. The chosen one gets a gold
+/// frame; the rest dim. This is the player's first act of identity — the face
+/// they will carry through the whole life.
+class _PortraitPicker extends StatelessWidget {
+  const _PortraitPicker({required this.selected, required this.onSelect});
+
+  final String selected;
+  final ValueChanged<String> onSelect;
+
+  @override
+  Widget build(BuildContext context) {
+    return OrnatePanel(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Genç bir yolcunun yüzünü seç.',
+            style: AppTextStyles.meta,
+          ),
+          const SizedBox(height: 8),
+          SizedBox(
+            height: 92,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              itemCount: GameAssets.playerPortraits.length,
+              separatorBuilder: (_, __) => const SizedBox(width: 10),
+              itemBuilder: (context, i) {
+                final asset = GameAssets.playerPortraits[i];
+                final isSelected = asset == selected;
+                return GestureDetector(
+                  onTap: () {
+                    AudioService.instance.playSfx('tap');
+                    onSelect(asset);
+                  },
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 180),
+                    width: 70,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: isSelected
+                            ? AppColors.goldBright
+                            : AppColors.goldDim.withValues(alpha: 0.5),
+                        width: isSelected ? 2.4 : 1,
+                      ),
+                      boxShadow: isSelected
+                          ? const [
+                              BoxShadow(
+                                color: Color(0x80EEC36A),
+                                blurRadius: 12,
+                              ),
+                            ]
+                          : null,
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(6),
+                      child: ColorFiltered(
+                        colorFilter: isSelected
+                            ? const ColorFilter.mode(
+                                Colors.transparent,
+                                BlendMode.multiply,
+                              )
+                            : const ColorFilter.mode(
+                                Color(0x66000000),
+                                BlendMode.darken,
+                              ),
+                        child: Image.asset(
+                          asset,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => const ColoredBox(
+                            color: AppColors.leatherDeep,
+                            child: Icon(Icons.person, color: AppColors.gold),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -21,6 +21,7 @@ class PlayerProfile {
     this.warfare = 5,
     this.familyStatus = 'Bekâr hane',
     this.marriageStatus = 'Bekâr',
+    this.portrait,
   });
 
   final String name;
@@ -45,6 +46,10 @@ class PlayerProfile {
   final String familyStatus;
   final String marriageStatus;
 
+  /// Chosen portrait asset path, or null to use the default leader art. Purely
+  /// cosmetic identity the player picks at the start and can change later.
+  final String? portrait;
+
   PlayerProfile copyWith({
     String? name,
     String? title,
@@ -67,6 +72,7 @@ class PlayerProfile {
     int? warfare,
     String? familyStatus,
     String? marriageStatus,
+    String? portrait,
   }) {
     return PlayerProfile(
       name: name ?? this.name,
@@ -90,6 +96,7 @@ class PlayerProfile {
       warfare: warfare ?? this.warfare,
       familyStatus: familyStatus ?? this.familyStatus,
       marriageStatus: marriageStatus ?? this.marriageStatus,
+      portrait: portrait ?? this.portrait,
     );
   }
 }

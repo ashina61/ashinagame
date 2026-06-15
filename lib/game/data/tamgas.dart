@@ -17,9 +17,15 @@ class Tamgas {
     Tamga(id: 'wolf', name: 'Bozkurt', asset: GameAssets.uiEmblemWolfRound),
     Tamga(id: 'war', name: 'Çapraz Kılıç', asset: GameAssets.uiEmblemWarRound),
     Tamga(
-        id: 'banner_red', name: 'Al Sancak', asset: GameAssets.uiBadgeBanner1),
+      id: 'banner_red',
+      name: 'Al Sancak',
+      asset: GameAssets.uiBadgeBanner1,
+    ),
     Tamga(
-        id: 'banner_sky', name: 'Gök Sancak', asset: GameAssets.uiBadgeBanner3),
+      id: 'banner_sky',
+      name: 'Gök Sancak',
+      asset: GameAssets.uiBadgeBanner3,
+    ),
     Tamga(id: 'yurt', name: 'Altın Otağ', asset: GameAssets.iconYurtGold),
   ];
 

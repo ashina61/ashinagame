@@ -5,7 +5,9 @@ import '../../app/theme/app_text_styles.dart';
 import '../../core/assets/game_assets.dart';
 import '../../core/audio/audio_service.dart';
 import '../../core/utils/formatters.dart';
+import '../../core/widgets/info_sheet.dart';
 import '../../core/widgets/ornate.dart';
+import '../../game/data/game_info.dart';
 import '../scene/floating_text.dart';
 import '../../game/data/companion_roles.dart';
 import '../../game/data/faith_paths.dart';
@@ -40,7 +42,13 @@ class _CampScreenState extends State<CampScreen> {
     ('watchtower', 'Gözcü Kulesi', 0.85, 0.22, GameAssets.iconWatchtower),
     ('storage', 'Depo', 0.2, 0.46, GameAssets.iconChestMedallion),
     ('pen', 'Ağıl', 0.8, 0.48, GameAssets.iconMedallionHorse),
-    ('market_tent', 'Pazar Çadırı', 0.5, 0.56, GameAssets.iconCoinsMedallion),
+    (
+      'market_tent',
+      'Pazar Çadırı',
+      0.5,
+      0.56,
+      GameAssets.iconCoinsMedallion,
+    ),
     ('workshop', 'Atölye', 0.16, 0.72, GameAssets.iconGearEmblem),
     ('kam_tent', 'Kam Çadırı', 0.34, 0.78, GameAssets.iconScrollMedallion),
     ('healer', 'Şifacı Çadırı', 0.66, 0.78, GameAssets.iconHeartMedallion),
@@ -71,7 +79,10 @@ class _CampScreenState extends State<CampScreen> {
         SafeArea(
           child: Column(
             children: [
-              const OrnateHeader(title: 'Oba'),
+              OrnateHeader(
+                title: 'Oba',
+                onInfo: () => showHelpSheet(context, HelpId.oba),
+              ),
               _IdentityBand(onToggle: () => setState(() => _list = !_list)),
               Expanded(
                 child: _list
@@ -112,8 +123,9 @@ class _CampScreenState extends State<CampScreen> {
   ) {
     final b = controller.state.building(id);
     if (b == null) return;
-    final affordable = b.upgradeCost.entries
-        .every((e) => controller.state.resource(e.key) >= e.value);
+    final affordable = b.upgradeCost.entries.every(
+      (e) => controller.state.resource(e.key) >= e.value,
+    );
     showSceneDetail(
       context,
       title: '$label • Lv.${b.level}/${b.maxLevel}',
@@ -124,7 +136,7 @@ class _CampScreenState extends State<CampScreen> {
           label: b.canUpgrade ? 'Yükselt' : 'Azami seviye',
           subtitle: b.canUpgrade
               ? 'Maliyet: ${Formatters.resourceDelta({
-                      for (final e in b.upgradeCost.entries) e.key: -e.value,
+                      for (final e in b.upgradeCost.entries) e.key: -e.value
                     })}'
               : null,
           primary: true,
@@ -133,13 +145,16 @@ class _CampScreenState extends State<CampScreen> {
             final ok = controller.upgradeBuilding(id);
             if (ok) {
               AudioService.instance.playSfx('craft');
-              showFloatingGain(context, '$label ↑',
-                  color: AppColors.goldBright);
+              showFloatingGain(
+                context,
+                '$label ↑',
+                color: AppColors.goldBright,
+              );
             } else {
               AudioService.instance.playSfx('denied');
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Kaynak yetersiz.')),
-              );
+              ScaffoldMessenger.of(
+                context,
+              ).showSnackBar(const SnackBar(content: Text('Kaynak yetersiz.')));
             }
           },
         ),
@@ -210,9 +225,9 @@ class _SceneActionsBar extends StatelessWidget {
           child: GoldButton(
             label: 'OBA HALKI',
             height: 42,
-            onPressed: () => Navigator.of(context).push(
-              MaterialPageRoute<void>(builder: (_) => const NpcScreen()),
-            ),
+            onPressed: () => Navigator.of(
+              context,
+            ).push(MaterialPageRoute<void>(builder: (_) => const NpcScreen())),
           ),
         ),
         const SizedBox(width: 8),
@@ -280,8 +295,11 @@ class _CompanionBonusPanel extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(vertical: 3),
                 child: Row(
                   children: [
-                    const Icon(Icons.star,
-                        size: 14, color: AppColors.goldBright),
+                    const Icon(
+                      Icons.star,
+                      size: 14,
+                      color: AppColors.goldBright,
+                    ),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
@@ -318,9 +336,9 @@ class _ObaList extends StatelessWidget {
           child: GoldButton(
             label: 'OBA HALKI İLE KONUŞ',
             height: 44,
-            onPressed: () => Navigator.of(context).push(
-              MaterialPageRoute<void>(builder: (_) => const NpcScreen()),
-            ),
+            onPressed: () => Navigator.of(
+              context,
+            ).push(MaterialPageRoute<void>(builder: (_) => const NpcScreen())),
           ),
         ),
         const SectionPlaque('İNANÇ YOLU'),
@@ -347,10 +365,14 @@ class _ObaStat extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text('$label ',
-            style: AppTextStyles.meta.copyWith(color: AppColors.stone)),
-        Text('$value',
-            style: AppTextStyles.value.copyWith(color: AppColors.goldBright)),
+        Text(
+          '$label ',
+          style: AppTextStyles.meta.copyWith(color: AppColors.stone),
+        ),
+        Text(
+          '$value',
+          style: AppTextStyles.value.copyWith(color: AppColors.goldBright),
+        ),
       ],
     );
   }
@@ -394,9 +416,11 @@ class _FaithPathPanel extends StatelessWidget {
                       final ok = controller.chooseFaithPath(path.id);
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                          content: Text(ok
-                              ? '${path.name} yoluna girildi.'
-                              : 'Bu yol zaten seçili.'),
+                          content: Text(
+                            ok
+                                ? '${path.name} yoluna girildi.'
+                                : 'Bu yol zaten seçili.',
+                          ),
                           duration: const Duration(seconds: 2),
                         ),
                       );
@@ -422,12 +446,16 @@ class _AdvisorPanel extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('${advisor.name} • ${advisor.role} Seviye ${advisor.level}',
-              style: AppTextStyles.bodyStrong.copyWith(fontSize: 16)),
+          Text(
+            '${advisor.name} • ${advisor.role} Seviye ${advisor.level}',
+            style: AppTextStyles.bodyStrong.copyWith(fontSize: 16),
+          ),
           const SizedBox(height: 4),
           Text(advisor.description, style: AppTextStyles.body),
-          Text(advisor.effect,
-              style: AppTextStyles.meta.copyWith(color: AppColors.goldBright)),
+          Text(
+            advisor.effect,
+            style: AppTextStyles.meta.copyWith(color: AppColors.goldBright),
+          ),
           const SizedBox(height: 8),
           const Wrap(
             spacing: 8,
@@ -464,9 +492,12 @@ class _AdvisorButton extends StatelessWidget {
                 final ok = controller.consultAdvisor(action);
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                      content: Text(ok
+                    content: Text(
+                      ok
                           ? '$label tamamlandı.'
-                          : 'Kam için cooldown/AP uygun değil.')),
+                          : 'Kam için cooldown/AP uygun değil.',
+                    ),
+                  ),
                 );
               }
             : null,
@@ -489,21 +520,26 @@ class _RitualCard extends StatelessWidget {
     final cooldownLeft = (ritual.cooldownDays - (state.day.day - last))
         .clamp(0, ritual.cooldownDays)
         .toInt();
-    final affordable = ritual.cost.entries
-        .every((entry) => state.resource(entry.key) >= entry.value);
+    final affordable = ritual.cost.entries.every(
+      (entry) => state.resource(entry.key) >= entry.value,
+    );
     return OrnatePanel(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(ritual.name,
-              style: AppTextStyles.bodyStrong.copyWith(fontSize: 16)),
+          Text(
+            ritual.name,
+            style: AppTextStyles.bodyStrong.copyWith(fontSize: 16),
+          ),
           const SizedBox(height: 4),
           Text(ritual.description, style: AppTextStyles.body),
           if (ritual.seasonHint != null)
             Text(ritual.seasonHint!, style: AppTextStyles.meta),
           const SizedBox(height: 6),
-          Text(ritual.effectDescription,
-              style: AppTextStyles.meta.copyWith(color: AppColors.goldBright)),
+          Text(
+            ritual.effectDescription,
+            style: AppTextStyles.meta.copyWith(color: AppColors.goldBright),
+          ),
           const SizedBox(height: 8),
           Row(
             children: [
@@ -527,9 +563,12 @@ class _RitualCard extends StatelessWidget {
                           final ok = controller.performRitual(ritual.id);
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                                content: Text(ok
+                              content: Text(
+                                ok
                                     ? '${ritual.name} yapıldı.'
-                                    : 'Tören koşulları uygun değil.')),
+                                    : 'Tören koşulları uygun değil.',
+                              ),
+                            ),
                           );
                         }
                       : null,
@@ -601,9 +640,11 @@ class _BuildingCard extends StatelessWidget {
                           final ok = controller.upgradeBuilding(building.id);
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              content: Text(ok
-                                  ? '${building.name} yükseltildi.'
-                                  : 'Kaynak yetersiz.'),
+                              content: Text(
+                                ok
+                                    ? '${building.name} yükseltildi.'
+                                    : 'Kaynak yetersiz.',
+                              ),
                             ),
                           );
                         }

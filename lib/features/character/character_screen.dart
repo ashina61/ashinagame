@@ -5,7 +5,9 @@ import '../../app/theme/app_text_styles.dart';
 import '../../core/assets/game_assets.dart';
 import '../../core/audio/audio_service.dart';
 import '../../core/widgets/asset_placeholder.dart';
+import '../../core/widgets/info_sheet.dart';
 import '../../core/widgets/ornate.dart';
+import '../../game/data/game_info.dart';
 import '../../game/models/marriage_candidate.dart';
 import '../../game/models/resource.dart';
 import '../../game/state/game_scope.dart';
@@ -26,7 +28,11 @@ class CharacterScreen extends StatelessWidget {
       body: OrnateScaffold(
         child: Column(
           children: [
-            OrnateHeader(title: 'Karakter', showBack: showBack),
+            OrnateHeader(
+              title: 'Karakter',
+              showBack: showBack,
+              onInfo: () => showHelpSheet(context, HelpId.character),
+            ),
             Expanded(
               child: ListView(
                 padding: const EdgeInsets.only(top: 4, bottom: 16),
@@ -35,50 +41,45 @@ class CharacterScreen extends StatelessWidget {
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        SizedBox(
-                          width: 120,
-                          height: 170,
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(10),
-                            child: Image.asset(
-                              GameAssets.characterLeader,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) =>
-                                  const AssetPlaceholder(
-                                assetPath: GameAssets.characterLeader,
-                                label: 'Karakter',
-                                height: 170,
-                                icon: Icons.person_rounded,
-                              ),
-                            ),
-                          ),
+                        _PortraitFrame(
+                          asset: profile.portrait ?? GameAssets.characterLeader,
+                          onTap: () => _showPortraitPicker(context),
                         ),
                         const SizedBox(width: 12),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text('${profile.name}, ${profile.age}',
-                                  style: AppTextStyles.title),
+                              Text(
+                                '${profile.name}, ${profile.age}',
+                                style: AppTextStyles.title,
+                              ),
                               Text(profile.title, style: AppTextStyles.meta),
                               const SizedBox(height: 6),
                               Text(
-                                  'Seviye ${profile.level} • XP ${profile.xp}/${profile.xpToNextLevel}',
-                                  style: AppTextStyles.value),
+                                'Seviye ${profile.level} • XP ${profile.xp}/${profile.xpToNextLevel}',
+                                style: AppTextStyles.value,
+                              ),
                               const SizedBox(height: 6),
                               StatBar(
-                                  fraction: profile.xp / profile.xpToNextLevel,
-                                  height: 9),
+                                fraction: profile.xp / profile.xpToNextLevel,
+                                height: 9,
+                              ),
                               const SizedBox(height: 8),
-                              Text('Beceri Puanı: ${profile.skillPoints}',
-                                  style: AppTextStyles.bodyStrong
-                                      .copyWith(color: AppColors.goldBright)),
                               Text(
-                                  'Sağlık ${profile.health}/100 • Enerji ${profile.energy}/100 • Yorgunluk ${profile.fatigue}/100',
-                                  style: AppTextStyles.meta),
+                                'Beceri Puanı: ${profile.skillPoints}',
+                                style: AppTextStyles.bodyStrong.copyWith(
+                                  color: AppColors.goldBright,
+                                ),
+                              ),
                               Text(
-                                  'İtibar ${state.resource(ResourceType.reputation)} • ${profile.marriageStatus}',
-                                  style: AppTextStyles.meta),
+                                'Sağlık ${profile.health}/100 • Enerji ${profile.energy}/100 • Yorgunluk ${profile.fatigue}/100',
+                                style: AppTextStyles.meta,
+                              ),
+                              Text(
+                                'İtibar ${state.resource(ResourceType.reputation)} • ${profile.marriageStatus}',
+                                style: AppTextStyles.meta,
+                              ),
                             ],
                           ),
                         ),
@@ -93,7 +94,10 @@ class CharacterScreen extends StatelessWidget {
                         _SkillBar('Bilgelik', 'wisdom', profile.wisdom),
                         _SkillBar('Liderlik', 'leadership', profile.leadership),
                         _SkillBar(
-                            'Dayanıklılık', 'endurance', profile.endurance),
+                          'Dayanıklılık',
+                          'endurance',
+                          profile.endurance,
+                        ),
                         _SkillBar('Ticaret', 'trade', profile.trade),
                         _SkillBar('Zanaat', 'craft', profile.craft),
                         _SkillBar('Okçuluk', 'archery', profile.archery),
@@ -108,13 +112,18 @@ class CharacterScreen extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Eş: ${state.household.spouseName ?? 'Yok'}',
-                            style: AppTextStyles.bodyStrong),
-                        Text('Bonus: ${state.household.spouseBonus}',
-                            style: AppTextStyles.body),
                         Text(
-                            'Hane morali ${state.household.householdMorale}/100 • Çocuk ${state.household.childrenCount} • Aile itibarı ${state.household.familyPrestige}',
-                            style: AppTextStyles.meta),
+                          'Eş: ${state.household.spouseName ?? 'Yok'}',
+                          style: AppTextStyles.bodyStrong,
+                        ),
+                        Text(
+                          'Bonus: ${state.household.spouseBonus}',
+                          style: AppTextStyles.body,
+                        ),
+                        Text(
+                          'Hane morali ${state.household.householdMorale}/100 • Çocuk ${state.household.childrenCount} • Aile itibarı ${state.household.familyPrestige}',
+                          style: AppTextStyles.meta,
+                        ),
                       ],
                     ),
                   ),
@@ -124,8 +133,10 @@ class CharacterScreen extends StatelessWidget {
                   const SectionPlaque('OBA SÖZÜ'),
                   OrnatePanel(
                     backgroundAsset: GameAssets.bgSceneCampNight,
-                    child: Text(state.clan.motto,
-                        style: AppTextStyles.bodyStrong.copyWith(fontSize: 16)),
+                    child: Text(
+                      state.clan.motto,
+                      style: AppTextStyles.bodyStrong.copyWith(fontSize: 16),
+                    ),
                   ),
                   Padding(
                     padding: const EdgeInsets.fromLTRB(12, 4, 12, 0),
@@ -135,8 +146,10 @@ class CharacterScreen extends StatelessWidget {
                           child: DarkButton(
                             label: 'KUŞAM',
                             onPressed: () => Navigator.of(context).push(
-                                MaterialPageRoute<void>(
-                                    builder: (_) => const EquipmentScreen())),
+                              MaterialPageRoute<void>(
+                                builder: (_) => const EquipmentScreen(),
+                              ),
+                            ),
                           ),
                         ),
                         const SizedBox(width: 8),
@@ -144,8 +157,10 @@ class CharacterScreen extends StatelessWidget {
                           child: DarkButton(
                             label: 'ENVANTER',
                             onPressed: () => Navigator.of(context).push(
-                                MaterialPageRoute<void>(
-                                    builder: (_) => const InventoryScreen())),
+                              MaterialPageRoute<void>(
+                                builder: (_) => const InventoryScreen(),
+                              ),
+                            ),
                           ),
                         ),
                       ],
@@ -161,6 +176,137 @@ class CharacterScreen extends StatelessWidget {
   }
 }
 
+/// The tappable leader portrait with a small "change" badge.
+class _PortraitFrame extends StatelessWidget {
+  const _PortraitFrame({required this.asset, required this.onTap});
+
+  final String asset;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: SizedBox(
+        width: 120,
+        height: 170,
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(10),
+                child: Image.asset(
+                  asset,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) =>
+                      const AssetPlaceholder(
+                    assetPath: GameAssets.characterLeader,
+                    label: 'Karakter',
+                    height: 170,
+                    icon: Icons.person_rounded,
+                  ),
+                ),
+              ),
+            ),
+            Positioned(
+              right: 4,
+              bottom: 4,
+              child: Container(
+                padding: const EdgeInsets.all(5),
+                decoration: BoxDecoration(
+                  color: AppColors.ink.withValues(alpha: 0.8),
+                  shape: BoxShape.circle,
+                  border: Border.all(color: AppColors.gold),
+                ),
+                child: const Icon(
+                  Icons.edit,
+                  size: 14,
+                  color: AppColors.goldBright,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Slides up the portrait gallery so the player can change their leader's face.
+void _showPortraitPicker(BuildContext context) {
+  final controller = GameScope.of(context);
+  final current =
+      controller.state.profile.portrait ?? GameAssets.characterLeader;
+  showModalBottomSheet<void>(
+    context: context,
+    backgroundColor: Colors.transparent,
+    builder: (sheetContext) => SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.all(8),
+        child: OrnatePanel(
+          margin: EdgeInsets.zero,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Portre Seç',
+                style: AppTextStyles.title.copyWith(
+                  fontSize: 18,
+                  color: AppColors.goldBright,
+                ),
+              ),
+              const SizedBox(height: 10),
+              SizedBox(
+                height: 112,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: GameAssets.playerPortraits.length,
+                  separatorBuilder: (_, __) => const SizedBox(width: 10),
+                  itemBuilder: (context, i) {
+                    final asset = GameAssets.playerPortraits[i];
+                    final selected = asset == current;
+                    return GestureDetector(
+                      onTap: () {
+                        controller.setPortrait(asset);
+                        AudioService.instance.playSfx('tap');
+                        Navigator.of(sheetContext).maybePop();
+                      },
+                      child: Container(
+                        width: 80,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: selected
+                                ? AppColors.goldBright
+                                : AppColors.goldDim.withValues(alpha: 0.5),
+                            width: selected ? 2.4 : 1,
+                          ),
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(6),
+                          child: Image.asset(
+                            asset,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => const ColoredBox(
+                              color: AppColors.leatherDeep,
+                              child: Icon(Icons.person, color: AppColors.gold),
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    ),
+  );
+}
+
 class _SpiritualCharacterPanel extends StatelessWidget {
   const _SpiritualCharacterPanel();
 
@@ -171,25 +317,32 @@ class _SpiritualCharacterPanel extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Kut ${faith.kut}/100 • Töre ${faith.tore}/100',
-              style: AppTextStyles.bodyStrong),
+          Text(
+            'Kut ${faith.kut}/100 • Töre ${faith.tore}/100',
+            style: AppTextStyles.bodyStrong,
+          ),
           const SizedBox(height: 4),
           Text(
-              'İnanç ${faith.faith}/100 • Atalara Saygı ${faith.ancestorHonor}/100',
-              style: AppTextStyles.body),
+            'İnanç ${faith.faith}/100 • Atalara Saygı ${faith.ancestorHonor}/100',
+            style: AppTextStyles.body,
+          ),
           const SizedBox(height: 6),
           const Text(
-              'Kut diplomasi ve evlilik görüşmelerine küçük güven etkisi verir; töre oba düzenini korur.',
-              style: AppTextStyles.meta),
+            'Kut diplomasi ve evlilik görüşmelerine küçük güven etkisi verir; töre oba düzenini korur.',
+            style: AppTextStyles.meta,
+          ),
           if (faith.activeBlessings.isNotEmpty) ...[
             const SizedBox(height: 6),
-            Text('Kutsamalar: ${faith.activeBlessings.join(', ')}',
-                style:
-                    AppTextStyles.meta.copyWith(color: AppColors.goldBright)),
+            Text(
+              'Kutsamalar: ${faith.activeBlessings.join(', ')}',
+              style: AppTextStyles.meta.copyWith(color: AppColors.goldBright),
+            ),
           ],
           if (faith.activeWarnings.isNotEmpty)
-            Text('Uyarılar: ${faith.activeWarnings.join(', ')}',
-                style: AppTextStyles.meta.copyWith(color: AppColors.danger)),
+            Text(
+              'Uyarılar: ${faith.activeWarnings.join(', ')}',
+              style: AppTextStyles.meta.copyWith(color: AppColors.danger),
+            ),
         ],
       ),
     );
@@ -210,13 +363,46 @@ class _SkillBar extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         children: [
-          SizedBox(
-              width: 98, child: Text(label, style: AppTextStyles.bodyStrong)),
-          Expanded(child: StatBar(fraction: value / 20, height: 11)),
-          SizedBox(
-              width: 32,
-              child: Text('$value',
-                  textAlign: TextAlign.right, style: AppTextStyles.value)),
+          Expanded(
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: () => showSkillInfoSheet(context, stat, value),
+              child: Row(
+                children: [
+                  SizedBox(
+                    width: 90,
+                    child: Row(
+                      children: [
+                        Flexible(
+                          child: Text(
+                            label,
+                            style: AppTextStyles.bodyStrong,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        const SizedBox(width: 3),
+                        const Icon(
+                          Icons.info_outline,
+                          size: 12,
+                          color: AppColors.goldDim,
+                        ),
+                      ],
+                    ),
+                  ),
+                  Expanded(child: StatBar(fraction: value / 20, height: 11)),
+                  SizedBox(
+                    width: 30,
+                    child: Text(
+                      '$value',
+                      textAlign: TextAlign.right,
+                      style: AppTextStyles.value,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
           const SizedBox(width: 8),
           SizedBox(
             width: 34,
@@ -252,61 +438,73 @@ class _CandidateCard extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                  child: Text('${candidate.name}, ${candidate.age}',
-                      style: AppTextStyles.bodyStrong.copyWith(fontSize: 16))),
+                child: Text(
+                  '${candidate.name}, ${candidate.age}',
+                  style: AppTextStyles.bodyStrong.copyWith(fontSize: 16),
+                ),
+              ),
               Text(
-                  candidate.isMarriedToPlayer
-                      ? 'EŞ'
-                      : candidate.isAvailable
-                          ? 'Uygun'
-                          : 'Kapalı',
-                  style: AppTextStyles.meta.copyWith(
-                      color: candidate.isAvailable
-                          ? AppColors.success
-                          : AppColors.stone)),
+                candidate.isMarriedToPlayer
+                    ? 'EŞ'
+                    : candidate.isAvailable
+                        ? 'Uygun'
+                        : 'Kapalı',
+                style: AppTextStyles.meta.copyWith(
+                  color: candidate.isAvailable
+                      ? AppColors.success
+                      : AppColors.stone,
+                ),
+              ),
             ],
           ),
           Text(
-              '${candidate.tribeName} • ${candidate.personality} • Bonus: ${candidate.bonusType}',
-              style: AppTextStyles.body),
+            '${candidate.tribeName} • ${candidate.personality} • Bonus: ${candidate.bonusType}',
+            style: AppTextStyles.body,
+          ),
           Text(
-              'Uyum ${candidate.compatibility}/100 • İlişki ${candidate.relation}/100 • Diplomatik değer ${candidate.diplomaticValue}',
-              style: AppTextStyles.meta),
+            'Uyum ${candidate.compatibility}/100 • İlişki ${candidate.relation}/100 • Diplomatik değer ${candidate.diplomaticValue}',
+            style: AppTextStyles.meta,
+          ),
           const SizedBox(height: 8),
           Row(
             children: [
               Expanded(
-                  child: DarkButton(
-                      label: 'GÖRÜŞ',
-                      height: 34,
-                      onPressed:
-                          state.dailyActionPoints > 0 && candidate.isAvailable
-                              ? () {
-                                  controller.meetCandidate(candidate.id);
-                                  AudioService.instance.playSfx('tap');
-                                }
-                              : null)),
-              const SizedBox(width: 8),
-              Expanded(
-                  child: DarkButton(
-                      label: 'HEDİYE',
-                      height: 34,
-                      onPressed: state.resource(ResourceType.gold) >= 50 &&
-                              state.dailyActionPoints > 0 &&
-                              candidate.isAvailable
+                child: DarkButton(
+                  label: 'GÖRÜŞ',
+                  height: 34,
+                  onPressed:
+                      state.dailyActionPoints > 0 && candidate.isAvailable
                           ? () {
-                              controller.giftCandidate(candidate.id);
-                              AudioService.instance.playSfx('coin');
+                              controller.meetCandidate(candidate.id);
+                              AudioService.instance.playSfx('tap');
                             }
-                          : null)),
+                          : null,
+                ),
+              ),
               const SizedBox(width: 8),
               Expanded(
-                  child: GoldButton(
-                      label: candidate.isMarriedToPlayer ? 'EŞİN' : 'TEKLİF',
-                      height: 34,
-                      onPressed: offerable
-                          ? () => _propose(context, controller)
-                          : null)),
+                child: DarkButton(
+                  label: 'HEDİYE',
+                  height: 34,
+                  onPressed: state.resource(ResourceType.gold) >= 50 &&
+                          state.dailyActionPoints > 0 &&
+                          candidate.isAvailable
+                      ? () {
+                          controller.giftCandidate(candidate.id);
+                          AudioService.instance.playSfx('coin');
+                        }
+                      : null,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: GoldButton(
+                  label: candidate.isMarriedToPlayer ? 'EŞİN' : 'TEKLİF',
+                  height: 34,
+                  onPressed:
+                      offerable ? () => _propose(context, controller) : null,
+                ),
+              ),
             ],
           ),
         ],
@@ -336,20 +534,31 @@ class _CandidateCard extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('${candidate.name} ile evlendin!',
-                  style: AppTextStyles.title
-                      .copyWith(color: AppColors.goldBright)),
+              Text(
+                '${candidate.name} ile evlendin!',
+                style: AppTextStyles.title.copyWith(
+                  color: AppColors.goldBright,
+                ),
+              ),
               const SizedBox(height: 8),
-              Text('Eş: ${h.spouseName ?? candidate.name}',
-                  style: AppTextStyles.body),
+              Text(
+                'Eş: ${h.spouseName ?? candidate.name}',
+                style: AppTextStyles.body,
+              ),
               Text('Bonus: ${candidate.bonusType}', style: AppTextStyles.body),
-              Text('Hane morali yükseldi (${h.householdMorale}/100).',
-                  style: AppTextStyles.body),
-              Text('${candidate.tribeName} ile bağ güçlendi.',
-                  style: AppTextStyles.body),
+              Text(
+                'Hane morali yükseldi (${h.householdMorale}/100).',
+                style: AppTextStyles.body,
+              ),
+              Text(
+                '${candidate.tribeName} ile bağ güçlendi.',
+                style: AppTextStyles.body,
+              ),
               const SizedBox(height: 6),
-              const Text('Oba kurma yolunda güçlü bağ tamamlandı.',
-                  style: AppTextStyles.meta),
+              const Text(
+                'Oba kurma yolunda güçlü bağ tamamlandı.',
+                style: AppTextStyles.meta,
+              ),
               const SizedBox(height: 12),
               GoldButton(
                 label: 'DEVAM',

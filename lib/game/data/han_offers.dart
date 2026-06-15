@@ -38,26 +38,44 @@ class HanOffers {
 
   static const companions = <HanCompanion>[
     HanCompanion(
-        npcId: 'kaya_atabek', name: 'Kaya', roleId: 'warleader', goldCost: 120),
+      npcId: 'kaya_atabek',
+      name: 'Kaya',
+      roleId: 'warleader',
+      goldCost: 120,
+    ),
     HanCompanion(
-        npcId: 'bori_bey', name: 'Böri Bey', roleId: 'kam', goldCost: 100),
+      npcId: 'bori_bey',
+      name: 'Böri Bey',
+      roleId: 'kam',
+      goldCost: 100,
+    ),
     HanCompanion(
-        npcId: 'bezirgan', name: 'Bezirgân', roleId: 'merchant', goldCost: 110),
+      npcId: 'bezirgan',
+      name: 'Bezirgân',
+      roleId: 'merchant',
+      goldCost: 110,
+    ),
     HanCompanion(
-        npcId: 'alis_hatun',
-        name: 'Alış Hatun',
-        roleId: 'hearth_mother',
-        goldCost: 90),
+      npcId: 'alis_hatun',
+      name: 'Alış Hatun',
+      roleId: 'hearth_mother',
+      goldCost: 90,
+    ),
     HanCompanion(
-        npcId: 'tugan_bey', name: 'Tugan Bey', roleId: 'hunter', goldCost: 100),
+      npcId: 'tugan_bey',
+      name: 'Tugan Bey',
+      roleId: 'hunter',
+      goldCost: 100,
+    ),
   ];
 
   static const mercenaries = <HanMercenary>[
     HanMercenary(
-        unitId: 'horse_archer',
-        name: 'Atlı Okçu',
-        goldCost: 90,
-        needsHorse: true),
+      unitId: 'horse_archer',
+      name: 'Atlı Okçu',
+      goldCost: 90,
+      needsHorse: true,
+    ),
     HanMercenary(unitId: 'foot_sword', name: 'Kılıçlı Piyade', goldCost: 50),
     HanMercenary(unitId: 'spear', name: 'Mızraklı', goldCost: 55),
     HanMercenary(unitId: 'scout', name: 'İzci', goldCost: 30, needsHorse: true),
@@ -74,6 +92,7 @@ class HanOffers {
   static String rumorForDay(int day) => rumors[(day.abs()) % rumors.length];
 
   /// Cost helper so callers need not import the resource enum.
-  static Map<ResourceType, int> companionCost(HanCompanion c) =>
-      {ResourceType.gold: c.goldCost};
+  static Map<ResourceType, int> companionCost(HanCompanion c) => {
+        ResourceType.gold: c.goldCost,
+      };
 }

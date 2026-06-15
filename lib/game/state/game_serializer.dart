@@ -42,6 +42,7 @@ class GameSerializer {
           'warfare': state.profile.warfare,
           'familyStatus': state.profile.familyStatus,
           'marriageStatus': state.profile.marriageStatus,
+          'portrait': state.profile.portrait,
         },
         'clan': {'name': state.clan.name, 'motto': state.clan.motto},
         'day': {'day': state.day.day, 'season': state.day.season.name},
@@ -50,7 +51,7 @@ class GameSerializer {
         },
         'quests': [
           for (final q in state.quests)
-            {'id': q.id, 'progress': q.progress, 'completed': q.completed}
+            {'id': q.id, 'progress': q.progress, 'completed': q.completed},
         ],
         'eventId': state.currentEvent?.id,
         'eventIndex': state.eventIndex,
@@ -63,13 +64,13 @@ class GameSerializer {
         'gameOverReason': state.gameOverReason,
         'craftQueue': [
           for (final j in state.craftQueue)
-            {'recipeId': j.recipeId, 'daysLeft': j.daysLeft}
+            {'recipeId': j.recipeId, 'daysLeft': j.daysLeft},
         ],
         'craftedItems': state.craftedItems,
         'completedExpeditions': state.completedExpeditions,
         'marketStock': state.marketStock,
         'buildings': [
-          for (final b in state.buildings) {'id': b.id, 'level': b.level}
+          for (final b in state.buildings) {'id': b.id, 'level': b.level},
         ],
         'tribes': [
           for (final t in state.tribes)
@@ -77,8 +78,8 @@ class GameSerializer {
               'id': t.id,
               'relation': t.relation,
               'tradeOpen': t.tradeOpen,
-              'marriageTie': t.marriageTie
-            }
+              'marriageTie': t.marriageTie,
+            },
         ],
         'household': {
           'spouseName': state.household.spouseName,
@@ -93,8 +94,8 @@ class GameSerializer {
               'id': c.id,
               'relation': c.relation,
               'isAvailable': c.isAvailable,
-              'isMarriedToPlayer': c.isMarriedToPlayer
-            }
+              'isMarriedToPlayer': c.isMarriedToPlayer,
+            },
         ],
         'faithState': {
           'faith': state.faithState.faith,
@@ -153,6 +154,18 @@ class GameSerializer {
       final clan = json['clan'] as Map<String, dynamic>;
       final day = json['day'] as Map<String, dynamic>;
       final eventId = json['eventId'] as String?;
+      final resources = {
+        for (final e in (json['resources'] as Map<String, dynamic>).entries)
+          ResourceType.values.byName(e.key): e.value as int,
+      };
+      // Reputation now has a single source of truth: the resource accumulator.
+      // Seed the profile mirror from it (older saves may have drifted apart, so
+      // keep the higher of the two to honour renown the player already earned).
+      final reputation = [
+        resources[ResourceType.reputation] ?? 0,
+        profile['reputation'] as int? ?? 0,
+      ].reduce((a, b) => a > b ? a : b).clamp(0, 100).toInt();
+      resources[ResourceType.reputation] = reputation;
       return GameState(
         profile: PlayerProfile(
           name: profile['name'] as String,
@@ -165,7 +178,7 @@ class GameSerializer {
           health: profile['health'] as int? ?? 100,
           energy: profile['energy'] as int? ?? 100,
           fatigue: profile['fatigue'] as int? ?? 0,
-          reputation: profile['reputation'] as int? ?? 10,
+          reputation: reputation,
           courage: profile['courage'] as int,
           wisdom: profile['wisdom'] as int,
           leadership: profile['leadership'] as int,
@@ -176,16 +189,17 @@ class GameSerializer {
           warfare: profile['warfare'] as int? ?? 5,
           familyStatus: profile['familyStatus'] as String? ?? 'Bekâr hane',
           marriageStatus: profile['marriageStatus'] as String? ?? 'Bekâr',
+          portrait: profile['portrait'] as String?,
         ),
-        clan:
-            Clan(name: clan['name'] as String, motto: clan['motto'] as String),
+        clan: Clan(
+          name: clan['name'] as String,
+          motto: clan['motto'] as String,
+        ),
         day: GameDay(
-            day: day['day'] as int,
-            season: Season.values.byName(day['season'] as String)),
-        resources: {
-          for (final e in (json['resources'] as Map<String, dynamic>).entries)
-            ResourceType.values.byName(e.key): e.value as int
-        },
+          day: day['day'] as int,
+          season: Season.values.byName(day['season'] as String),
+        ),
+        resources: resources,
         quests: _decodeQuests(json['quests'] as List<dynamic>),
         currentEvent: eventId == null
             ? null
@@ -205,8 +219,9 @@ class GameSerializer {
           for (final job in (json['craftQueue'] as List<dynamic>? ?? [])
               .cast<Map<String, dynamic>>())
             CraftJob(
-                recipeId: job['recipeId'] as String,
-                daysLeft: job['daysLeft'] as int)
+              recipeId: job['recipeId'] as String,
+              daysLeft: job['daysLeft'] as int,
+            ),
         ],
         craftedItems: (json['craftedItems'] as Map<String, dynamic>? ?? {})
             .cast<String, int>(),
@@ -217,15 +232,17 @@ class GameSerializer {
             (json['marketStock'] as Map<String, dynamic>? ?? {})
                 .cast<String, int>()) {
           final stock when stock.isEmpty => MarketGoods.startingStock(),
-          final stock => stock
+          final stock => stock,
         },
         buildings: _decodeBuildings(json['buildings'] as List<dynamic>?),
         tribes: _decodeTribes(json['tribes'] as List<dynamic>?),
         household: _decodeHousehold(json['household'] as Map<String, dynamic>?),
-        marriageCandidates:
-            _decodeCandidates(json['marriageCandidates'] as List<dynamic>?),
-        faithState:
-            _decodeFaithState(json['faithState'] as Map<String, dynamic>?),
+        marriageCandidates: _decodeCandidates(
+          json['marriageCandidates'] as List<dynamic>?,
+        ),
+        faithState: _decodeFaithState(
+          json['faithState'] as Map<String, dynamic>?,
+        ),
         spiritualAdvisor: StarterGameData.spiritualAdvisor.copyWith(
           level: (json['spiritualAdvisor'] as Map<String, dynamic>?)?['level']
               as int?,
@@ -289,38 +306,41 @@ class GameSerializer {
   static List<Quest> _decodeQuests(List<dynamic> entries) {
     final catalog = {
       for (final q in StarterGameData.dailyQuestPool) q.id: q,
-      for (final q in StarterGameData.storyQuests) q.id: q
+      for (final q in StarterGameData.storyQuests) q.id: q,
     };
     return [
       for (final e in entries.cast<Map<String, dynamic>>())
         if (catalog.containsKey(e['id']))
           catalog[e['id']]!.copyWith(
-              progress: e['progress'] as int, completed: e['completed'] as bool)
+            progress: e['progress'] as int,
+            completed: e['completed'] as bool,
+          ),
     ];
   }
 
   static List<CampBuilding> _decodeBuildings(List<dynamic>? entries) {
     final levels = {
       for (final e in (entries ?? []).cast<Map<String, dynamic>>())
-        e['id'] as String: e['level'] as int
+        e['id'] as String: e['level'] as int,
     };
     return [
       for (final b in StarterGameData.campBuildings)
-        b.copyWith(level: levels[b.id] ?? b.level)
+        b.copyWith(level: levels[b.id] ?? b.level),
     ];
   }
 
   static List<TribeRelation> _decodeTribes(List<dynamic>? entries) {
     final data = {
       for (final e in (entries ?? []).cast<Map<String, dynamic>>())
-        e['id'] as String: e
+        e['id'] as String: e,
     };
     return [
       for (final t in StarterGameData.tribes)
         t.copyWith(
-            relation: data[t.id]?['relation'] as int? ?? t.relation,
-            tradeOpen: data[t.id]?['tradeOpen'] as bool? ?? t.tradeOpen,
-            marriageTie: data[t.id]?['marriageTie'] as bool? ?? t.marriageTie)
+          relation: data[t.id]?['relation'] as int? ?? t.relation,
+          tradeOpen: data[t.id]?['tradeOpen'] as bool? ?? t.tradeOpen,
+          marriageTie: data[t.id]?['marriageTie'] as bool? ?? t.marriageTie,
+        ),
     ];
   }
 
@@ -331,20 +351,22 @@ class GameSerializer {
           spouseBonus: h['spouseBonus'] as String? ?? 'Yok',
           householdMorale: h['householdMorale'] as int? ?? 50,
           childrenCount: h['childrenCount'] as int? ?? 0,
-          familyPrestige: h['familyPrestige'] as int? ?? 0);
+          familyPrestige: h['familyPrestige'] as int? ?? 0,
+        );
 
   static List<MarriageCandidate> _decodeCandidates(List<dynamic>? entries) {
     final data = {
       for (final e in (entries ?? []).cast<Map<String, dynamic>>())
-        e['id'] as String: e
+        e['id'] as String: e,
     };
     return [
       for (final c in StarterGameData.marriageCandidates)
         c.copyWith(
-            relation: data[c.id]?['relation'] as int? ?? c.relation,
-            isAvailable: data[c.id]?['isAvailable'] as bool? ?? c.isAvailable,
-            isMarriedToPlayer: data[c.id]?['isMarriedToPlayer'] as bool? ??
-                c.isMarriedToPlayer)
+          relation: data[c.id]?['relation'] as int? ?? c.relation,
+          isAvailable: data[c.id]?['isAvailable'] as bool? ?? c.isAvailable,
+          isMarriedToPlayer:
+              data[c.id]?['isMarriedToPlayer'] as bool? ?? c.isMarriedToPlayer,
+        ),
     ];
   }
 

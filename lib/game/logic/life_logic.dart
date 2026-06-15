@@ -37,6 +37,7 @@ class LifeLogic {
       name: names[random.nextInt(names.length)],
       title: titleForAge(age),
       age: age,
+      portrait: parent.portrait,
       reputation: (parent.reputation * 0.6).round(),
       courage: inherit(parent.courage),
       wisdom: inherit(parent.wisdom),

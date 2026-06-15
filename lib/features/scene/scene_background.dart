@@ -5,11 +5,7 @@ import '../../app/theme/app_colors.dart';
 /// Full-bleed scene art with a soft dark scrim so HUD text and hotspots stay
 /// readable over the painting. This is the bottom layer of every scene.
 class SceneBackground extends StatelessWidget {
-  const SceneBackground({
-    required this.asset,
-    this.scrim = true,
-    super.key,
-  });
+  const SceneBackground({required this.asset, this.scrim = true, super.key});
 
   final String asset;
   final bool scrim;

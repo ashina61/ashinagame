@@ -98,8 +98,9 @@ class _SceneHotspotWidgetState extends State<SceneHotspotWidget>
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0x80EEC36A)
-                          .withValues(alpha: locked ? 0.0 : 0.5),
+                      color: const Color(
+                        0x80EEC36A,
+                      ).withValues(alpha: locked ? 0.0 : 0.5),
                       blurRadius: glow,
                     ),
                   ],
@@ -139,7 +140,9 @@ class _SceneHotspotWidgetState extends State<SceneHotspotWidget>
                     top: 2,
                     child: Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 5, vertical: 1),
+                        horizontal: 5,
+                        vertical: 1,
+                      ),
                       decoration: const BoxDecoration(
                         color: AppColors.danger,
                         shape: BoxShape.circle,

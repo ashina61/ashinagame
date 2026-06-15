@@ -5,8 +5,10 @@ import '../../app/theme/app_text_styles.dart';
 import '../../core/assets/game_assets.dart';
 import '../../core/audio/audio_service.dart';
 import '../../core/utils/formatters.dart';
+import '../../core/widgets/info_sheet.dart';
 import '../../core/widgets/ornate.dart';
 import '../../game/data/expedition_sites.dart';
+import '../../game/data/game_info.dart';
 import '../../game/logic/unlock_logic.dart';
 import '../../game/models/expedition.dart';
 import '../../game/models/resource.dart';
@@ -124,15 +126,21 @@ class _ExpeditionsScreenState extends State<ExpeditionsScreen> {
     return OrnateScaffold(
       child: Column(
         children: [
-          const OrnateHeader(title: 'Seferler'),
+          OrnateHeader(
+            title: 'Seferler',
+            onInfo: () => showHelpSheet(context, HelpId.expeditions),
+          ),
           OrnatePanel(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             child: Column(
               children: [
                 Row(
                   children: [
-                    Image.asset(GameAssets.iconEnergyBolt,
-                        width: 18, height: 18),
+                    Image.asset(
+                      GameAssets.iconEnergyBolt,
+                      width: 18,
+                      height: 18,
+                    ),
                     const SizedBox(width: 6),
                     Expanded(
                       child: Text(
@@ -305,8 +313,10 @@ class _ExpeditionsScreenState extends State<ExpeditionsScreen> {
                 DarkButton(
                   label: 'KEŞFET',
                   onPressed: () {
-                    final done =
-                        controller.exploreRegion(region.name, region.effects);
+                    final done = controller.exploreRegion(
+                      region.name,
+                      region.effects,
+                    );
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text(
@@ -334,10 +344,14 @@ class _ExpeditionsScreenState extends State<ExpeditionsScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(place.name, style: AppTextStyles.bodyStrong),
-                      Text('Risk: ${place.risk} • Ödül: ${place.reward}',
-                          style: AppTextStyles.meta),
-                      Text(place.description,
-                          style: AppTextStyles.body.copyWith(fontSize: 13)),
+                      Text(
+                        'Risk: ${place.risk} • Ödül: ${place.reward}',
+                        style: AppTextStyles.meta,
+                      ),
+                      Text(
+                        place.description,
+                        style: AppTextStyles.body.copyWith(fontSize: 13),
+                      ),
                     ],
                   ),
                 ),
@@ -349,9 +363,12 @@ class _ExpeditionsScreenState extends State<ExpeditionsScreen> {
                           final done = controller.visitSacredPlace(place.id);
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                                content: Text(done
+                              content: Text(
+                                done
                                     ? '${place.name} ziyaret edildi.'
-                                    : 'Ziyaret için cooldown/AP uygun değil.')),
+                                    : 'Ziyaret için cooldown/AP uygun değil.',
+                              ),
+                            ),
                           );
                         }
                       : null,
@@ -367,9 +384,7 @@ class _ExpeditionsScreenState extends State<ExpeditionsScreen> {
     final target = _effectiveTarget(controller);
     if (target == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Tüm hedefler fethedildi. Bozkır senin!'),
-        ),
+        const SnackBar(content: Text('Tüm hedefler fethedildi. Bozkır senin!')),
       );
       return;
     }
@@ -424,7 +439,7 @@ class _MapNode extends StatelessWidget {
             : (
                 '${site.dangerLabel} • Başarı %'
                     '${controller.successChanceFor(site)}',
-                site.baseChance >= 60 ? AppColors.info : AppColors.danger
+                site.baseChance >= 60 ? AppColors.info : AppColors.danger,
               );
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),

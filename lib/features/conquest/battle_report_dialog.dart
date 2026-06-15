@@ -41,9 +41,11 @@ class BattleReportDialog extends StatelessWidget {
               const Text('Kayıp verilmedi.', style: AppTextStyles.body)
             else ...[
               Text(
-                  'Kayıp: ${report.totalLost} • Yaralı: ${report.totalWounded}',
-                  style: AppTextStyles.bodyStrong
-                      .copyWith(color: AppColors.goldBright)),
+                'Kayıp: ${report.totalLost} • Yaralı: ${report.totalWounded}',
+                style: AppTextStyles.bodyStrong.copyWith(
+                  color: AppColors.goldBright,
+                ),
+              ),
               const SizedBox(height: 6),
               for (final id in unitIds)
                 Padding(

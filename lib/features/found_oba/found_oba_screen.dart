@@ -248,11 +248,13 @@ class _TamgaStep extends StatelessWidget {
                           child: Image.asset(tamga.asset, fit: BoxFit.contain),
                         ),
                         const SizedBox(height: 4),
-                        Text(tamga.name,
-                            textAlign: TextAlign.center,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: AppTextStyles.meta),
+                        Text(
+                          tamga.name,
+                          textAlign: TextAlign.center,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppTextStyles.meta,
+                        ),
                       ],
                     ),
                   ),
@@ -287,8 +289,10 @@ class _LandStep extends StatelessWidget {
               foregroundDecoration: selected == i
                   ? BoxDecoration(
                       borderRadius: BorderRadius.circular(12),
-                      border:
-                          Border.all(color: AppColors.goldBright, width: 1.6),
+                      border: Border.all(
+                        color: AppColors.goldBright,
+                        width: 1.6,
+                      ),
                     )
                   : null,
               child: OrnatePanel(
@@ -349,12 +353,17 @@ class _RolesStep extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(NpcCharacters.byId(id)?.name ?? id,
-                    style: AppTextStyles.bodyStrong),
+                Text(
+                  NpcCharacters.byId(id)?.name ?? id,
+                  style: AppTextStyles.bodyStrong,
+                ),
                 if (roles[id] != null)
-                  Text(CompanionRoles.byId(roles[id]!)?.effect ?? '',
-                      style: AppTextStyles.meta
-                          .copyWith(color: AppColors.goldBright)),
+                  Text(
+                    CompanionRoles.byId(roles[id]!)?.effect ?? '',
+                    style: AppTextStyles.meta.copyWith(
+                      color: AppColors.goldBright,
+                    ),
+                  ),
                 const SizedBox(height: 6),
                 Wrap(
                   spacing: 6,
@@ -365,7 +374,9 @@ class _RolesStep extends StatelessWidget {
                         onTap: () => onAssign(id, role.id),
                         child: Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 10, vertical: 5),
+                            horizontal: 10,
+                            vertical: 5,
+                          ),
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(8),
                             color: roles[id] == role.id
@@ -377,12 +388,14 @@ class _RolesStep extends StatelessWidget {
                                   : AppColors.goldDim.withValues(alpha: 0.5),
                             ),
                           ),
-                          child: Text(role.name,
-                              style: AppTextStyles.meta.copyWith(
-                                color: roles[id] == role.id
-                                    ? AppColors.goldBright
-                                    : AppColors.sand,
-                              )),
+                          child: Text(
+                            role.name,
+                            style: AppTextStyles.meta.copyWith(
+                              color: roles[id] == role.id
+                                  ? AppColors.goldBright
+                                  : AppColors.sand,
+                            ),
+                          ),
                         ),
                       ),
                   ],
@@ -392,8 +405,10 @@ class _RolesStep extends StatelessWidget {
           ),
         if (followers.isEmpty)
           const OrnatePanel(
-            child: Text('Henüz yandaşın yok — yine de obanı kurabilirsin.',
-                style: AppTextStyles.meta),
+            child: Text(
+              'Henüz yandaşın yok — yine de obanı kurabilirsin.',
+              style: AppTextStyles.meta,
+            ),
           ),
       ],
     );
@@ -425,15 +440,18 @@ class _ResultCard extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Image.asset(Tamgas.byId(tamga).asset,
-                width: 72,
-                height: 72,
-                errorBuilder: (_, __, ___) => const SizedBox(height: 72)),
+            Image.asset(
+              Tamgas.byId(tamga).asset,
+              width: 72,
+              height: 72,
+              errorBuilder: (_, __, ___) => const SizedBox(height: 72),
+            ),
             const SizedBox(height: 8),
-            Text('$obaName kuruldu!',
-                textAlign: TextAlign.center,
-                style:
-                    AppTextStyles.title.copyWith(color: AppColors.goldBright)),
+            Text(
+              '$obaName kuruldu!',
+              textAlign: TextAlign.center,
+              style: AppTextStyles.title.copyWith(color: AppColors.goldBright),
+            ),
             const SizedBox(height: 8),
             _ResultRow(Icons.terrain, 'Toprak: $land'),
             _ResultRow(Icons.groups, 'Nüfus +$population (ilk haneler)'),

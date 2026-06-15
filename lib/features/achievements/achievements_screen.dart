@@ -79,8 +79,10 @@ class _AchievementPanel extends StatelessWidget {
           const SizedBox(height: 6),
           Row(
             children: [
-              Text('$progress/${achievement.target}',
-                  style: AppTextStyles.meta),
+              Text(
+                '$progress/${achievement.target}',
+                style: AppTextStyles.meta,
+              ),
               const SizedBox(width: 10),
               Expanded(
                 child: Text(

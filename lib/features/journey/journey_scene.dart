@@ -6,7 +6,9 @@ import '../../app/theme/app_colors.dart';
 import '../../app/theme/app_text_styles.dart';
 import '../../core/assets/game_assets.dart';
 import '../../core/utils/formatters.dart';
+import '../../core/widgets/info_sheet.dart';
 import '../../core/widgets/ornate.dart';
+import '../../game/data/game_info.dart';
 import '../../game/logic/phase_logic.dart';
 import '../../game/models/resource.dart';
 import '../../game/state/game_controller.dart';
@@ -41,37 +43,80 @@ class JourneyScreen extends StatelessWidget {
   /// own flavour, reward and sometimes a wound. One is rolled on each scout.
   static const _outcomes = <String, List<_Outcome>>{
     'river': [
-      _Outcome('Temiz su buldun; içtin, kaplarını doldurdun.',
-          {ResourceType.food: 8, ResourceType.wood: 4}, 4),
+      _Outcome(
+          'Temiz su buldun; içtin, kaplarını doldurdun.',
+          {
+            ResourceType.food: 8,
+            ResourceType.wood: 4,
+          },
+          4),
       _Outcome('Kıyıda balık tuttun.', {ResourceType.food: 14}, 0),
     ],
     'forest': [
       _Outcome('Bol odun kestin.', {ResourceType.wood: 14}, 0),
-      _Outcome('Kurt izi gördün; temkinli avlandın.',
-          {ResourceType.leather: 4, ResourceType.food: 6}, -2),
+      _Outcome(
+          'Kurt izi gördün; temkinli avlandın.',
+          {
+            ResourceType.leather: 4,
+            ResourceType.food: 6,
+          },
+          -2),
     ],
     'hunt': [
-      _Outcome('İyi bir av vurdun.',
-          {ResourceType.food: 16, ResourceType.leather: 3}, 0),
-      _Outcome('Avlanırken yaralandın ama eli boş dönmedin.',
-          {ResourceType.leather: 4, ResourceType.food: 8}, -8),
+      _Outcome(
+          'İyi bir av vurdun.',
+          {
+            ResourceType.food: 16,
+            ResourceType.leather: 3,
+          },
+          0),
+      _Outcome(
+          'Avlanırken yaralandın ama eli boş dönmedin.',
+          {
+            ResourceType.leather: 4,
+            ResourceType.food: 8,
+          },
+          -8),
     ],
     'market': [
-      _Outcome('Tüccara yol gösterdin; bahşiş aldın.',
-          {ResourceType.gold: 12, ResourceType.reputation: 1}, 0),
+      _Outcome(
+          'Tüccara yol gösterdin; bahşiş aldın.',
+          {
+            ResourceType.gold: 12,
+            ResourceType.reputation: 1,
+          },
+          0),
       _Outcome('Küçük bir takas yaptın.', {ResourceType.gold: 8}, 0),
     ],
     'inscription': [
-      _Outcome('Ataların izini okudun; içine huzur doldu.',
-          {ResourceType.reputation: 2, ResourceType.morale: 2}, 0),
-      _Outcome('Eski bir töre öğrendin.',
-          {ResourceType.reputation: 1, ResourceType.morale: 1}, 0),
+      _Outcome(
+          'Ataların izini okudun; içine huzur doldu.',
+          {
+            ResourceType.reputation: 2,
+            ResourceType.morale: 2,
+          },
+          0),
+      _Outcome(
+          'Eski bir töre öğrendin.',
+          {
+            ResourceType.reputation: 1,
+            ResourceType.morale: 1,
+          },
+          0),
     ],
     'pass': [
-      _Outcome('Geçidi aştın; adın biraz daha duyuldu.',
-          {ResourceType.reputation: 3}, -3),
       _Outcome(
-          'Sis seni yordu ama vazgeçmedin.', {ResourceType.reputation: 2}, -5),
+          'Geçidi aştın; adın biraz daha duyuldu.',
+          {
+            ResourceType.reputation: 3,
+          },
+          -3),
+      _Outcome(
+          'Sis seni yordu ama vazgeçmedin.',
+          {
+            ResourceType.reputation: 2,
+          },
+          -5),
     ],
   };
 
@@ -98,7 +143,11 @@ class JourneyScreen extends StatelessWidget {
           SafeArea(
             child: Column(
               children: [
-                OrnateHeader(title: 'Yolculuk', showBack: showBack),
+                OrnateHeader(
+                  title: 'Yolculuk',
+                  showBack: showBack,
+                  onInfo: () => showHelpSheet(context, HelpId.journey),
+                ),
                 Expanded(
                   child: LayoutBuilder(
                     builder: (context, c) => Stack(
@@ -193,8 +242,11 @@ class _DistantLandsPanel extends StatelessWidget {
           children: [
             Row(
               children: [
-                Icon(open ? Icons.explore : Icons.lock,
-                    size: 18, color: AppColors.goldBright),
+                Icon(
+                  open ? Icons.explore : Icons.lock,
+                  size: 18,
+                  color: AppColors.goldBright,
+                ),
                 const SizedBox(width: 8),
                 const Expanded(
                   child: Text('Uzak Diyarlar', style: AppTextStyles.bodyStrong),

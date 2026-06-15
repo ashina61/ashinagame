@@ -24,9 +24,10 @@ Future<void> showDayReport(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(title,
-                style:
-                    AppTextStyles.title.copyWith(color: AppColors.goldBright)),
+            Text(
+              title,
+              style: AppTextStyles.title.copyWith(color: AppColors.goldBright),
+            ),
             const SizedBox(height: 4),
             Text(atmosphere, style: AppTextStyles.meta),
             const SizedBox(height: 10),
@@ -36,8 +37,11 @@ Future<void> showDayReport(
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Icon(Icons.brightness_2,
-                        size: 12, color: AppColors.goldDim),
+                    const Icon(
+                      Icons.brightness_2,
+                      size: 12,
+                      color: AppColors.goldDim,
+                    ),
                     const SizedBox(width: 8),
                     Expanded(child: Text(line, style: AppTextStyles.body)),
                   ],

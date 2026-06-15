@@ -5,7 +5,9 @@ import '../../app/theme/app_text_styles.dart';
 import '../../core/assets/game_assets.dart';
 import '../../core/audio/audio_service.dart';
 import '../../core/utils/formatters.dart';
+import '../../core/widgets/info_sheet.dart';
 import '../../core/widgets/ornate.dart';
+import '../../game/data/game_info.dart';
 import '../../game/logic/phase_logic.dart';
 import '../../game/state/game_controller.dart';
 import '../../game/state/game_scope.dart';
@@ -59,7 +61,11 @@ class TentScreen extends StatelessWidget {
           SafeArea(
             child: Column(
               children: [
-                OrnateHeader(title: 'Çadırım', showBack: showBack),
+                OrnateHeader(
+                  title: 'Çadırım',
+                  showBack: showBack,
+                  onInfo: () => showHelpSheet(context, HelpId.tent),
+                ),
                 SizedBox(
                   height: 240,
                   child: LayoutBuilder(
@@ -103,8 +109,9 @@ class TentScreen extends StatelessWidget {
   ) {
     final building = controller.state.building(id);
     if (building == null) return;
-    final affordable = building.upgradeCost.entries
-        .every((e) => controller.state.resource(e.key) >= e.value);
+    final affordable = building.upgradeCost.entries.every(
+      (e) => controller.state.resource(e.key) >= e.value,
+    );
     showSceneDetail(
       context,
       title: '$label • Lv.${building.level}/${building.maxLevel}',
@@ -116,7 +123,7 @@ class TentScreen extends StatelessWidget {
           subtitle: building.canUpgrade
               ? 'Maliyet: ${Formatters.resourceDelta({
                       for (final e in building.upgradeCost.entries)
-                        e.key: -e.value,
+                        e.key: -e.value
                     })}'
               : null,
           primary: true,
@@ -125,13 +132,16 @@ class TentScreen extends StatelessWidget {
             final ok = controller.upgradeBuilding(id);
             if (ok) {
               AudioService.instance.playSfx('craft');
-              showFloatingGain(context, '$label ↑',
-                  color: AppColors.goldBright);
+              showFloatingGain(
+                context,
+                '$label ↑',
+                color: AppColors.goldBright,
+              );
             } else {
               AudioService.instance.playSfx('denied');
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Kaynak yetersiz.')),
-              );
+              ScaffoldMessenger.of(
+                context,
+              ).showSnackBar(const SnackBar(content: Text('Kaynak yetersiz.')));
             }
           },
         ),

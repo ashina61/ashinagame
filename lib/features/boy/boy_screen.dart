@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import '../../app/theme/app_colors.dart';
 import '../../app/theme/app_text_styles.dart';
 import '../../core/assets/game_assets.dart';
+import '../../core/widgets/info_sheet.dart';
 import '../../core/widgets/ornate.dart';
+import '../../game/data/game_info.dart';
 import '../../game/data/recruitment.dart';
 import '../../game/data/tamgas.dart';
 import '../../game/logic/unlock_logic.dart';
@@ -21,7 +23,10 @@ class BoyScreen extends StatelessWidget {
     return OrnateScaffold(
       child: Column(
         children: [
-          const OrnateHeader(title: 'Boylar'),
+          OrnateHeader(
+            title: 'Boylar',
+            onInfo: () => showHelpSheet(context, HelpId.boy),
+          ),
           Expanded(
             child: ListView(
               padding: const EdgeInsets.only(top: 4, bottom: 16),
@@ -36,19 +41,31 @@ class BoyScreen extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(state.clan.name.toUpperCase(),
-                                style: AppTextStyles.title),
-                            Text('Tamga: ${Tamgas.byId(state.tamga).name}',
-                                style: AppTextStyles.meta),
+                            Text(
+                              state.clan.name.toUpperCase(),
+                              style: AppTextStyles.title,
+                            ),
+                            Text(
+                              'Tamga: ${Tamgas.byId(state.tamga).name}',
+                              style: AppTextStyles.meta,
+                            ),
                             const SizedBox(height: 8),
-                            _InfoRow('Nüfus',
-                                '${state.resource(ResourceType.population)}'),
-                            _InfoRow('İtibar',
-                                '${state.resource(ResourceType.reputation)}'),
-                            _InfoRow('Halk',
-                                '${state.peopleApproval}/100 hoşnutluk'),
-                            _InfoRow('Kurultay',
-                                '${state.councilApproval}/100 hoşnutluk'),
+                            _InfoRow(
+                              'Nüfus',
+                              '${state.resource(ResourceType.population)}',
+                            ),
+                            _InfoRow(
+                              'İtibar',
+                              '${state.resource(ResourceType.reputation)}',
+                            ),
+                            _InfoRow(
+                              'Halk',
+                              '${state.peopleApproval}/100 hoşnutluk',
+                            ),
+                            _InfoRow(
+                              'Kurultay',
+                              '${state.councilApproval}/100 hoşnutluk',
+                            ),
                             _InfoRow('Boy sayısı', '${state.tribes.length}'),
                           ],
                         ),
@@ -109,8 +126,9 @@ class _RecruitPanel extends StatelessWidget {
   Widget build(BuildContext context) {
     final controller = GameScope.of(context);
     final state = controller.state;
-    final affordable =
-        source.cost.entries.every((e) => state.resource(e.key) >= e.value);
+    final affordable = source.cost.entries.every(
+      (e) => state.resource(e.key) >= e.value,
+    );
     final hasAp = state.dailyActionPoints > 0;
     final costText =
         source.cost.entries.map((e) => '${e.value} ${e.key.label}').join(', ');
@@ -122,12 +140,18 @@ class _RecruitPanel extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                child: Text(source.name,
-                    style: AppTextStyles.bodyStrong.copyWith(fontSize: 16)),
+                child: Text(
+                  source.name,
+                  style: AppTextStyles.bodyStrong.copyWith(fontSize: 16),
+                ),
               ),
-              Text('+${source.basePeople + bonus} kişi',
-                  style: AppTextStyles.value
-                      .copyWith(fontSize: 14, color: AppColors.goldBright)),
+              Text(
+                '+${source.basePeople + bonus} kişi',
+                style: AppTextStyles.value.copyWith(
+                  fontSize: 14,
+                  color: AppColors.goldBright,
+                ),
+              ),
             ],
           ),
           Text(source.description, style: AppTextStyles.meta),
@@ -147,9 +171,11 @@ class _RecruitPanel extends StatelessWidget {
                           final ok = controller.recruit(source.id);
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              content: Text(ok
-                                  ? '${source.name} obana katıldı.'
-                                  : 'Aksiyon ya da kaynak yetersiz.'),
+                              content: Text(
+                                ok
+                                    ? '${source.name} obana katıldı.'
+                                    : 'Aksiyon ya da kaynak yetersiz.',
+                              ),
                               duration: const Duration(seconds: 2),
                             ),
                           );
@@ -196,37 +222,48 @@ class _TribePanel extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Image.asset(art.$1,
-                  width: 44,
-                  height: 60,
-                  fit: BoxFit.contain,
-                  errorBuilder: (_, __, ___) => const SizedBox(width: 44)),
+              Image.asset(
+                art.$1,
+                width: 44,
+                height: 60,
+                fit: BoxFit.contain,
+                errorBuilder: (_, __, ___) => const SizedBox(width: 44),
+              ),
               const SizedBox(width: 8),
               Container(
                 width: 52,
                 height: 52,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(10),
-                  border:
-                      Border.all(color: AppColors.gold.withValues(alpha: 0.6)),
+                  border: Border.all(
+                    color: AppColors.gold.withValues(alpha: 0.6),
+                  ),
                 ),
                 clipBehavior: Clip.antiAlias,
-                child: Image.asset(art.$2,
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) =>
-                        const ColoredBox(color: AppColors.leatherDeep)),
+                child: Image.asset(
+                  art.$2,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) =>
+                      const ColoredBox(color: AppColors.leatherDeep),
+                ),
               ),
               const SizedBox(width: 10),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(tribe.name,
-                        style: AppTextStyles.bodyStrong.copyWith(fontSize: 16)),
+                    Text(
+                      tribe.name,
+                      style: AppTextStyles.bodyStrong.copyWith(fontSize: 16),
+                    ),
                     Text(tribe.leader, style: AppTextStyles.meta),
-                    Text(tribe.status,
-                        style: AppTextStyles.value.copyWith(
-                            fontSize: 13, color: _statusColor(tribe.status))),
+                    Text(
+                      tribe.status,
+                      style: AppTextStyles.value.copyWith(
+                        fontSize: 13,
+                        color: _statusColor(tribe.status),
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -234,23 +271,33 @@ class _TribePanel extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           _Bar('Güç', tribe.power / 120, '${tribe.power}', AppColors.gold),
-          _Bar('İlişki', (tribe.relation + 100) / 200, '${tribe.relation}',
-              _statusColor(tribe.status)),
-          _Bar('Savaş riski', tribe.warRisk / 100, '%${tribe.warRisk}',
-              AppColors.danger),
+          _Bar(
+            'İlişki',
+            (tribe.relation + 100) / 200,
+            '${tribe.relation}',
+            _statusColor(tribe.status),
+          ),
+          _Bar(
+            'Savaş riski',
+            tribe.warRisk / 100,
+            '%${tribe.warRisk}',
+            AppColors.danger,
+          ),
           const SizedBox(height: 6),
           Wrap(
             spacing: 6,
             runSpacing: 6,
             children: [
               _Badge(
-                  icon: Icons.swap_horiz,
-                  label: tribe.tradeOpen ? 'Ticaret açık' : 'Ticaret kapalı',
-                  on: tribe.tradeOpen),
+                icon: Icons.swap_horiz,
+                label: tribe.tradeOpen ? 'Ticaret açık' : 'Ticaret kapalı',
+                on: tribe.tradeOpen,
+              ),
               _Badge(
-                  icon: Icons.favorite,
-                  label: tribe.marriageTie ? 'Evlilik bağı' : 'Bağ yok',
-                  on: tribe.marriageTie),
+                icon: Icons.favorite,
+                label: tribe.marriageTie ? 'Evlilik bağı' : 'Bağ yok',
+                on: tribe.marriageTie,
+              ),
             ],
           ),
           const SizedBox(height: 8),
@@ -259,36 +306,41 @@ class _TribePanel extends StatelessWidget {
             runSpacing: 6,
             children: [
               _Action(
-                  icon: Icons.card_giftcard,
-                  label: 'Hediye',
-                  enabled: hasAp && state.resource(ResourceType.gold) >= 100,
-                  onTap: () => controller.performDiplomacy(tribe.id, 'gift')),
+                icon: Icons.card_giftcard,
+                label: 'Hediye',
+                enabled: hasAp && state.resource(ResourceType.gold) >= 100,
+                onTap: () => controller.performDiplomacy(tribe.id, 'gift'),
+              ),
               _Action(
-                  icon: Icons.handshake,
-                  label: 'Ticaret',
-                  enabled: hasAp && state.resource(ResourceType.gold) >= 60,
-                  onTap: () => controller.performDiplomacy(tribe.id, 'trade')),
+                icon: Icons.handshake,
+                label: 'Ticaret',
+                enabled: hasAp && state.resource(ResourceType.gold) >= 60,
+                onTap: () => controller.performDiplomacy(tribe.id, 'trade'),
+              ),
               _Action(
-                  icon: Icons.mail_outline,
-                  label: 'Elçi',
-                  enabled: hasAp,
-                  onTap: () => controller.performDiplomacy(tribe.id, 'envoy')),
+                icon: Icons.mail_outline,
+                label: 'Elçi',
+                enabled: hasAp,
+                onTap: () => controller.performDiplomacy(tribe.id, 'envoy'),
+              ),
               _Action(
-                  icon: Icons.volunteer_activism,
-                  label: 'Yardım',
-                  enabled: hasAp && state.resource(ResourceType.food) >= 20,
-                  onTap: () => controller.performDiplomacy(tribe.id, 'aid')),
+                icon: Icons.volunteer_activism,
+                label: 'Yardım',
+                enabled: hasAp && state.resource(ResourceType.food) >= 20,
+                onTap: () => controller.performDiplomacy(tribe.id, 'aid'),
+              ),
               _Action(
-                  icon: Icons.local_fire_department,
-                  label: 'Savaş Haz.',
-                  enabled: hasAp && state.resource(ResourceType.gold) >= 40,
-                  onTap: () => controller.performDiplomacy(tribe.id, 'war')),
+                icon: Icons.local_fire_department,
+                label: 'Savaş Haz.',
+                enabled: hasAp && state.resource(ResourceType.gold) >= 40,
+                onTap: () => controller.performDiplomacy(tribe.id, 'war'),
+              ),
               _Action(
-                  icon: Icons.diversity_3,
-                  label: 'Evlilik',
-                  enabled: hasAp && state.resource(ResourceType.gold) >= 80,
-                  onTap: () =>
-                      controller.performDiplomacy(tribe.id, 'marriage')),
+                icon: Icons.diversity_3,
+                label: 'Evlilik',
+                enabled: hasAp && state.resource(ResourceType.gold) >= 80,
+                onTap: () => controller.performDiplomacy(tribe.id, 'marriage'),
+              ),
             ],
           ),
         ],
@@ -317,15 +369,23 @@ class _Bar extends StatelessWidget {
       child: Row(
         children: [
           SizedBox(
-              width: 78,
-              child: Text(label,
-                  style: AppTextStyles.meta.copyWith(fontSize: 11))),
-          Expanded(child: StatBar(fraction: fraction, height: 8, fill: fill)),
+            width: 78,
+            child: Text(
+              label,
+              style: AppTextStyles.meta.copyWith(fontSize: 11),
+            ),
+          ),
+          Expanded(
+            child: StatBar(fraction: fraction, height: 8, fill: fill),
+          ),
           SizedBox(
-              width: 44,
-              child: Text(value,
-                  textAlign: TextAlign.right,
-                  style: AppTextStyles.meta.copyWith(fontSize: 11))),
+            width: 44,
+            child: Text(
+              value,
+              textAlign: TextAlign.right,
+              style: AppTextStyles.meta.copyWith(fontSize: 11),
+            ),
+          ),
         ],
       ),
     );
@@ -352,8 +412,10 @@ class _Badge extends StatelessWidget {
         children: [
           Icon(icon, size: 13, color: color),
           const SizedBox(width: 4),
-          Text(label,
-              style: AppTextStyles.meta.copyWith(fontSize: 11, color: color)),
+          Text(
+            label,
+            style: AppTextStyles.meta.copyWith(fontSize: 11, color: color),
+          ),
         ],
       ),
     );
@@ -361,11 +423,12 @@ class _Badge extends StatelessWidget {
 }
 
 class _Action extends StatelessWidget {
-  const _Action(
-      {required this.icon,
-      required this.label,
-      required this.enabled,
-      required this.onTap});
+  const _Action({
+    required this.icon,
+    required this.label,
+    required this.enabled,
+    required this.onTap,
+  });
   final IconData icon;
   final String label;
   final bool enabled;
@@ -378,7 +441,8 @@ class _Action extends StatelessWidget {
           ? () {
               onTap();
               ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('$label: diplomasi işlendi.')));
+                SnackBar(content: Text('$label: diplomasi işlendi.')),
+              );
             }
           : null,
       child: Opacity(
@@ -395,8 +459,10 @@ class _Action extends StatelessWidget {
             children: [
               Icon(icon, size: 15, color: AppColors.goldBright),
               const SizedBox(width: 5),
-              Text(label,
-                  style: AppTextStyles.buttonDark.copyWith(fontSize: 12)),
+              Text(
+                label,
+                style: AppTextStyles.buttonDark.copyWith(fontSize: 12),
+              ),
             ],
           ),
         ),
@@ -417,7 +483,9 @@ class _InfoRow extends StatelessWidget {
       child: Row(
         children: [
           SizedBox(
-              width: 70, child: Text('$label:', style: AppTextStyles.meta)),
+            width: 70,
+            child: Text('$label:', style: AppTextStyles.meta),
+          ),
           Expanded(child: Text(value, style: AppTextStyles.bodyStrong)),
         ],
       ),

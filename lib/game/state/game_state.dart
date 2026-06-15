@@ -228,6 +228,12 @@ class GameState {
 
   int resource(ResourceType type) => resources[type] ?? 0;
 
+  /// The leader's renown, 0–100. There is one true reputation in the game: the
+  /// [ResourceType.reputation] accumulator. [PlayerProfile.reputation] is kept
+  /// mirrored to it on every commit (see [GameController]), so this getter and
+  /// `profile.reputation` always agree and every screen shows the same number.
+  int get reputation => resource(ResourceType.reputation);
+
   int unitCount(String id) => army[id] ?? 0;
   int woundedCount(String id) => wounded[id] ?? 0;
   int get totalSoldiers => army.values.fold(0, (s, n) => s + n);
@@ -245,8 +251,10 @@ class GameState {
         AchievementMetric.population => resource(ResourceType.population),
         AchievementMetric.gold => resource(ResourceType.gold),
         AchievementMetric.conquered => completedExpeditions.length,
-        AchievementMetric.crafted =>
-          craftedItems.values.fold(0, (sum, n) => sum + n),
+        AchievementMetric.crafted => craftedItems.values.fold(
+            0,
+            (sum, n) => sum + n,
+          ),
         AchievementMetric.generation => generation,
         AchievementMetric.reputation => profile.reputation,
         AchievementMetric.daysSurvived => day.day,

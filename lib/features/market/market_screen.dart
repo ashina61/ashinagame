@@ -4,8 +4,10 @@ import '../../app/theme/app_colors.dart';
 import '../../app/theme/app_text_styles.dart';
 import '../../core/assets/game_assets.dart';
 import '../../core/audio/audio_service.dart';
+import '../../core/widgets/info_sheet.dart';
 import '../../core/widgets/ornate.dart';
 import '../../game/data/companion_roles.dart';
+import '../../game/data/game_info.dart';
 import '../../game/data/han_offers.dart';
 import '../../game/data/market_goods.dart';
 import '../../game/data/rare_offers.dart';
@@ -14,6 +16,7 @@ import '../../game/models/unit_type.dart';
 import '../../game/logic/market_logic.dart';
 import '../../game/models/resource.dart';
 import '../../game/state/game_scope.dart';
+import '../scene/floating_text.dart';
 
 /// Atlas icons for market goods.
 String goodIcon(String goodId) => switch (goodId) {
@@ -61,13 +64,20 @@ class _CompanionOffer extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('$name — ${role?.name ?? companion.roleId}',
-                    style: AppTextStyles.bodyStrong),
-                Text(role?.effect ?? '',
-                    style: AppTextStyles.meta
-                        .copyWith(color: AppColors.goldBright)),
-                Text('Bedel: ${companion.goldCost} altın',
-                    style: AppTextStyles.meta),
+                Text(
+                  '$name — ${role?.name ?? companion.roleId}',
+                  style: AppTextStyles.bodyStrong,
+                ),
+                Text(
+                  role?.effect ?? '',
+                  style: AppTextStyles.meta.copyWith(
+                    color: AppColors.goldBright,
+                  ),
+                ),
+                Text(
+                  'Bedel: ${companion.goldCost} altın',
+                  style: AppTextStyles.meta,
+                ),
               ],
             ),
           ),
@@ -86,12 +96,16 @@ class _CompanionOffer extends StatelessWidget {
                         goldCost: companion.goldCost,
                       );
                       AudioService.instance.playSfx(ok ? 'reward' : 'denied');
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                        content: Text(ok
-                            ? '$name obana katıldı.'
-                            : 'Altın ya da aksiyon yetersiz.'),
-                        duration: const Duration(seconds: 2),
-                      ));
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            ok
+                                ? '$name obana katıldı.'
+                                : 'Altın ya da aksiyon yetersiz.',
+                          ),
+                          duration: const Duration(seconds: 2),
+                        ),
+                      );
                     },
             ),
           ),
@@ -125,11 +139,14 @@ class _MercenaryOffer extends StatelessWidget {
               children: [
                 Text(mercenary.name, style: AppTextStyles.bodyStrong),
                 Text(
-                    'Saldırı ${unit?.attack ?? 0} • Savunma ${unit?.defense ?? 0}'
-                    '${mercenary.needsHorse ? ' • At gerekir' : ''}',
-                    style: AppTextStyles.meta),
-                Text('Bedel: ${mercenary.goldCost} altın',
-                    style: AppTextStyles.meta),
+                  'Saldırı ${unit?.attack ?? 0} • Savunma ${unit?.defense ?? 0}'
+                  '${mercenary.needsHorse ? ' • At gerekir' : ''}',
+                  style: AppTextStyles.meta,
+                ),
+                Text(
+                  'Bedel: ${mercenary.goldCost} altın',
+                  style: AppTextStyles.meta,
+                ),
               ],
             ),
           ),
@@ -144,12 +161,16 @@ class _MercenaryOffer extends StatelessWidget {
                   : () {
                       final ok = controller.recruitUnit(mercenary.unitId, 1);
                       AudioService.instance.playSfx(ok ? 'coin' : 'denied');
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                        content: Text(ok
-                            ? '${mercenary.name} orduya katıldı.'
-                            : 'Altın/at ya da aksiyon yetersiz.'),
-                        duration: const Duration(seconds: 2),
-                      ));
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            ok
+                                ? '${mercenary.name} orduya katıldı.'
+                                : 'Altın/at ya da aksiyon yetersiz.',
+                          ),
+                          duration: const Duration(seconds: 2),
+                        ),
+                      );
                     },
             ),
           ),
@@ -194,21 +215,30 @@ class _TraderBanner extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Icon(rare != null ? Icons.auto_awesome : Icons.local_offer,
-              size: 16, color: AppColors.goldBright),
+          Icon(
+            rare != null ? Icons.auto_awesome : Icons.local_offer,
+            size: 16,
+            color: AppColors.goldBright,
+          ),
           const SizedBox(width: 8),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 if (rare != null)
-                  Text('Nadir teklif: ${rare.title} — ${rare.note}',
-                      style: AppTextStyles.meta
-                          .copyWith(color: AppColors.goldBright))
+                  Text(
+                    'Nadir teklif: ${rare.title} — ${rare.note}',
+                    style: AppTextStyles.meta.copyWith(
+                      color: AppColors.goldBright,
+                    ),
+                  )
                 else if (featured != null)
-                  Text('Günün teklifi: ${featured.name}',
-                      style: AppTextStyles.meta
-                          .copyWith(color: AppColors.goldBright)),
+                  Text(
+                    'Günün teklifi: ${featured.name}',
+                    style: AppTextStyles.meta.copyWith(
+                      color: AppColors.goldBright,
+                    ),
+                  ),
                 Text(quote, style: AppTextStyles.meta),
               ],
             ),
@@ -256,7 +286,11 @@ class _MarketScreenState extends State<MarketScreen> {
       body: OrnateScaffold(
         child: Column(
           children: [
-            const OrnateHeader(title: 'Pazar', showBack: true),
+            OrnateHeader(
+              title: 'Pazar',
+              showBack: true,
+              onInfo: () => showHelpSheet(context, HelpId.market),
+            ),
             Align(
               alignment: Alignment.centerLeft,
               child: Container(
@@ -402,9 +436,7 @@ class _MarketScreenState extends State<MarketScreen> {
               Expanded(
                 child: ListView(
                   padding: const EdgeInsets.only(right: 12, left: 4, bottom: 8),
-                  children: [
-                    for (final good in _filtered) _BuyRow(good: good),
-                  ],
+                  children: [for (final good in _filtered) _BuyRow(good: good)],
                 ),
               ),
             ],
@@ -446,11 +478,7 @@ class _MarketScreenState extends State<MarketScreen> {
                 ),
                 Row(
                   children: [
-                    Image.asset(
-                      GameAssets.iconCoinGold,
-                      width: 14,
-                      height: 14,
-                    ),
+                    Image.asset(GameAssets.iconCoinGold, width: 14, height: 14),
                     const SizedBox(width: 3),
                     Text(
                       '+${MarketLogic.sellPriceFor(MarketGoods.byId(goodId)!, day)}',
@@ -472,12 +500,20 @@ class _MarketScreenState extends State<MarketScreen> {
                       {type: -amount, ResourceType.gold: price},
                     );
                     AudioService.instance.playSfx(done ? 'coin' : 'denied');
-                    _notify(
-                      context,
-                      done
-                          ? '$amount ${type.label} satıldı, +$price altın.'
-                          : 'Depoda yeterli ${type.label.toLowerCase()} yok.',
-                    );
+                    if (done) {
+                      // A light floating gain instead of stacked snackbars, so
+                      // rapid sales feel like coins dropping, not a log spam.
+                      showFloatingGain(
+                        context,
+                        '+$price Altın',
+                        color: AppColors.success,
+                      );
+                    } else {
+                      _notify(
+                        context,
+                        'Depoda yeterli ${type.label.toLowerCase()} yok.',
+                      );
+                    }
                   },
                 ),
               ],
@@ -500,8 +536,10 @@ class _MarketScreenState extends State<MarketScreen> {
               const Icon(Icons.campaign, color: AppColors.goldBright),
               const SizedBox(width: 8),
               Expanded(
-                child: Text(HanOffers.rumorForDay(state.day.day),
-                    style: AppTextStyles.body),
+                child: Text(
+                  HanOffers.rumorForDay(state.day.day),
+                  style: AppTextStyles.body,
+                ),
               ),
             ],
           ),
@@ -516,10 +554,7 @@ class _MarketScreenState extends State<MarketScreen> {
 
   static void _notify(BuildContext context, String message) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        duration: const Duration(seconds: 2),
-      ),
+      SnackBar(content: Text(message), duration: const Duration(seconds: 2)),
     );
   }
 }
@@ -602,12 +637,15 @@ class _BuyRow extends StatelessWidget {
               }
               final done = controller.buyGood(good.id);
               AudioService.instance.playSfx(done ? 'coin' : 'denied');
-              _MarketScreenState._notify(
-                context,
-                done
-                    ? '${good.name} satın alındı (-$price altın).'
-                    : 'Yeterli altın yok.',
-              );
+              if (done) {
+                showFloatingGain(
+                  context,
+                  '${good.name}  -$price Altın',
+                  color: AppColors.goldBright,
+                );
+              } else {
+                _MarketScreenState._notify(context, 'Yeterli altın yok.');
+              }
             },
           ),
         ],
