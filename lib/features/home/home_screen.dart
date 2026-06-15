@@ -19,6 +19,7 @@ import '../journey/journey_scene.dart';
 import '../market/market_screen.dart';
 import '../people/nearby_people_scene.dart';
 import '../scene/floating_text.dart';
+import '../scene/scene_atmosphere.dart';
 import '../scene/scene_detail_panel.dart';
 import '../scene/scene_hotspot.dart';
 import '../scene/scene_hud_overlay.dart';
@@ -97,6 +98,7 @@ class HomeScreen extends StatelessWidget {
 
     return SceneScreen(
       background: GameAssets.bgSceneCampNight,
+      atmosphere: const EmberGlow(center: Alignment(0.32, 0.25)),
       hud: const _HomeHud(),
       hotspots: hotspots,
       foreground: const _CampTitlePlate(),
@@ -312,6 +314,7 @@ class _CampBottom extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
+          _AmbientLine(day: state.day.day),
           if (state.raidLooming)
             Container(
               width: double.infinity,
@@ -438,6 +441,50 @@ class _CampBottom extends StatelessWidget {
   static void _toast(BuildContext context, String text) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(text), duration: const Duration(seconds: 2)),
+    );
+  }
+}
+
+/// A single drifting line of bozkır atmosphere above the day's work — sets the
+/// scene's mood without a wall of text. Rotates slowly with the day.
+class _AmbientLine extends StatelessWidget {
+  const _AmbientLine({required this.day});
+
+  final int day;
+
+  static const _lines = [
+    'Ateş sönmeden bir iş daha çıkar.',
+    'Gök sonsuz, bozkır geniş — adın yavaş yavaş duyuluyor.',
+    'Rüzgâr çadırın örtüsünü yokluyor; gece uzun.',
+    'Uzakta bir kurt uluyor. Yalnızsın ama yılmadın.',
+    'Bu çadır bir gün obanın kalbi olabilir.',
+    'Toprak seni çağırıyor — vakit, emek vakti.',
+    'Köz başında geçen her gün seni biraz büyütüyor.',
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    final line = _lines[day % _lines.length];
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8, left: 4, right: 4),
+      child: Row(
+        children: [
+          const Icon(Icons.local_fire_department,
+              size: 14, color: AppColors.ember),
+          const SizedBox(width: 6),
+          Expanded(
+            child: Text(
+              line,
+              style: AppTextStyles.meta.copyWith(
+                color: AppColors.sand,
+                fontStyle: FontStyle.italic,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

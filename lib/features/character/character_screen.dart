@@ -10,6 +10,7 @@ import '../../core/widgets/ornate.dart';
 import '../../game/data/game_info.dart';
 import '../../game/models/marriage_candidate.dart';
 import '../../game/models/resource.dart';
+import '../../game/state/game_controller.dart';
 import '../../game/state/game_scope.dart';
 import '../equipment/equipment_screen.dart';
 import '../inventory/inventory_screen.dart';
@@ -128,6 +129,24 @@ class CharacterScreen extends StatelessWidget {
                     ),
                   ),
                   const SectionPlaque('EVLİLİK ADAYLARI'),
+                  if (state.profile.age < GameController.marriageMinAge)
+                    const OrnatePanel(
+                      child: Row(
+                        children: [
+                          Icon(Icons.lock_clock,
+                              size: 18, color: AppColors.stone),
+                          SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              'Henüz çok gençsin. Evlilik ancak '
+                              '${GameController.marriageMinAge} yaşından sonra '
+                              'açılır — büyümek zaman ister.',
+                              style: AppTextStyles.meta,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   for (final candidate in state.marriageCandidates)
                     _CandidateCard(candidate: candidate),
                   const SectionPlaque('OBA SÖZÜ'),
@@ -349,6 +368,20 @@ class _SpiritualCharacterPanel extends StatelessWidget {
   }
 }
 
+/// Atlas emblem for each skill, so the row reads as a glyph + bar, not a plain
+/// stat line.
+String _skillIcon(String stat) => switch (stat) {
+      'courage' => GameAssets.iconDaggersCrossed,
+      'wisdom' => GameAssets.iconScrollMedallion,
+      'leadership' => GameAssets.iconPeopleGroupGold,
+      'endurance' => GameAssets.iconHeartMedallion,
+      'trade' => GameAssets.iconCoinsMedallion,
+      'craft' => GameAssets.iconGearEmblem,
+      'archery' => GameAssets.iconItemBow,
+      'warfare' => GameAssets.iconArmyEmblem,
+      _ => GameAssets.iconStarMedallion,
+    };
+
 class _SkillBar extends StatelessWidget {
   const _SkillBar(this.label, this.stat, this.value);
   final String label;
@@ -369,8 +402,19 @@ class _SkillBar extends StatelessWidget {
               onTap: () => showSkillInfoSheet(context, stat, value),
               child: Row(
                 children: [
+                  Image.asset(
+                    _skillIcon(stat),
+                    width: 22,
+                    height: 22,
+                    errorBuilder: (_, __, ___) => const Icon(
+                      Icons.star,
+                      size: 18,
+                      color: AppColors.goldDim,
+                    ),
+                  ),
+                  const SizedBox(width: 6),
                   SizedBox(
-                    width: 90,
+                    width: 84,
                     child: Row(
                       children: [
                         Flexible(

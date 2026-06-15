@@ -16,11 +16,16 @@ class SceneScreen extends StatelessWidget {
     this.hud,
     this.bottom,
     this.foreground,
+    this.atmosphere,
     super.key,
   });
 
   final String background;
   final List<SceneHotspot> hotspots;
+
+  /// Optional click-through overlay drawn just above the background art (e.g.
+  /// an [EmberGlow] firelight), beneath the HUD and content.
+  final Widget? atmosphere;
 
   /// Overlay pinned to the top (resources, day, end-day).
   final Widget? hud;
@@ -37,6 +42,7 @@ class SceneScreen extends StatelessWidget {
       fit: StackFit.expand,
       children: [
         SceneBackground(asset: background),
+        if (atmosphere != null) atmosphere!,
         SafeArea(
           child: Column(
             children: [

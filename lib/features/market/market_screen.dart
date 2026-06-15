@@ -215,12 +215,28 @@ class _TraderBanner extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Icon(
-            rare != null ? Icons.auto_awesome : Icons.local_offer,
-            size: 16,
-            color: AppColors.goldBright,
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: rare != null ? AppColors.goldBright : AppColors.goldDim,
+                width: 1.4,
+              ),
+            ),
+            clipBehavior: Clip.antiAlias,
+            child: Image.asset(
+              GameAssets.portraitMerchant,
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => const Icon(
+                Icons.storefront,
+                size: 18,
+                color: AppColors.goldBright,
+              ),
+            ),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 10),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

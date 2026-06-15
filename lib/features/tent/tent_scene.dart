@@ -15,6 +15,7 @@ import '../achievements/achievements_screen.dart';
 import '../found_oba/found_oba_screen.dart';
 import '../quests/quests_screen.dart';
 import '../scene/floating_text.dart';
+import '../scene/scene_atmosphere.dart';
 import '../scene/scene_background.dart';
 import '../scene/scene_detail_panel.dart';
 import '../scene/scene_hotspot.dart';
@@ -58,6 +59,7 @@ class TentScreen extends StatelessWidget {
         fit: StackFit.expand,
         children: [
           const SceneBackground(asset: GameAssets.bgSceneCampNight),
+          const EmberGlow(center: Alignment(0, -0.45)),
           SafeArea(
             child: Column(
               children: [
@@ -165,17 +167,30 @@ class _ObaPathPanel extends StatelessWidget {
       children: [
         const SectionPlaque('OBA YOLU'),
         OrnatePanel(
+          backgroundAsset: GameAssets.bgSceneCampNight,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 state.obaFounded
-                    ? '${state.clan.name} kuruldu. Artık bir oban var.'
-                    : 'Kendi obanı kurmak için şu adımları tamamla:',
+                    ? '${state.clan.name} kuruldu. Bu çadır artık bir obanın '
+                        'kalbi.'
+                    : 'Yalnız bir yolcusun. Bu çadır bir gün obanın kalbi '
+                        'olacak — yol şöyle:',
                 style: AppTextStyles.body,
               ),
-              const SizedBox(height: 10),
-              for (final r in reqs) _ReqRow(req: r),
+              const SizedBox(height: 6),
+              Text(
+                '${reqs.where((r) => r.met).length}/${reqs.length} adım tamam',
+                style: AppTextStyles.meta.copyWith(color: AppColors.goldBright),
+              ),
+              const SizedBox(height: 12),
+              for (var i = 0; i < reqs.length; i++)
+                _MilestoneTile(
+                  step: i + 1,
+                  req: reqs[i],
+                  last: i == reqs.length - 1,
+                ),
             ],
           ),
         ),
@@ -227,36 +242,94 @@ class _ObaPathPanel extends StatelessWidget {
   }
 }
 
-class _ReqRow extends StatelessWidget {
-  const _ReqRow({required this.req});
+/// One step on the road to founding an oba, drawn as a numbered medallion on a
+/// vertical track: lit gold and checked when met, dim and locked when not — so
+/// progress reads as a journey, not a checkbox list.
+class _MilestoneTile extends StatelessWidget {
+  const _MilestoneTile({
+    required this.step,
+    required this.req,
+    required this.last,
+  });
 
+  final int step;
   final FoundingRequirement req;
+  final bool last;
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
+    final met = req.met;
+    return IntrinsicHeight(
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(
-            req.met ? Icons.check_circle : Icons.radio_button_unchecked,
-            size: 18,
-            color: req.met ? AppColors.success : AppColors.stone,
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              req.label,
-              style: AppTextStyles.body.copyWith(
-                fontSize: 13,
-                color: req.met ? AppColors.sand : AppColors.stone,
+          Column(
+            children: [
+              Container(
+                width: 30,
+                height: 30,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: met
+                      ? AppColors.gold.withValues(alpha: 0.25)
+                      : AppColors.ink.withValues(alpha: 0.6),
+                  border: Border.all(
+                    color: met ? AppColors.goldBright : AppColors.goldDim,
+                    width: met ? 2 : 1,
+                  ),
+                  boxShadow: met
+                      ? const [
+                          BoxShadow(color: Color(0x66EEC36A), blurRadius: 10)
+                        ]
+                      : null,
+                ),
+                alignment: Alignment.center,
+                child: met
+                    ? const Icon(Icons.check,
+                        size: 16, color: AppColors.goldBright)
+                    : Text(
+                        '$step',
+                        style: AppTextStyles.value.copyWith(
+                          fontSize: 13,
+                          color: AppColors.stone,
+                        ),
+                      ),
               ),
-            ),
+              if (!last)
+                Expanded(
+                  child: Container(
+                    width: 2,
+                    margin: const EdgeInsets.symmetric(vertical: 2),
+                    color: met
+                        ? AppColors.goldDim
+                        : AppColors.goldDim.withValues(alpha: 0.3),
+                  ),
+                ),
+            ],
           ),
-          Text(
-            req.progress,
-            style: AppTextStyles.meta.copyWith(
-              color: req.met ? AppColors.goldBright : AppColors.stone,
+          const SizedBox(width: 12),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    req.label,
+                    style: AppTextStyles.bodyStrong.copyWith(
+                      fontSize: 14,
+                      color: met ? AppColors.parchment : AppColors.sand,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    req.progress,
+                    style: AppTextStyles.meta.copyWith(
+                      color: met ? AppColors.goldBright : AppColors.stone,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ],
