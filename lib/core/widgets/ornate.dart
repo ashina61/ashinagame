@@ -21,11 +21,16 @@ class OrnateScaffold extends StatelessWidget {
   const OrnateScaffold({
     required this.child,
     this.backgroundAsset = GameAssets.bgScreenNight,
+    this.backgroundFallback,
     super.key,
   });
 
   final Widget child;
   final String backgroundAsset;
+
+  /// Art to use until [backgroundAsset] (often a produced [GameArt] path) is in
+  /// the bundle, so a screen can opt into scene art without regressing.
+  final String? backgroundFallback;
 
   @override
   Widget build(BuildContext context) {
@@ -36,7 +41,14 @@ class OrnateScaffold extends StatelessWidget {
           backgroundAsset,
           fit: BoxFit.cover,
           errorBuilder: (context, error, stackTrace) =>
-              const ColoredBox(color: AppColors.leatherDeep),
+              backgroundFallback == null
+                  ? const ColoredBox(color: AppColors.leatherDeep)
+                  : Image.asset(
+                      backgroundFallback!,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) =>
+                          const ColoredBox(color: AppColors.leatherDeep),
+                    ),
         ),
         SafeArea(child: child),
       ],

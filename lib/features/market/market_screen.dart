@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 
 import '../../app/theme/app_colors.dart';
 import '../../app/theme/app_text_styles.dart';
+import '../../core/assets/game_art.dart';
 import '../../core/assets/game_assets.dart';
+import '../../core/widgets/game_image.dart';
 import '../../core/audio/audio_service.dart';
 import '../../core/widgets/info_sheet.dart';
 import '../../core/widgets/ornate.dart';
@@ -226,14 +228,10 @@ class _TraderBanner extends StatelessWidget {
               ),
             ),
             clipBehavior: Clip.antiAlias,
-            child: Image.asset(
-              GameAssets.portraitMerchant,
-              fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => const Icon(
-                Icons.storefront,
-                size: 18,
-                color: AppColors.goldBright,
-              ),
+            child: const GameImage(
+              primary: GameArt.npcMerchant,
+              fallback: GameAssets.portraitMerchant,
+              placeholderIcon: Icons.storefront,
             ),
           ),
           const SizedBox(width: 10),
@@ -299,7 +297,10 @@ class _MarketScreenState extends State<MarketScreen> {
     final gold = controller.state.resource(ResourceType.gold);
 
     return Scaffold(
+      // TODO(asset): market_bg — falls back to the shipping night backdrop.
       body: OrnateScaffold(
+        backgroundAsset: GameArt.marketBg,
+        backgroundFallback: GameAssets.bgScreenNight,
         child: Column(
           children: [
             OrnateHeader(

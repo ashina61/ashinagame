@@ -12,6 +12,7 @@ import 'scene_hotspot.dart';
 class SceneScreen extends StatelessWidget {
   const SceneScreen({
     required this.background,
+    this.backgroundFallback,
     this.hotspots = const [],
     this.hud,
     this.bottom,
@@ -21,6 +22,11 @@ class SceneScreen extends StatelessWidget {
   });
 
   final String background;
+
+  /// Art to use until [background] (often a produced [GameArt] path) lands in
+  /// the bundle.
+  final String? backgroundFallback;
+
   final List<SceneHotspot> hotspots;
 
   /// Optional click-through overlay drawn just above the background art (e.g.
@@ -41,7 +47,7 @@ class SceneScreen extends StatelessWidget {
     return Stack(
       fit: StackFit.expand,
       children: [
-        SceneBackground(asset: background),
+        SceneBackground(asset: background, fallback: backgroundFallback),
         if (atmosphere != null) atmosphere!,
         SafeArea(
           child: Column(

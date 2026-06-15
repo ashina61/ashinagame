@@ -6,9 +6,18 @@ import '../../app/theme/app_colors.dart';
 /// edges fall into shadow and the eye is drawn to the middle of the scene. This
 /// is the bottom layer of every scene.
 class SceneBackground extends StatelessWidget {
-  const SceneBackground({required this.asset, this.scrim = true, super.key});
+  const SceneBackground({
+    required this.asset,
+    this.fallback,
+    this.scrim = true,
+    super.key,
+  });
 
   final String asset;
+
+  /// Shown when [asset] is not in the bundle yet (the art the game ships with
+  /// today), so pointing [asset] at produced art never regresses the look.
+  final String? fallback;
   final bool scrim;
 
   @override
@@ -19,8 +28,14 @@ class SceneBackground extends StatelessWidget {
         Image.asset(
           asset,
           fit: BoxFit.cover,
-          errorBuilder: (_, __, ___) =>
-              const ColoredBox(color: AppColors.leatherDeep),
+          errorBuilder: (_, __, ___) => fallback == null
+              ? const ColoredBox(color: AppColors.leatherDeep)
+              : Image.asset(
+                  fallback!,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) =>
+                      const ColoredBox(color: AppColors.leatherDeep),
+                ),
         ),
         if (scrim) ...[
           const DecoratedBox(

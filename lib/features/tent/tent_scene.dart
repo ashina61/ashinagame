@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../app/theme/app_colors.dart';
 import '../../app/theme/app_text_styles.dart';
+import '../../core/assets/game_art.dart';
 import '../../core/assets/game_assets.dart';
 import '../../core/audio/audio_service.dart';
 import '../../core/utils/formatters.dart';
@@ -58,7 +59,11 @@ class TentScreen extends StatelessWidget {
       body: Stack(
         fit: StackFit.expand,
         children: [
-          const SceneBackground(asset: GameAssets.bgSceneCampNight),
+          // TODO(asset): tent_interior_bg — falls back to the night camp.
+          const SceneBackground(
+            asset: GameArt.tentInteriorBg,
+            fallback: GameAssets.bgSceneCampNight,
+          ),
           const EmberGlow(center: Alignment(0, -0.45)),
           SafeArea(
             child: Column(

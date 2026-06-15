@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../app/theme/app_colors.dart';
 import '../../app/theme/app_text_styles.dart';
+import '../../core/assets/game_art.dart';
 import '../../core/assets/game_assets.dart';
 import '../../core/utils/formatters.dart';
 import '../../core/widgets/info_sheet.dart';
@@ -97,7 +98,10 @@ class HomeScreen extends StatelessWidget {
     ];
 
     return SceneScreen(
-      background: GameAssets.bgSceneCampNight,
+      // Prefers produced camp art; falls back to the shipping night camp until
+      // it lands (see assets/images/game/README.md). TODO(asset): camp_night_bg.
+      background: GameArt.campNightBg,
+      backgroundFallback: GameAssets.bgSceneCampNight,
       atmosphere: const EmberGlow(center: Alignment(0.32, 0.25)),
       hud: const _HomeHud(),
       hotspots: hotspots,
