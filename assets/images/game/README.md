@@ -6,6 +6,19 @@ in code (`lib/core/assets/game_art.dart`) and globbed in `pubspec.yaml`, and the
 screens prefer this art with a graceful fallback to the art the game ships with
 today (`GameImage` / `SceneBackground.fallback` / `OrnateScaffold.backgroundFallback`).
 
+## Batch workflow
+
+Art arrives in small batches, not all at once. For each batch:
+
+1. Drop the original files (any name) into `_incoming/batch_xx/` so the source
+   is never lost. `_incoming/` is **not** bundled into the app (kept out of
+   `pubspec.yaml`); it is just an archive.
+2. Copy the chosen file to its target path below, renamed to ASCII
+   `snake_case`.
+3. If several candidates fit one slot, keep the best as the target and stash the
+   rest in `_incoming/alternatives/` (or suffix `_alt_01`, `_alt_02`).
+4. Add a `GameArt` constant if the slot is new, and wire it into its screen.
+
 ## Rules
 
 - File names are English `snake_case` (no Turkish characters) — Flutter asset
