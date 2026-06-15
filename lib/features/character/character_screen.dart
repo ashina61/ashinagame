@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../app/theme/app_colors.dart';
 import '../../app/theme/app_text_styles.dart';
 import '../../core/assets/game_assets.dart';
+import '../../core/audio/audio_service.dart';
 import '../../core/widgets/asset_placeholder.dart';
 import '../../core/widgets/ornate.dart';
 import '../../game/models/marriage_candidate.dart';
@@ -240,13 +241,10 @@ class _CandidateCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final controller = GameScope.of(context);
     final state = controller.state;
-    final tribe = state.tribeByName(candidate.tribeName);
-    final canPropose = !state.household.isMarried &&
-        candidate.isAvailable &&
-        state.resource(ResourceType.reputation) >= 20 &&
-        state.resource(ResourceType.gold) >= 300 &&
-        (tribe?.relation ?? -100) >= 10 &&
-        state.dailyActionPoints > 0;
+    // The proposal is offered whenever this candidate is still open and the
+    // leader is unwed; whether it succeeds is decided on tap, with a clear
+    // reason if something is missing — never a silent, dead button.
+    final offerable = !state.household.isMarried && candidate.isAvailable;
     return OrnatePanel(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -283,7 +281,10 @@ class _CandidateCard extends StatelessWidget {
                       height: 34,
                       onPressed:
                           state.dailyActionPoints > 0 && candidate.isAvailable
-                              ? () => controller.meetCandidate(candidate.id)
+                              ? () {
+                                  controller.meetCandidate(candidate.id);
+                                  AudioService.instance.playSfx('tap');
+                                }
                               : null)),
               const SizedBox(width: 8),
               Expanded(
@@ -291,20 +292,72 @@ class _CandidateCard extends StatelessWidget {
                       label: 'HEDİYE',
                       height: 34,
                       onPressed: state.resource(ResourceType.gold) >= 50 &&
+                              state.dailyActionPoints > 0 &&
                               candidate.isAvailable
-                          ? () => controller.meetCandidate(candidate.id)
+                          ? () {
+                              controller.giftCandidate(candidate.id);
+                              AudioService.instance.playSfx('coin');
+                            }
                           : null)),
               const SizedBox(width: 8),
               Expanded(
                   child: GoldButton(
-                      label: 'TEKLİF',
+                      label: candidate.isMarriedToPlayer ? 'EŞİN' : 'TEKLİF',
                       height: 34,
-                      onPressed: canPropose
-                          ? () => controller.proposeMarriage(candidate.id)
+                      onPressed: offerable
+                          ? () => _propose(context, controller)
                           : null)),
             ],
           ),
         ],
+      ),
+    );
+  }
+
+  void _propose(BuildContext context, controller) {
+    final reason = controller.marriageBlockReason(candidate.id);
+    if (reason != null) {
+      AudioService.instance.playSfx('denied');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(reason), duration: const Duration(seconds: 3)),
+      );
+      return;
+    }
+    controller.proposeMarriage(candidate.id);
+    AudioService.instance.playSfx('reward');
+    final h = controller.state.household;
+    showDialog<void>(
+      context: context,
+      builder: (dialogContext) => Dialog(
+        backgroundColor: Colors.transparent,
+        child: OrnatePanel(
+          margin: EdgeInsets.zero,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('${candidate.name} ile evlendin!',
+                  style: AppTextStyles.title
+                      .copyWith(color: AppColors.goldBright)),
+              const SizedBox(height: 8),
+              Text('Eş: ${h.spouseName ?? candidate.name}',
+                  style: AppTextStyles.body),
+              Text('Bonus: ${candidate.bonusType}', style: AppTextStyles.body),
+              Text('Hane morali yükseldi (${h.householdMorale}/100).',
+                  style: AppTextStyles.body),
+              Text('${candidate.tribeName} ile bağ güçlendi.',
+                  style: AppTextStyles.body),
+              const SizedBox(height: 6),
+              const Text('Oba kurma yolunda güçlü bağ tamamlandı.',
+                  style: AppTextStyles.meta),
+              const SizedBox(height: 12),
+              GoldButton(
+                label: 'DEVAM',
+                onPressed: () => Navigator.of(dialogContext).maybePop(),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

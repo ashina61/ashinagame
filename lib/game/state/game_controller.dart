@@ -986,29 +986,65 @@ class GameController extends ChangeNotifier {
           c.id == candidateId ? c.copyWith(relation: c.relation + 8) : c,
       ],
       profile: ProgressionLogic.addXp(_state.profile, 8),
-      log: _prependLog('Hane görüşmesi yapıldı; adayla ilişki güçlendi.'),
+      log: _prependLog('Görüştünüz; adayla araniz biraz daha ısındı.'),
     ));
     return true;
   }
 
-  bool proposeMarriage(String candidateId) {
-    final candidate = _candidateById(candidateId);
-    if (candidate == null ||
-        !candidate.isAvailable ||
-        _state.household.isMarried ||
-        _state.dailyActionPoints < 1) {
-      return false;
-    }
-    final tribe = _state.tribeByName(candidate.tribeName);
-    if (_state.resource(ResourceType.reputation) < 20 ||
-        _state.resource(ResourceType.gold) < 300 ||
-        (tribe?.relation ?? -100) + (_state.faithState.kut / 25).floor() < 10) {
+  /// Giving a gift warms a candidate's heart faster than talk, for some gold.
+  bool giftCandidate(String candidateId) {
+    if (_state.dailyActionPoints < 1 ||
+        _state.resource(ResourceType.gold) < 50) {
       return false;
     }
     _commit(_state.copyWith(
       dailyActionPoints: _state.dailyActionPoints - 1,
+      resources:
+          ResourceLogic.apply(_state.resources, const {ResourceType.gold: -50}),
+      marriageCandidates: [
+        for (final c in _state.marriageCandidates)
+          c.id == candidateId ? c.copyWith(relation: c.relation + 14) : c,
+      ],
+      profile: ProgressionLogic.addXp(_state.profile, 6),
+      log: _prependLog('Armağan verildi; gönlü ısındı.'),
+    ));
+    return true;
+  }
+
+  // Marriage thresholds. The bond you build with the *candidate* (via talk and
+  // gifts) is what unlocks the proposal — not the tribe's mood.
+  static const marriageRelation = 60;
+  static const marriageReputation = 20;
+  static const marriageGold = 200;
+
+  /// Why a proposal to [candidateId] cannot go ahead, or null when it can. Used
+  /// both to gate [proposeMarriage] and to tell the player what is missing.
+  String? marriageBlockReason(String candidateId) {
+    final candidate = _candidateById(candidateId);
+    if (candidate == null) return 'Aday bulunamadı.';
+    if (_state.household.isMarried) return 'Zaten evlisin.';
+    if (!candidate.isAvailable) return 'Bu aday artık uygun değil.';
+    if (_state.dailyActionPoints < 1) return 'Bugün takatin kalmadı.';
+    if (candidate.relation < marriageRelation) {
+      return 'İlişkiniz henüz yeterli değil '
+          '(${candidate.relation}/$marriageRelation). Önce görüş, hediye ver.';
+    }
+    if (_state.resource(ResourceType.reputation) < marriageReputation) {
+      return 'Adın daha duyulmalı (itibar en az $marriageReputation).';
+    }
+    if (_state.resource(ResourceType.gold) < marriageGold) {
+      return 'Armağan için yeterli altının yok ($marriageGold gerek).';
+    }
+    return null;
+  }
+
+  bool proposeMarriage(String candidateId) {
+    if (marriageBlockReason(candidateId) != null) return false;
+    final candidate = _candidateById(candidateId);
+    _commit(_state.copyWith(
+      dailyActionPoints: _state.dailyActionPoints - 1,
       resources: ResourceLogic.apply(_state.resources, const {
-        ResourceType.gold: -300,
+        ResourceType.gold: -marriageGold,
         ResourceType.morale: 8,
         ResourceType.reputation: 3,
       }),

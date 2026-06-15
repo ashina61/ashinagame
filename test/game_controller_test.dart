@@ -12,6 +12,7 @@ import 'package:ashinagame/game/data/nations.dart';
 import 'package:ashinagame/game/data/npc_dialogues.dart';
 import 'package:ashinagame/game/data/rare_offers.dart';
 import 'package:ashinagame/game/logic/phase_logic.dart';
+import 'package:ashinagame/game/models/craft.dart';
 import 'package:ashinagame/game/models/household.dart';
 import 'package:ashinagame/game/models/nation.dart';
 import 'package:ashinagame/game/models/npc.dart';
@@ -147,19 +148,121 @@ void main() {
 
   test('marriage requires conditions and then updates household', () {
     final controller = GameController.starter();
+    // Bare start: no gold, no reputation, low candidate bond -> blocked.
     expect(controller.proposeMarriage('aybuke'), isFalse);
-    final boosted = controller.state.copyWith(
+
+    final ready = GameController(controller.state.copyWith(
       resources: {
         ...controller.state.resources,
         ResourceType.gold: 600,
         ResourceType.reputation: 25,
       },
-    );
-    final ready = GameController(boosted);
+      marriageCandidates: [
+        for (final c in controller.state.marriageCandidates)
+          c.id == 'aybuke' ? c.copyWith(relation: 70) : c,
+      ],
+    ));
     expect(ready.proposeMarriage('aybuke'), isTrue);
     expect(ready.state.household.spouseName, 'Aybüke');
     expect(ready.state.household.isMarried, isTrue);
+    expect(ready.state.household.spouseBonus, isNot('Yok'));
+    expect(ready.state.household.familyPrestige, greaterThan(0));
     expect(ready.state.tribeByName('Kara Kurtlar')!.marriageTie, isTrue);
+    // The candidate is now the spouse and no longer on offer.
+    final wed =
+        ready.state.marriageCandidates.firstWhere((c) => c.id == 'aybuke');
+    expect(wed.isMarriedToPlayer, isTrue);
+    expect(wed.isAvailable, isFalse);
+  });
+
+  test('marriage is gated by the candidate bond, not the tribe mood', () {
+    final base = StarterGameData.create().copyWith(
+      resources: {
+        ...StarterGameData.create().resources,
+        ResourceType.gold: 600,
+        ResourceType.reputation: 25,
+      },
+    );
+    final low = GameController(base);
+    // Low candidate bond -> a clear reason, no marriage.
+    expect(low.marriageBlockReason('aybuke'), isNotNull);
+    expect(low.proposeMarriage('aybuke'), isFalse);
+    expect(low.state.household.isMarried, isFalse);
+
+    final ready = GameController(base.copyWith(
+      marriageCandidates: [
+        for (final c in base.marriageCandidates)
+          c.id == 'aybuke' ? c.copyWith(relation: 65) : c,
+      ],
+    ));
+    expect(ready.marriageBlockReason('aybuke'), isNull);
+    expect(ready.proposeMarriage('aybuke'), isTrue);
+  });
+
+  test('a married leader cannot take a second spouse', () {
+    final base = StarterGameData.create().copyWith(
+      resources: {
+        ...StarterGameData.create().resources,
+        ResourceType.gold: 1200,
+        ResourceType.reputation: 40,
+      },
+      marriageCandidates: [
+        for (final c in StarterGameData.create().marriageCandidates)
+          c.copyWith(relation: 80),
+      ],
+    );
+    final c = GameController(base);
+    expect(c.proposeMarriage('aybuke'), isTrue);
+    expect(c.marriageBlockReason('selen'), 'Zaten evlisin.');
+    expect(c.proposeMarriage('selen'), isFalse);
+  });
+
+  test('marriage completes the strong-bond founding milestone', () {
+    final base = StarterGameData.create().copyWith(
+      landScouted: true,
+      // Three followers, but none bound deeply enough (≥90) to count as the
+      // strong bond on their own — so marriage is what completes it.
+      npcRelations: const {'kaya_atabek': 80, 'alis_hatun': 85, 'bori_bey': 80},
+      profile: StarterGameData.create().profile.copyWith(reputation: 55),
+      buildings: [
+        for (final b in StarterGameData.create().buildings)
+          if (b.id == 'main_tent') b.copyWith(level: 2) else b,
+      ],
+      resources: {
+        ...StarterGameData.create().resources,
+        ResourceType.gold: 600,
+        ResourceType.reputation: 55,
+      },
+      marriageCandidates: [
+        for (final c in StarterGameData.create().marriageCandidates)
+          c.id == 'aybuke' ? c.copyWith(relation: 70) : c,
+      ],
+    );
+    final c = GameController(base);
+    expect(PhaseLogic.canFoundOba(c.state), isFalse); // bond missing
+    expect(c.proposeMarriage('aybuke'), isTrue);
+    expect(PhaseLogic.hasStrongBond(c.state), isTrue);
+    expect(PhaseLogic.canFoundOba(c.state), isTrue);
+  });
+
+  test('marriage survives a serializer round-trip', () {
+    final base = StarterGameData.create().copyWith(
+      resources: {
+        ...StarterGameData.create().resources,
+        ResourceType.gold: 600,
+        ResourceType.reputation: 25,
+      },
+      marriageCandidates: [
+        for (final c in StarterGameData.create().marriageCandidates)
+          c.id == 'aybuke' ? c.copyWith(relation: 70) : c,
+      ],
+    );
+    final c = GameController(base);
+    c.proposeMarriage('aybuke');
+    final decoded = GameSerializer.decode(GameSerializer.encode(c.state));
+    expect(decoded, isNotNull);
+    expect(decoded!.household.spouseName, 'Aybüke');
+    expect(decoded.household.isMarried, isTrue);
   });
 
   test('crafting, expeditions, market and serializer still work', () {
@@ -1151,6 +1254,76 @@ void main() {
       c.state.log.any((l) => l.contains('envantere eklendi')),
       isTrue,
     );
+  });
+
+  test('a legacy/minimal save loads with safe defaults, no crash', () {
+    final map = jsonDecode(GameSerializer.encode(StarterGameData.create()))
+        as Map<String, dynamic>;
+    // Drop every field added across the recent passes.
+    map
+      ..remove('companionRoles')
+      ..remove('raidCountdown')
+      ..remove('raidFrom')
+      ..remove('marchTarget')
+      ..remove('marchDaysLeft')
+      ..remove('obaFounded')
+      ..remove('landScouted');
+    final decoded = GameSerializer.decode(jsonEncode(map));
+    expect(decoded, isNotNull);
+    expect(decoded!.marching, isFalse);
+    expect(decoded.raidLooming, isFalse);
+    expect(decoded.companionRoles, isEmpty);
+    // Pre-phase saves are treated as an already-established oba.
+    expect(decoded.obaFounded, isTrue);
+  });
+
+  test('campaign, raid, companion and craft state survive a save', () {
+    final fresh = StarterGameData.create();
+    final controller = GameController(fresh.copyWith(
+      obaFounded: true,
+      companionRoles: const {'kaya_atabek': 'warleader'},
+      raidCountdown: 2,
+      raidFrom: 'oguz',
+      marchTarget: 'otuken',
+      marchDaysLeft: 1,
+      craftQueue: const [CraftJob(recipeId: 'wood_shield', daysLeft: 1)],
+    ));
+    final decoded =
+        GameSerializer.decode(GameSerializer.encode(controller.state));
+    expect(decoded, isNotNull);
+    expect(decoded!.companionRoles['kaya_atabek'], 'warleader');
+    expect(decoded.raidCountdown, 2);
+    expect(decoded.raidFrom, 'oguz');
+    expect(decoded.marchTarget, 'otuken');
+    expect(decoded.marchDaysLeft, 1);
+    expect(decoded.craftQueue.length, 1);
+    expect(decoded.craftQueue.first.recipeId, 'wood_shield');
+  });
+
+  test('a marching campaign continues after a save/load', () {
+    final fresh = StarterGameData.create();
+    final base = fresh.copyWith(
+      obaFounded: true,
+      army: const {'heavy_cav': 40},
+      profile: fresh.profile.copyWith(warfare: 20),
+      resources: {
+        ...fresh.resources,
+        ResourceType.food: 800,
+        ResourceType.population: 300,
+      },
+    );
+    final c = GameController(base, random: _FixedRandom(0));
+    c.startMarch('otuken');
+    // Round-trip mid-campaign, then carry on to the walls.
+    final reloaded = GameController(
+      GameSerializer.decode(GameSerializer.encode(c.state))!,
+      random: _FixedRandom(0),
+    );
+    expect(reloaded.state.marching, isTrue);
+    reloaded.endDay();
+    reloaded.endDay();
+    expect(reloaded.state.marching, isFalse);
+    expect(reloaded.state.regionConquered('otuken'), isTrue);
   });
 
   test('the merchant role discounts the market', () {
