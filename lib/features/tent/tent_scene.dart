@@ -62,7 +62,7 @@ class TentScreen extends StatelessWidget {
         fit: StackFit.expand,
         children: [
           const SceneBackground(
-            asset: GameArt.campNightBg,
+            asset: GameArt.tentInteriorBg,
             fallback: GameAssets.bgSceneCampNight,
           ),
           const EmberGlow(center: Alignment(0, -0.45)),

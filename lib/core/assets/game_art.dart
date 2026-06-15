@@ -50,14 +50,27 @@ class GameArt {
   static const playerPortrait1 = '$_base/portraits/player/player_01.png';
   static const playerPortrait2 = '$_base/portraits/player/player_02.png';
   static const playerPortrait3 = '$_base/portraits/player/player_03.png';
+  static const playerPortrait4 = '$_base/portraits/player/player_04.png';
+  static const playerPortrait5 = '$_base/portraits/player/player_05.png';
+  static const playerPortrait6 = '$_base/portraits/player/player_06.png';
   static const npcMerchant = '$_base/portraits/npc/merchant.png';
+  static const npcKam = '$_base/portraits/npc/kam.png';
+  static const npcAlisHatun = '$_base/portraits/npc/alis_hatun.png';
+  static const npcBey = '$_base/portraits/npc/bey.png';
 
   /// The leader portraits offered at onboarding / on the character screen.
   static const playerPortraits = <String>[
     playerPortrait1,
     playerPortrait2,
     playerPortrait3,
+    playerPortrait4,
+    playerPortrait5,
+    playerPortrait6,
   ];
+
+  /// Portrait for a marriage candidate by id, falling back to a generic one.
+  static String marriageCandidate(String id) =>
+      '$_base/portraits/marriage/$id.png';
 
   // ---- UI: frames, panels, bars, cards ---------------------------------
   static const portraitFrameWolf = '$_base/ui/frames/portrait_frame_wolf.png';

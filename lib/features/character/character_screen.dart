@@ -6,6 +6,7 @@ import '../../core/assets/game_art.dart';
 import '../../core/assets/game_assets.dart';
 import '../../core/audio/audio_service.dart';
 import '../../core/widgets/asset_placeholder.dart';
+import '../../core/widgets/game_image.dart';
 import '../../core/widgets/info_sheet.dart';
 import '../../core/widgets/ornate.dart';
 import '../../game/data/game_info.dart';
@@ -481,34 +482,63 @@ class _CandidateCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(
-                child: Text(
-                  '${candidate.name}, ${candidate.age}',
-                  style: AppTextStyles.bodyStrong.copyWith(fontSize: 16),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: SizedBox(
+                  width: 60,
+                  height: 78,
+                  child: GameImage(
+                    primary: GameArt.marriageCandidate(candidate.id),
+                    fallback: GameAssets.characterLeader,
+                    placeholderIcon: Icons.person,
+                  ),
                 ),
               ),
-              Text(
-                candidate.isMarriedToPlayer
-                    ? 'EŞ'
-                    : candidate.isAvailable
-                        ? 'Uygun'
-                        : 'Kapalı',
-                style: AppTextStyles.meta.copyWith(
-                  color: candidate.isAvailable
-                      ? AppColors.success
-                      : AppColors.stone,
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            '${candidate.name}, ${candidate.age}',
+                            style:
+                                AppTextStyles.bodyStrong.copyWith(fontSize: 16),
+                          ),
+                        ),
+                        Text(
+                          candidate.isMarriedToPlayer
+                              ? 'EŞ'
+                              : candidate.isAvailable
+                                  ? 'Uygun'
+                                  : 'Kapalı',
+                          style: AppTextStyles.meta.copyWith(
+                            color: candidate.isAvailable
+                                ? AppColors.success
+                                : AppColors.stone,
+                          ),
+                        ),
+                      ],
+                    ),
+                    Text(
+                      '${candidate.tribeName} • ${candidate.personality} • '
+                      'Bonus: ${candidate.bonusType}',
+                      style: AppTextStyles.body,
+                    ),
+                    Text(
+                      'Uyum ${candidate.compatibility}/100 • İlişki '
+                      '${candidate.relation}/100 • Diplomatik değer '
+                      '${candidate.diplomaticValue}',
+                      style: AppTextStyles.meta,
+                    ),
+                  ],
                 ),
               ),
             ],
-          ),
-          Text(
-            '${candidate.tribeName} • ${candidate.personality} • Bonus: ${candidate.bonusType}',
-            style: AppTextStyles.body,
-          ),
-          Text(
-            'Uyum ${candidate.compatibility}/100 • İlişki ${candidate.relation}/100 • Diplomatik değer ${candidate.diplomaticValue}',
-            style: AppTextStyles.meta,
           ),
           const SizedBox(height: 8),
           Row(

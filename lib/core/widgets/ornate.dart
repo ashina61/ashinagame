@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../app/theme/app_colors.dart';
 import '../../app/theme/app_text_styles.dart';
+import '../assets/game_art.dart';
 import '../assets/game_assets.dart';
 import '../audio/audio_service.dart';
 import '../settings/app_settings.dart';
@@ -141,7 +142,14 @@ class ResourceBar extends StatelessWidget {
     return Container(
       height: 44,
       margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: _stretchedImage(GameAssets.uiBarResources),
+      decoration: BoxDecoration(
+        image: DecorationImage(
+          image: const AssetImage(GameArt.resourceBarFrame),
+          fit: BoxFit.fill,
+          // Swallow load errors so a missing frame never crashes the HUD.
+          onError: (_, __) {},
+        ),
+      ),
       child: Row(
         children: [
           for (var i = 0; i < entries.length; i++)

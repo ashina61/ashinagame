@@ -6,6 +6,16 @@ in code (`lib/core/assets/game_art.dart`) and globbed in `pubspec.yaml`, and the
 screens prefer this art with a graceful fallback to the art the game ships with
 today (`GameImage` / `SceneBackground.fallback` / `OrnateScaffold.backgroundFallback`).
 
+## Integrated batches
+
+- **batch_01** (20): camp/market/journey/oba/workshop night backgrounds; camp
+  objects (fire, chest, horse, workbench); tent levels 1–3; 3 player portraits.
+  Held: 4 texted action cards, 1 emblem sheet.
+- **batch_02** (19): HUD resource-bar frame; tent interior bg; conquest map bg;
+  4 marriage-candidate portraits; +3 player portraits (now 6); npc/companion/kam
+  portraits placed for a later NPC-screen pass. Held: 8-building oba sheet
+  (needs cropping).
+
 ## Batch workflow
 
 Art arrives in small batches, not all at once. For each batch:

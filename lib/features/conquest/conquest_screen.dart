@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../app/theme/app_colors.dart';
 import '../../app/theme/app_text_styles.dart';
+import '../../core/assets/game_art.dart';
 import '../../core/assets/game_assets.dart';
 import '../../core/audio/audio_service.dart';
 import '../../core/widgets/ornate.dart';
@@ -44,7 +45,8 @@ class _ConquestScreenState extends State<ConquestScreen> {
 
     return Scaffold(
       body: OrnateScaffold(
-        backgroundAsset: GameAssets.bgMapParchment,
+        backgroundAsset: GameArt.conquestMapBg,
+        backgroundFallback: GameAssets.bgMapParchment,
         child: Column(
           children: [
             const OrnateHeader(title: 'Fetih Haritası', showBack: true),
