@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../../app/theme/app_colors.dart';
 import '../../app/theme/app_text_styles.dart';
+import '../../core/assets/game_art.dart';
 import '../../core/assets/game_assets.dart';
 import '../../core/utils/formatters.dart';
 import '../../core/widgets/info_sheet.dart';
@@ -139,7 +140,11 @@ class JourneyScreen extends StatelessWidget {
       body: Stack(
         fit: StackFit.expand,
         children: [
-          const SceneBackground(asset: GameAssets.bgMapParchment, scrim: false),
+          const SceneBackground(
+            asset: GameArt.journeyMapBg,
+            fallback: GameAssets.bgMapParchment,
+            scrim: false,
+          ),
           SafeArea(
             child: Column(
               children: [

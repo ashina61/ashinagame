@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../app/theme/app_colors.dart';
 import '../../app/theme/app_text_styles.dart';
-import '../../core/assets/game_assets.dart';
+import '../../core/assets/game_art.dart';
 import '../../core/audio/audio_service.dart';
 import '../../core/widgets/ornate.dart';
 import '../../game/state/game_scope.dart';
@@ -16,7 +16,7 @@ class OnboardingScreen extends StatefulWidget {
 
 class _OnboardingScreenState extends State<OnboardingScreen> {
   final _leader = TextEditingController(text: 'Bumin');
-  String _portrait = GameAssets.playerPortraits.first;
+  String _portrait = GameArt.playerPortraits.first;
 
   @override
   void dispose() {
@@ -116,10 +116,10 @@ class _PortraitPicker extends StatelessWidget {
             height: 92,
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
-              itemCount: GameAssets.playerPortraits.length,
+              itemCount: GameArt.playerPortraits.length,
               separatorBuilder: (_, __) => const SizedBox(width: 10),
               itemBuilder: (context, i) {
-                final asset = GameAssets.playerPortraits[i];
+                final asset = GameArt.playerPortraits[i];
                 final isSelected = asset == selected;
                 return GestureDetector(
                   onTap: () {

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../app/theme/app_text_styles.dart';
+import '../../core/assets/game_art.dart';
 import '../../core/assets/game_assets.dart';
 import '../../core/audio/audio_service.dart';
 import '../../core/widgets/info_sheet.dart';
@@ -41,6 +42,8 @@ class _AtelierScreenState extends State<AtelierScreen> {
     final selected = CraftRecipes.byId(_selectedId) ?? CraftRecipes.all.first;
 
     return OrnateScaffold(
+      backgroundAsset: GameArt.workshopBg,
+      backgroundFallback: GameAssets.bgScreenNight,
       child: Column(
         children: [
           OrnateHeader(

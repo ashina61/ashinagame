@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../app/theme/app_colors.dart';
 import '../../app/theme/app_text_styles.dart';
+import '../../core/assets/game_art.dart';
 import '../../core/assets/game_assets.dart';
 import '../../core/audio/audio_service.dart';
 import '../../core/utils/formatters.dart';
@@ -75,7 +76,10 @@ class _CampScreenState extends State<CampScreen> {
     return Stack(
       fit: StackFit.expand,
       children: [
-        const SceneBackground(asset: GameAssets.bgSceneCampNight),
+        const SceneBackground(
+          asset: GameArt.obaSceneBg,
+          fallback: GameAssets.bgSceneCampNight,
+        ),
         SafeArea(
           child: Column(
             children: [

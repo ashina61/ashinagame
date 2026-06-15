@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../app/theme/app_colors.dart';
 import '../../app/theme/app_text_styles.dart';
+import '../../core/assets/game_art.dart';
 import '../../core/assets/game_assets.dart';
 import '../../core/audio/audio_service.dart';
 import '../../core/widgets/asset_placeholder.dart';
@@ -280,10 +281,10 @@ void _showPortraitPicker(BuildContext context) {
                 height: 112,
                 child: ListView.separated(
                   scrollDirection: Axis.horizontal,
-                  itemCount: GameAssets.playerPortraits.length,
+                  itemCount: GameArt.playerPortraits.length,
                   separatorBuilder: (_, __) => const SizedBox(width: 10),
                   itemBuilder: (context, i) {
-                    final asset = GameAssets.playerPortraits[i];
+                    final asset = GameArt.playerPortraits[i];
                     final selected = asset == current;
                     return GestureDetector(
                       onTap: () {

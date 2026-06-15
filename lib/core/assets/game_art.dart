@@ -17,6 +17,7 @@ class GameArt {
   static const obaSceneBg = '$_base/scenes/oba/oba_scene_bg.png';
   static const conquestMapBg = '$_base/scenes/conquest/conquest_map_bg.png';
   static const marriageBg = '$_base/scenes/household/marriage_bg.png';
+  static const workshopBg = '$_base/scenes/workshop/workshop_bg.png';
 
   // ---- Buildings -------------------------------------------------------
   static const playerTentLv1 = '$_base/buildings/tent/tent_lv1.png';

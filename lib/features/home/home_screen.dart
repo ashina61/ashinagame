@@ -51,7 +51,7 @@ class HomeScreen extends StatelessWidget {
         title: 'Çadırım',
         x: 0.5,
         y: 0.38,
-        icon: GameAssets.iconYurtMedallion,
+        icon: GameArt.playerTentLv1,
         onTap: () => push(context, const TentScreen(showBack: true)),
       ),
       SceneHotspot(
@@ -59,7 +59,7 @@ class HomeScreen extends StatelessWidget {
         title: hasEvent ? 'Ateş Başı Olayı' : 'Ateş Ocağı',
         x: 0.66,
         y: 0.6,
-        icon: GameAssets.iconMoraleEmblem,
+        icon: GameArt.campFire,
         badge: hasEvent ? '!' : null,
         onTap: () => _openFire(context, controller),
       ),
@@ -68,7 +68,7 @@ class HomeScreen extends StatelessWidget {
         title: 'Sandık',
         x: 0.28,
         y: 0.62,
-        icon: GameAssets.iconChestMedallion,
+        icon: GameArt.campChest,
         onTap: () => push(context, const InventoryScreen()),
       ),
       SceneHotspot(
@@ -76,7 +76,7 @@ class HomeScreen extends StatelessWidget {
         title: 'At Bağı',
         x: 0.82,
         y: 0.4,
-        icon: GameAssets.iconMedallionHorse,
+        icon: GameArt.campHorseTie,
         onTap: () => _openHorse(context, controller),
       ),
       SceneHotspot(
@@ -84,7 +84,7 @@ class HomeScreen extends StatelessWidget {
         title: 'Çalışma Tezgâhı',
         x: 0.16,
         y: 0.4,
-        icon: GameAssets.iconGearEmblem,
+        icon: GameArt.campWorkbench,
         onTap: () => push(context, const AtelierScreen()),
       ),
       SceneHotspot(

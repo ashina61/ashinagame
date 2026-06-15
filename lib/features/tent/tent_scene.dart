@@ -33,16 +33,17 @@ class TentScreen extends StatelessWidget {
   /// underlying building ids and placed around the tent scene.
   static const _parts =
       <(String id, String label, double x, double y, String icon)>[
-    ('main_tent', 'Ana Çadır', 0.5, 0.34, GameAssets.iconYurtMedallion),
-    ('storage', 'Sandık', 0.24, 0.6, GameAssets.iconChestMedallion),
-    ('workshop', 'Çalışma Tezgâhı', 0.16, 0.34, GameAssets.iconGearEmblem),
-    ('horse_herd', 'At Bağı', 0.82, 0.4, GameAssets.iconMedallionHorse),
+    ('main_tent', 'Ana Çadır', 0.5, 0.34, GameArt.playerTentLv1),
+    ('storage', 'Sandık', 0.24, 0.6, GameArt.campChest),
+    ('workshop', 'Çalışma Tezgâhı', 0.16, 0.34, GameArt.campWorkbench),
+    ('horse_herd', 'At Bağı', 0.82, 0.4, GameArt.campHorseTie),
     ('healer', 'Korunak', 0.76, 0.66, GameAssets.iconHeartMedallion),
   ];
 
   @override
   Widget build(BuildContext context) {
     final controller = GameScope.of(context);
+    final tentLevel = PhaseLogic.tentLevel(controller.state);
     final hotspots = [
       for (final (id, label, x, y, icon) in _parts)
         SceneHotspot(
@@ -50,7 +51,8 @@ class TentScreen extends StatelessWidget {
           title: label,
           x: x,
           y: y,
-          icon: icon,
+          // The main tent's marker grows with its level (lv1 → lv3 art).
+          icon: id == 'main_tent' ? GameArt.playerTent(tentLevel) : icon,
           onTap: () => _openPart(context, controller, id, label, icon),
         ),
     ];
@@ -59,9 +61,8 @@ class TentScreen extends StatelessWidget {
       body: Stack(
         fit: StackFit.expand,
         children: [
-          // TODO(asset): tent_interior_bg — falls back to the night camp.
           const SceneBackground(
-            asset: GameArt.tentInteriorBg,
+            asset: GameArt.campNightBg,
             fallback: GameAssets.bgSceneCampNight,
           ),
           const EmberGlow(center: Alignment(0, -0.45)),
