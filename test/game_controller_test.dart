@@ -147,19 +147,121 @@ void main() {
 
   test('marriage requires conditions and then updates household', () {
     final controller = GameController.starter();
+    // Bare start: no gold, no reputation, low candidate bond -> blocked.
     expect(controller.proposeMarriage('aybuke'), isFalse);
-    final boosted = controller.state.copyWith(
+
+    final ready = GameController(controller.state.copyWith(
       resources: {
         ...controller.state.resources,
         ResourceType.gold: 600,
         ResourceType.reputation: 25,
       },
-    );
-    final ready = GameController(boosted);
+      marriageCandidates: [
+        for (final c in controller.state.marriageCandidates)
+          c.id == 'aybuke' ? c.copyWith(relation: 70) : c,
+      ],
+    ));
     expect(ready.proposeMarriage('aybuke'), isTrue);
     expect(ready.state.household.spouseName, 'Aybüke');
     expect(ready.state.household.isMarried, isTrue);
+    expect(ready.state.household.spouseBonus, isNot('Yok'));
+    expect(ready.state.household.familyPrestige, greaterThan(0));
     expect(ready.state.tribeByName('Kara Kurtlar')!.marriageTie, isTrue);
+    // The candidate is now the spouse and no longer on offer.
+    final wed =
+        ready.state.marriageCandidates.firstWhere((c) => c.id == 'aybuke');
+    expect(wed.isMarriedToPlayer, isTrue);
+    expect(wed.isAvailable, isFalse);
+  });
+
+  test('marriage is gated by the candidate bond, not the tribe mood', () {
+    final base = StarterGameData.create().copyWith(
+      resources: {
+        ...StarterGameData.create().resources,
+        ResourceType.gold: 600,
+        ResourceType.reputation: 25,
+      },
+    );
+    final low = GameController(base);
+    // Low candidate bond -> a clear reason, no marriage.
+    expect(low.marriageBlockReason('aybuke'), isNotNull);
+    expect(low.proposeMarriage('aybuke'), isFalse);
+    expect(low.state.household.isMarried, isFalse);
+
+    final ready = GameController(base.copyWith(
+      marriageCandidates: [
+        for (final c in base.marriageCandidates)
+          c.id == 'aybuke' ? c.copyWith(relation: 65) : c,
+      ],
+    ));
+    expect(ready.marriageBlockReason('aybuke'), isNull);
+    expect(ready.proposeMarriage('aybuke'), isTrue);
+  });
+
+  test('a married leader cannot take a second spouse', () {
+    final base = StarterGameData.create().copyWith(
+      resources: {
+        ...StarterGameData.create().resources,
+        ResourceType.gold: 1200,
+        ResourceType.reputation: 40,
+      },
+      marriageCandidates: [
+        for (final c in StarterGameData.create().marriageCandidates)
+          c.copyWith(relation: 80),
+      ],
+    );
+    final c = GameController(base);
+    expect(c.proposeMarriage('aybuke'), isTrue);
+    expect(c.marriageBlockReason('selen'), 'Zaten evlisin.');
+    expect(c.proposeMarriage('selen'), isFalse);
+  });
+
+  test('marriage completes the strong-bond founding milestone', () {
+    final base = StarterGameData.create().copyWith(
+      landScouted: true,
+      // Three followers, but none bound deeply enough (≥90) to count as the
+      // strong bond on their own — so marriage is what completes it.
+      npcRelations: const {'kaya_atabek': 80, 'alis_hatun': 85, 'bori_bey': 80},
+      profile: StarterGameData.create().profile.copyWith(reputation: 55),
+      buildings: [
+        for (final b in StarterGameData.create().buildings)
+          if (b.id == 'main_tent') b.copyWith(level: 2) else b,
+      ],
+      resources: {
+        ...StarterGameData.create().resources,
+        ResourceType.gold: 600,
+        ResourceType.reputation: 55,
+      },
+      marriageCandidates: [
+        for (final c in StarterGameData.create().marriageCandidates)
+          c.id == 'aybuke' ? c.copyWith(relation: 70) : c,
+      ],
+    );
+    final c = GameController(base);
+    expect(PhaseLogic.canFoundOba(c.state), isFalse); // bond missing
+    expect(c.proposeMarriage('aybuke'), isTrue);
+    expect(PhaseLogic.hasStrongBond(c.state), isTrue);
+    expect(PhaseLogic.canFoundOba(c.state), isTrue);
+  });
+
+  test('marriage survives a serializer round-trip', () {
+    final base = StarterGameData.create().copyWith(
+      resources: {
+        ...StarterGameData.create().resources,
+        ResourceType.gold: 600,
+        ResourceType.reputation: 25,
+      },
+      marriageCandidates: [
+        for (final c in StarterGameData.create().marriageCandidates)
+          c.id == 'aybuke' ? c.copyWith(relation: 70) : c,
+      ],
+    );
+    final c = GameController(base);
+    c.proposeMarriage('aybuke');
+    final decoded = GameSerializer.decode(GameSerializer.encode(c.state));
+    expect(decoded, isNotNull);
+    expect(decoded!.household.spouseName, 'Aybüke');
+    expect(decoded.household.isMarried, isTrue);
   });
 
   test('crafting, expeditions, market and serializer still work', () {
