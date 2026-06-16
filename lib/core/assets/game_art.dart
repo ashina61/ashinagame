@@ -14,10 +14,13 @@ class GameArt {
   static const marketBg = '$_base/scenes/market/market_bg.png';
   static const innBg = '$_base/scenes/market/inn_bg.png';
   static const journeyMapBg = '$_base/scenes/map/journey_map_bg.png';
+  static const worldMapParchment = '$_base/maps/world_map_parchment_01.png';
   static const obaSceneBg = '$_base/scenes/oba/oba_scene_bg.png';
   static const conquestMapBg = '$_base/scenes/conquest/conquest_map_bg.png';
   static const marriageBg = '$_base/scenes/household/marriage_bg.png';
   static const workshopBg = '$_base/scenes/workshop/workshop_bg.png';
+  static const workshopInteriorNight =
+      '$_base/backgrounds/interiors/workshop_interior_night.png';
 
   // ---- Buildings -------------------------------------------------------
   static const playerTentLv1 = '$_base/buildings/tent/tent_lv1.png';
@@ -56,6 +59,10 @@ class GameArt {
   static const playerPortrait4 = '$_base/portraits/player/player_04.png';
   static const playerPortrait5 = '$_base/portraits/player/player_05.png';
   static const playerPortrait6 = '$_base/portraits/player/player_06.png';
+  static const playerPortraitBatch07_03 =
+      '$_base/portraits/player/player_portrait_03.png';
+  static const playerPortraitBatch07_04 =
+      '$_base/portraits/player/player_portrait_04.png';
   static const npcMerchant = '$_base/portraits/npc/merchant.png';
   static const npcKam = '$_base/portraits/npc/kam.png';
   static const npcAlisHatun = '$_base/portraits/npc/alis_hatun.png';
@@ -69,6 +76,8 @@ class GameArt {
     playerPortrait4,
     playerPortrait5,
     playerPortrait6,
+    playerPortraitBatch07_03,
+    playerPortraitBatch07_04,
   ];
 
   /// Portrait for a marriage candidate by id, falling back to a generic one.
@@ -77,6 +86,8 @@ class GameArt {
 
   // ---- UI: frames, panels, bars, cards ---------------------------------
   static const portraitFrameWolf = '$_base/ui/frames/portrait_frame_wolf.png';
+  static const portraitFrameWolfRound =
+      '$_base/ui/frames/portrait_frame_wolf_round.png';
   static const equipmentSlot = '$_base/ui/frames/equipment_slot.png';
   static const marriageCandidateFrame =
       '$_base/ui/frames/marriage_candidate_frame.png';
@@ -96,9 +107,15 @@ class GameArt {
   static const householdPanel = '$_base/ui/panels/household_panel.png';
   static const diplomacyPanel = '$_base/ui/panels/diplomacy_panel.png';
   static const battleResultPanel = '$_base/ui/panels/battle_result_panel.png';
+  static const stonePanelTall = '$_base/ui/panels/stone_panel_tall.png';
 
   static const rumorBar = '$_base/ui/bars/rumor_bar.png';
   static const relationBar = '$_base/ui/bars/relation_bar.png';
+  static const titleBannerGoldLong =
+      '$_base/ui/bars/title_banner_gold_long.png';
+  static const sectionBarDarkRune = '$_base/ui/bars/section_bar_dark_rune.png';
+  static const titleBannerWolfSlim =
+      '$_base/ui/bars/title_banner_wolf_slim.png';
 
   static const rareOfferCard = '$_base/ui/cards/rare_offer_card.png';
 
@@ -130,6 +147,10 @@ class GameArt {
   static const itemShield = '$_base/items/armor/shield.png';
   static const itemHorseTack = '$_base/items/horse/horse_tack.png';
   static const itemMarriageGift = '$_base/items/gifts/marriage_gift.png';
+
+  // ---- References (not shown directly in-game) -------------------------
+  static const obaBuildingsSheet01 =
+      '$_base/references/oba_buildings_sheet_01.png';
 
   // ---- Icon / milestone helpers ----------------------------------------
 
