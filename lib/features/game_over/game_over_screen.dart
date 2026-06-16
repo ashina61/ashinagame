@@ -29,8 +29,10 @@ class GameOverScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 10),
-          Text('OCAK SÖNDÜ',
-              style: AppTextStyles.display.copyWith(fontSize: 36)),
+          Text(
+            'OCAK SÖNDÜ',
+            style: AppTextStyles.display.copyWith(fontSize: 36),
+          ),
           Text(
             'BOZKIRDA BİR ÖMÜR SONA ERDİ',
             style: AppTextStyles.section.copyWith(letterSpacing: 3),

@@ -17,9 +17,7 @@ class AppTheme {
       colorScheme: scheme,
       scaffoldBackgroundColor: AppColors.ink,
       fontFamily: 'Alegreya',
-      textTheme: const TextTheme(
-        bodyMedium: TextStyle(color: AppColors.sand),
-      ),
+      textTheme: const TextTheme(bodyMedium: TextStyle(color: AppColors.sand)),
       snackBarTheme: const SnackBarThemeData(
         backgroundColor: AppColors.card,
         contentTextStyle: TextStyle(color: AppColors.parchment),

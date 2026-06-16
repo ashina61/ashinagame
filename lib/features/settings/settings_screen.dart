@@ -4,7 +4,10 @@ import '../../app/theme/app_colors.dart';
 import '../../app/theme/app_text_styles.dart';
 import '../../core/assets/game_assets.dart';
 import '../../core/audio/audio_service.dart';
+import '../../core/settings/app_settings.dart';
+import '../../core/widgets/info_sheet.dart';
 import '../../core/widgets/ornate.dart';
+import '../../game/data/game_info.dart';
 import '../../game/state/game_scope.dart';
 import '../found_oba/found_oba_screen.dart';
 
@@ -18,36 +21,22 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   bool _music = AudioService.instance.musicOn;
   bool _sfx = AudioService.instance.sfxOn;
-  bool _notifications = true;
-  bool _powerSave = false;
+  bool _haptics = AppSettings.instance.haptics;
 
   @override
   Widget build(BuildContext context) {
     return OrnateScaffold(
       child: Column(
         children: [
-          const OrnateHeader(title: 'Ayarlar', showBack: true),
+          OrnateHeader(
+            title: 'Ayarlar',
+            showBack: true,
+            onInfo: () => showHelpSheet(context, HelpId.settings),
+          ),
           Expanded(
             child: ListView(
               padding: const EdgeInsets.only(top: 4, bottom: 16),
               children: [
-                const SectionPlaque('HESAP'),
-                OrnatePanel(
-                  padding: const EdgeInsets.all(10),
-                  child: Column(
-                    children: [
-                      _FieldRow(
-                        label: 'Hesap Bağla',
-                        value: 'Google Play  ✓',
-                        valueColor: AppColors.success,
-                        onTap: () => _soon(context),
-                      ),
-                      const _FieldRow(
-                          label: 'Kullanıcı ID', value: 'ASHINA-4587'),
-                      const _FieldRow(label: 'Sunucu', value: 'TR-1'),
-                    ],
-                  ),
-                ),
                 const SectionPlaque('OBA & LİDER'),
                 Builder(
                   builder: (context) {
@@ -59,10 +48,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text('Oba: ${state.clan.name}',
-                                    style: AppTextStyles.bodyStrong),
-                                Text('Lider: ${state.profile.name}',
-                                    style: AppTextStyles.meta),
+                                Text(
+                                  'Oba: ${state.clan.name}',
+                                  style: AppTextStyles.bodyStrong,
+                                ),
+                                Text(
+                                  'Lider: ${state.profile.name}',
+                                  style: AppTextStyles.meta,
+                                ),
                               ],
                             ),
                           ),
@@ -101,26 +94,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         },
                       ),
                       _Toggle(
-                        label: 'Bildirimler',
-                        value: _notifications,
-                        onChanged: (v) => setState(() => _notifications = v),
+                        label: 'Sarsıntı (Titreşim)',
+                        value: _haptics,
+                        onChanged: (v) {
+                          setState(() => _haptics = v);
+                          AppSettings.instance.setHaptics(v);
+                        },
                       ),
-                      _Toggle(
-                        label: 'Güç Tasarrufu Modu',
-                        value: _powerSave,
-                        onChanged: (v) => setState(() => _powerSave = v),
-                      ),
-                    ],
-                  ),
-                ),
-                const SectionPlaque('DİL'),
-                const OrnatePanel(
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Text('Dil', style: AppTextStyles.bodyStrong),
-                      ),
-                      Text('Türkçe  ▾', style: AppTextStyles.value),
                     ],
                   ),
                 ),
@@ -167,39 +147,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ],
                   ),
                 ),
-                const SectionPlaque('DİĞER'),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                const SectionPlaque('OYUN BİLGİSİ'),
+                const OrnatePanel(
                   child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      for (final pair in const [
-                        [
-                          GameAssets.uiButtonDestek,
-                          GameAssets.uiButtonHediyeKodu
-                        ],
-                        [
-                          GameAssets.uiButtonGizlilik,
-                          GameAssets.uiButtonHizmetSartlari,
-                        ],
-                      ])
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 8),
-                          child: Row(
-                            children: [
-                              for (final asset in pair) ...[
-                                if (asset != pair.first)
-                                  const SizedBox(width: 8),
-                                Expanded(
-                                  child: ImageButton(
-                                    asset: asset,
-                                    height: 42,
-                                    onPressed: () => _soon(context),
-                                  ),
-                                ),
-                              ],
-                            ],
-                          ),
-                        ),
+                      _InfoLine('Oyun', 'Ashina: Bozkırda Bir Ömür'),
+                      _InfoLine('Sürüm', '0.1.0'),
+                      _InfoLine('Tür', 'Çevrimdışı, tek oyunculu'),
+                      SizedBox(height: 6),
+                      Text(
+                        'Tamamen çevrimdışı oynanır; hesap, sunucu ya da '
+                        'çevrimiçi bağlantı gerektirmez. İlerlemen bu cihazda '
+                        'saklanır.',
+                        style: AppTextStyles.meta,
+                      ),
                     ],
                   ),
                 ),
@@ -214,8 +176,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
   void _renameDialog(BuildContext context) {
     final controller = GameScope.of(context);
     final obaCtrl = TextEditingController(text: controller.state.clan.name);
-    final leaderCtrl =
-        TextEditingController(text: controller.state.profile.name);
+    final leaderCtrl = TextEditingController(
+      text: controller.state.profile.name,
+    );
     showDialog<void>(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -263,9 +226,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
               );
               Navigator.of(dialogContext).pop();
             },
-            child: Text('Kaydet',
-                style: AppTextStyles.bodyStrong
-                    .copyWith(color: AppColors.goldBright)),
+            child: Text(
+              'Kaydet',
+              style: AppTextStyles.bodyStrong.copyWith(
+                color: AppColors.goldBright,
+              ),
+            ),
           ),
         ],
       ),
@@ -298,8 +264,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
               Navigator.of(dialogContext).pop();
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
-                  content:
-                      Text('Oba ateşi yeniden yakıldı. Yeni ömür başladı.'),
+                  content: Text(
+                    'Oba ateşi yeniden yakıldı. Yeni ömür başladı.',
+                  ),
                 ),
               );
             },
@@ -312,53 +279,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
     );
   }
-
-  static void _soon(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Bu özellik yakında geliyor.')),
-    );
-  }
 }
 
-class _FieldRow extends StatelessWidget {
-  const _FieldRow({
-    required this.label,
-    required this.value,
-    this.valueColor,
-    this.onTap,
-  });
+class _InfoLine extends StatelessWidget {
+  const _InfoLine(this.label, this.value);
 
   final String label;
   final String value;
-  final Color? valueColor;
-  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        height: 38,
-        margin: const EdgeInsets.only(bottom: 6),
-        padding: const EdgeInsets.symmetric(horizontal: 12),
-        decoration: const BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage(GameAssets.uiPanelField),
-            fit: BoxFit.fill,
-          ),
-        ),
-        child: Row(
-          children: [
-            Expanded(child: Text(label, style: AppTextStyles.body)),
-            Text(
-              value,
-              style: AppTextStyles.bodyStrong.copyWith(
-                fontSize: 14,
-                color: valueColor,
-              ),
-            ),
-          ],
-        ),
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 3),
+      child: Row(
+        children: [
+          Expanded(child: Text(label, style: AppTextStyles.body)),
+          Text(value, style: AppTextStyles.bodyStrong.copyWith(fontSize: 14)),
+        ],
       ),
     );
   }

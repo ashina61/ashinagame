@@ -134,6 +134,7 @@ class MarketGoods {
     return null;
   }
 
-  static Map<String, int> startingStock() =>
-      {for (final good in all) good.id: good.baseStock};
+  static Map<String, int> startingStock() => {
+        for (final good in all) good.id: good.baseStock,
+      };
 }

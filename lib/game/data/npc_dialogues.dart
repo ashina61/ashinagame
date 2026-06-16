@@ -246,6 +246,6 @@ class NpcDialogues {
   /// All dialogues belonging to [npcId].
   static List<Dialogue> forNpc(String npcId) => [
         for (final d in all)
-          if (d.npcId == npcId) d
+          if (d.npcId == npcId) d,
       ];
 }

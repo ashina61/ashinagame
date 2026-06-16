@@ -56,8 +56,12 @@ void main() {
 
   test('quest completion grants XP and can level up', () {
     final controller = GameController.starter();
-    controller.performCampAction(GameActions.hunt, 'Avlan', huntEffects,
-        xp: 90);
+    controller.performCampAction(
+      GameActions.hunt,
+      'Avlan',
+      huntEffects,
+      xp: 90,
+    );
     final beforeLevel = controller.state.profile.level;
     final beforeXp = controller.state.profile.xp;
     controller.claimQuest('d_hunt');
@@ -67,8 +71,12 @@ void main() {
 
     for (var i = 0; i < 4; i++) {
       controller.endDay();
-      controller.performCampAction(GameActions.hunt, 'Avlan', huntEffects,
-          xp: 80);
+      controller.performCampAction(
+        GameActions.hunt,
+        'Avlan',
+        huntEffects,
+        xp: 80,
+      );
     }
     expect(controller.state.profile.level, greaterThan(1));
     expect(controller.state.profile.skillPoints, greaterThan(0));
@@ -90,27 +98,37 @@ void main() {
     final controller = GameController.starter();
     expect(controller.state.dailyActionPoints, 4);
     expect(
-        controller.performCampAction(
-            GameActions.farm, 'Tarla', const {ResourceType.food: 12}),
-        isTrue);
+      controller.performCampAction(GameActions.farm, 'Tarla', const {
+        ResourceType.food: 12,
+      }),
+      isTrue,
+    );
     expect(controller.state.dailyActionPoints, 3);
     for (var i = 0; i < 3; i++) {
       expect(controller.rest(), isTrue);
     }
     expect(
-        controller.performCampAction(
-            GameActions.farm, 'Tarla', const {ResourceType.food: 12}),
-        isFalse);
+      controller.performCampAction(GameActions.farm, 'Tarla', const {
+        ResourceType.food: 12,
+      }),
+      isFalse,
+    );
     controller.endDay();
-    expect(controller.state.dailyActionPoints,
-        controller.state.maxDailyActionPoints);
+    expect(
+      controller.state.dailyActionPoints,
+      controller.state.maxDailyActionPoints,
+    );
   });
 
   test('energy fatigue and health are affected by action and day cycle', () {
     final controller = GameController.starter();
     controller.performCampAction(
-        GameActions.wood, 'Odun Kes', const {ResourceType.wood: 15},
-        energyCost: 10, fatigueGain: 8);
+      GameActions.wood,
+      'Odun Kes',
+      const {ResourceType.wood: 15},
+      energyCost: 10,
+      fatigueGain: 8,
+    );
     expect(controller.state.profile.energy, lessThan(100));
     expect(controller.state.profile.fatigue, greaterThan(0));
     controller.endDay();
@@ -122,11 +140,13 @@ void main() {
     // Exactly enough for the storage upgrade (wood 35, stone 20), leaving the
     // watchtower (wood 45, stone 15) unaffordable afterwards.
     final controller = GameController(
-      base.copyWith(resources: {
-        ...base.resources,
-        ResourceType.wood: 35,
-        ResourceType.stone: 20,
-      }),
+      base.copyWith(
+        resources: {
+          ...base.resources,
+          ResourceType.wood: 35,
+          ResourceType.stone: 20,
+        },
+      ),
     );
     expect(controller.upgradeBuilding('storage'), isTrue);
     expect(controller.state.building('storage')!.level, 2);
@@ -140,8 +160,9 @@ void main() {
     final controller = GameController.starter();
     final before = controller.state.tribes.first.relation;
     expect(
-        controller.performDiplomacy(controller.state.tribes.first.id, 'envoy'),
-        isTrue);
+      controller.performDiplomacy(controller.state.tribes.first.id, 'envoy'),
+      isTrue,
+    );
     expect(controller.state.tribes.first.relation, isNot(before));
     expect(controller.state.dailyActionPoints, 3);
   });
@@ -151,17 +172,20 @@ void main() {
     // Bare start: no gold, no reputation, low candidate bond -> blocked.
     expect(controller.proposeMarriage('aybuke'), isFalse);
 
-    final ready = GameController(controller.state.copyWith(
-      resources: {
-        ...controller.state.resources,
-        ResourceType.gold: 600,
-        ResourceType.reputation: 25,
-      },
-      marriageCandidates: [
-        for (final c in controller.state.marriageCandidates)
-          c.id == 'aybuke' ? c.copyWith(relation: 70) : c,
-      ],
-    ));
+    final ready = GameController(
+      controller.state.copyWith(
+        profile: controller.state.profile.copyWith(age: 18),
+        resources: {
+          ...controller.state.resources,
+          ResourceType.gold: 600,
+          ResourceType.reputation: 25,
+        },
+        marriageCandidates: [
+          for (final c in controller.state.marriageCandidates)
+            c.id == 'aybuke' ? c.copyWith(relation: 70) : c,
+        ],
+      ),
+    );
     expect(ready.proposeMarriage('aybuke'), isTrue);
     expect(ready.state.household.spouseName, 'Aybüke');
     expect(ready.state.household.isMarried, isTrue);
@@ -169,14 +193,16 @@ void main() {
     expect(ready.state.household.familyPrestige, greaterThan(0));
     expect(ready.state.tribeByName('Kara Kurtlar')!.marriageTie, isTrue);
     // The candidate is now the spouse and no longer on offer.
-    final wed =
-        ready.state.marriageCandidates.firstWhere((c) => c.id == 'aybuke');
+    final wed = ready.state.marriageCandidates.firstWhere(
+      (c) => c.id == 'aybuke',
+    );
     expect(wed.isMarriedToPlayer, isTrue);
     expect(wed.isAvailable, isFalse);
   });
 
   test('marriage is gated by the candidate bond, not the tribe mood', () {
     final base = StarterGameData.create().copyWith(
+      profile: StarterGameData.create().profile.copyWith(age: 18),
       resources: {
         ...StarterGameData.create().resources,
         ResourceType.gold: 600,
@@ -189,18 +215,21 @@ void main() {
     expect(low.proposeMarriage('aybuke'), isFalse);
     expect(low.state.household.isMarried, isFalse);
 
-    final ready = GameController(base.copyWith(
-      marriageCandidates: [
-        for (final c in base.marriageCandidates)
-          c.id == 'aybuke' ? c.copyWith(relation: 65) : c,
-      ],
-    ));
+    final ready = GameController(
+      base.copyWith(
+        marriageCandidates: [
+          for (final c in base.marriageCandidates)
+            c.id == 'aybuke' ? c.copyWith(relation: 65) : c,
+        ],
+      ),
+    );
     expect(ready.marriageBlockReason('aybuke'), isNull);
     expect(ready.proposeMarriage('aybuke'), isTrue);
   });
 
   test('a married leader cannot take a second spouse', () {
     final base = StarterGameData.create().copyWith(
+      profile: StarterGameData.create().profile.copyWith(age: 18),
       resources: {
         ...StarterGameData.create().resources,
         ResourceType.gold: 1200,
@@ -223,7 +252,10 @@ void main() {
       // Three followers, but none bound deeply enough (≥90) to count as the
       // strong bond on their own — so marriage is what completes it.
       npcRelations: const {'kaya_atabek': 80, 'alis_hatun': 85, 'bori_bey': 80},
-      profile: StarterGameData.create().profile.copyWith(reputation: 55),
+      profile: StarterGameData.create().profile.copyWith(
+            reputation: 55,
+            age: 18,
+          ),
       buildings: [
         for (final b in StarterGameData.create().buildings)
           if (b.id == 'main_tent') b.copyWith(level: 2) else b,
@@ -247,6 +279,7 @@ void main() {
 
   test('marriage survives a serializer round-trip', () {
     final base = StarterGameData.create().copyWith(
+      profile: StarterGameData.create().profile.copyWith(age: 18),
       resources: {
         ...StarterGameData.create().resources,
         ResourceType.gold: 600,
@@ -266,8 +299,10 @@ void main() {
   });
 
   test('crafting, expeditions, market and serializer still work', () {
-    final controller =
-        GameController(StarterGameData.create(), random: _FixedRandom(0));
+    final controller = GameController(
+      StarterGameData.create(),
+      random: _FixedRandom(0),
+    );
     expect(controller.startCraft('wood_shield'), CraftStart.started);
     controller.endDay();
     expect(controller.state.craftedCount('wood_shield'), 1);
@@ -279,16 +314,21 @@ void main() {
     final salt = MarketGoods.byId('salt')!;
     final price = MarketLogic.priceFor(salt, controller.state.day.day);
     expect(controller.buyGood('salt'), isTrue);
-    expect(controller.state.resource(ResourceType.gold),
-        lessThan(250 - price + 100));
+    expect(
+      controller.state.resource(ResourceType.gold),
+      lessThan(250 - price + 100),
+    );
 
-    final decoded =
-        GameSerializer.decode(GameSerializer.encode(controller.state));
+    final decoded = GameSerializer.decode(
+      GameSerializer.encode(controller.state),
+    );
     expect(decoded, isNotNull);
     expect(decoded!.buildings.length, controller.state.buildings.length);
     expect(decoded.tribes.length, controller.state.tribes.length);
-    expect(decoded.household.householdMorale,
-        controller.state.household.householdMorale);
+    expect(
+      decoded.household.householdMorale,
+      controller.state.household.householdMorale,
+    );
 
     final legacyMap = jsonDecode(GameSerializer.encode(controller.state))
         as Map<String, dynamic>;
@@ -332,40 +372,48 @@ void main() {
     expect(state.faithState.ancestorHonor, 0);
   });
 
-  test('end day can create an omen and kam consultation softens a bad omen',
-      () {
-    final controller =
-        GameController(StarterGameData.create(), random: _FixedRandom(20));
-    controller.endDay();
-    expect(controller.state.faithState.hasOmen, isTrue);
-    expect(controller.state.faithState.omenSeverity, OmenSeverity.bad);
-    expect(controller.consultAdvisor('interpret_omen'), isTrue);
-    expect(controller.state.faithState.omenSeverity, OmenSeverity.neutral);
-    expect(controller.state.faithState.activeWarnings, isEmpty);
-  });
+  test(
+    'end day can create an omen and kam consultation softens a bad omen',
+    () {
+      final controller = GameController(
+        StarterGameData.create(),
+        random: _FixedRandom(20),
+      );
+      controller.endDay();
+      expect(controller.state.faithState.hasOmen, isTrue);
+      expect(controller.state.faithState.omenSeverity, OmenSeverity.bad);
+      expect(controller.consultAdvisor('interpret_omen'), isTrue);
+      expect(controller.state.faithState.omenSeverity, OmenSeverity.neutral);
+      expect(controller.state.faithState.activeWarnings, isEmpty);
+    },
+  );
 
-  test('sacred place visit costs AP and energy while increasing faith state',
-      () {
-    final controller = GameController.starter();
-    final beforeEnergy = controller.state.profile.energy;
-    final beforeKut = controller.state.faithState.kut;
-    expect(controller.visitSacredPlace('old_inscription'), isTrue);
-    expect(controller.state.dailyActionPoints, 3);
-    expect(controller.state.profile.energy, lessThan(beforeEnergy));
-    expect(controller.state.faithState.kut, beforeKut + 2);
-    expect(controller.visitSacredPlace('old_inscription'), isFalse);
-  });
+  test(
+    'sacred place visit costs AP and energy while increasing faith state',
+    () {
+      final controller = GameController.starter();
+      final beforeEnergy = controller.state.profile.energy;
+      final beforeKut = controller.state.faithState.kut;
+      expect(controller.visitSacredPlace('old_inscription'), isTrue);
+      expect(controller.state.dailyActionPoints, 3);
+      expect(controller.state.profile.energy, lessThan(beforeEnergy));
+      expect(controller.state.faithState.kut, beforeKut + 2);
+      expect(controller.visitSacredPlace('old_inscription'), isFalse);
+    },
+  );
 
   test('tore event applies faith effects and tracks tore quest action', () {
     final controller = GameController.starter();
-    final event = StarterGameData.events
-        .firstWhere((item) => item.id == 'tore_herd_dispute');
+    final event = StarterGameData.events.firstWhere(
+      (item) => item.id == 'tore_herd_dispute',
+    );
     final choice = event.choices.first;
     final beforeTore = controller.state.faithState.tore;
     expect(controller.chooseEvent(choice), isTrue);
     expect(controller.state.faithState.tore, beforeTore + 4);
-    final quest =
-        controller.state.quests.firstWhere((item) => item.id == 's_tore_case');
+    final quest = controller.state.quests.firstWhere(
+      (item) => item.id == 's_tore_case',
+    );
     expect(quest.progress, 1);
   });
 
@@ -436,10 +484,7 @@ void main() {
     final moraleBefore = loser.state.resource(ResourceType.morale);
     expect(loser.attackRegion('kasgar'), isFalse);
     expect(loser.state.regionConquered('kasgar'), isFalse);
-    expect(
-      loser.state.resource(ResourceType.morale),
-      lessThan(moraleBefore),
-    );
+    expect(loser.state.resource(ResourceType.morale), lessThan(moraleBefore));
   });
 
   test('battle casualties favour tougher units and fill a report', () {
@@ -469,8 +514,9 @@ void main() {
   test('army defence lifts war strength', () {
     final base = StarterGameData.create();
     final plain = GameController(base.copyWith(army: const {}));
-    final defended =
-        GameController(base.copyWith(army: const {'spear': 10})); // def 8
+    final defended = GameController(
+      base.copyWith(army: const {'spear': 10}),
+    ); // def 8
     expect(defended.warStrength, greaterThan(plain.warStrength));
     expect(defended.armyDefense, 80);
   });
@@ -519,7 +565,9 @@ void main() {
     expect(controller.state.nationConquered('oguz'), isTrue);
     expect(controller.conqueredNations, 1);
     expect(
-        controller.state.resource(ResourceType.gold), greaterThan(goldBefore));
+      controller.state.resource(ResourceType.gold),
+      greaterThan(goldBefore),
+    );
 
     // A governed province pays tribute each day.
     final beforeDay = GameController(
@@ -530,7 +578,9 @@ void main() {
     final goldDayStart = beforeDay.state.resource(ResourceType.gold);
     beforeDay.endDay();
     expect(
-        beforeDay.state.resource(ResourceType.gold), greaterThan(goldDayStart));
+      beforeDay.state.resource(ResourceType.gold),
+      greaterThan(goldDayStart),
+    );
   });
 
   test('a neglected province loses loyalty and finally revolts', () {
@@ -749,8 +799,10 @@ void main() {
     expect(controller.state.relationWith('bori_bey'), 58);
     expect(controller.state.relationWith('alis_hatun'), 42);
     // The exodus from a furious populace bleeds population.
-    expect(controller.state.resource(ResourceType.population),
-        lessThan(popBefore));
+    expect(
+      controller.state.resource(ResourceType.population),
+      lessThan(popBefore),
+    );
   });
 
   test('a furious council costs a bound oba at the next verdict', () {
@@ -793,8 +845,9 @@ void main() {
     expect(UnlockLogic.expeditions(armed), isTrue);
 
     // A first campaign opens recruitment.
-    final veteran =
-        armed.copyWith(completedExpeditions: const ['border_outpost']);
+    final veteran = armed.copyWith(
+      completedExpeditions: const ['border_outpost'],
+    );
     expect(UnlockLogic.recruitment(veteran), isTrue);
   });
 
@@ -861,8 +914,10 @@ void main() {
     expect(controller.state.profile.age, ageBefore);
     expect(controller.state.generation, 1);
     // Followers form the first households, so the camp gains people.
-    expect(controller.state.resource(ResourceType.population),
-        greaterThan(popBefore));
+    expect(
+      controller.state.resource(ResourceType.population),
+      greaterThan(popBefore),
+    );
   });
 
   test('founding an oba does nothing while the milestones are unmet', () {
@@ -877,8 +932,9 @@ void main() {
     controller.foundNewOba('Test Obası', 'yurt');
     controller.chooseFaithPath('atalar_kultu');
 
-    final decoded =
-        GameSerializer.decode(GameSerializer.encode(controller.state));
+    final decoded = GameSerializer.decode(
+      GameSerializer.encode(controller.state),
+    );
     expect(decoded, isNotNull);
     expect(decoded!.tamga, 'yurt');
     expect(decoded.faithPath, 'atalar_kultu');
@@ -966,33 +1022,38 @@ void main() {
     );
     controller.claimAchievement('dynasty');
 
-    final decoded =
-        GameSerializer.decode(GameSerializer.encode(controller.state));
+    final decoded = GameSerializer.decode(
+      GameSerializer.encode(controller.state),
+    );
     expect(decoded, isNotNull);
     expect(decoded!.generation, 3);
     expect(decoded.leaderLifespan, 70);
     expect(decoded.claimedAchievements, controller.state.claimedAchievements);
   });
 
-  test('talking to an NPC spends an action and shifts the bond and approvals',
-      () {
-    final controller = GameController.starter();
-    final dialogue = controller.dialogueFor('bori_bey');
-    expect(dialogue, isNotNull);
-    expect(controller.state.relationWith('bori_bey'), 50);
+  test(
+    'talking to an NPC spends an action and shifts the bond and approvals',
+    () {
+      final controller = GameController.starter();
+      final dialogue = controller.dialogueFor('bori_bey');
+      expect(dialogue, isNotNull);
+      expect(controller.state.relationWith('bori_bey'), 50);
 
-    final ap = controller.state.dailyActionPoints;
-    final people = controller.state.peopleApproval;
-    final council = controller.state.councilApproval;
-    final choice = dialogue!.choices.first;
+      final ap = controller.state.dailyActionPoints;
+      final people = controller.state.peopleApproval;
+      final council = controller.state.councilApproval;
+      final choice = dialogue!.choices.first;
 
-    expect(controller.talkTo('bori_bey', choice), isTrue);
-    expect(controller.state.dailyActionPoints, ap - 1);
-    expect(controller.state.relationWith('bori_bey'),
-        (50 + choice.relationEffect).clamp(0, 100));
-    expect(controller.state.peopleApproval, people + choice.peopleEffect);
-    expect(controller.state.councilApproval, council + choice.councilEffect);
-  });
+      expect(controller.talkTo('bori_bey', choice), isTrue);
+      expect(controller.state.dailyActionPoints, ap - 1);
+      expect(
+        controller.state.relationWith('bori_bey'),
+        (50 + choice.relationEffect).clamp(0, 100),
+      );
+      expect(controller.state.peopleApproval, people + choice.peopleEffect);
+      expect(controller.state.councilApproval, council + choice.councilEffect);
+    },
+  );
 
   test('a dialogue can summon the council', () {
     final controller = GameController.starter();
@@ -1025,7 +1086,9 @@ void main() {
     expect(controller.lastBattle, isNotNull);
     expect(controller.lastBattle!.won, isTrue);
     expect(
-        controller.state.resource(ResourceType.gold), greaterThan(goldBefore));
+      controller.state.resource(ResourceType.gold),
+      greaterThan(goldBefore),
+    );
   });
 
   test('npc relations survive a serializer round-trip', () {
@@ -1033,11 +1096,14 @@ void main() {
     final choice = NpcDialogues.forNpc('kaya_atabek').first.choices.first;
     controller.talkTo('kaya_atabek', choice);
 
-    final decoded =
-        GameSerializer.decode(GameSerializer.encode(controller.state));
+    final decoded = GameSerializer.decode(
+      GameSerializer.encode(controller.state),
+    );
     expect(decoded, isNotNull);
-    expect(decoded!.relationWith('kaya_atabek'),
-        controller.state.relationWith('kaya_atabek'));
+    expect(
+      decoded!.relationWith('kaya_atabek'),
+      controller.state.relationWith('kaya_atabek'),
+    );
   });
 
   test('talking with no action points left fails', () {
@@ -1062,8 +1128,9 @@ void main() {
     expect(bonus[ResourceType.gold], 6); // merchant
     expect(bonus[ResourceType.food], 5); // hunter
 
-    final decoded =
-        GameSerializer.decode(GameSerializer.encode(controller.state));
+    final decoded = GameSerializer.decode(
+      GameSerializer.encode(controller.state),
+    );
     expect(decoded, isNotNull);
     expect(decoded!.companionRoles['alis_hatun'], 'hunter');
   });
@@ -1163,8 +1230,10 @@ void main() {
       raidFrom: 'oguz',
       resources: {...fresh.resources, ResourceType.gold: 200},
     );
-    final c =
-        GameController(base, random: _FixedRandom(0)); // 0 < 55 -> appeased
+    final c = GameController(
+      base,
+      random: _FixedRandom(0),
+    ); // 0 < 55 -> appeased
     expect(c.state.raidLooming, isTrue);
     expect(c.respondToRaid('envoy'), isTrue);
     expect(c.state.raidLooming, isFalse);
@@ -1178,8 +1247,9 @@ void main() {
   });
 
   test('the opening-month guide spans day 1 to 30 then stops', () {
-    GameState onDay(int d) => StarterGameData.create()
-        .copyWith(day: GameDay(day: d, season: Season.spring));
+    GameState onDay(int d) => StarterGameData.create().copyWith(
+          day: GameDay(day: d, season: Season.spring),
+        );
     expect(PhaseLogic.dailyTutorial(onDay(1)), isNotNull);
     expect(PhaseLogic.dailyTutorial(onDay(26)), isNotNull);
     expect(PhaseLogic.dailyTutorial(onDay(31)), isNull);
@@ -1250,10 +1320,7 @@ void main() {
     expect(c.startCraft('wood_shield'), CraftStart.started);
     c.endDay();
     expect(c.state.craftedCount('wood_shield'), 1);
-    expect(
-      c.state.log.any((l) => l.contains('envantere eklendi')),
-      isTrue,
-    );
+    expect(c.state.log.any((l) => l.contains('envantere eklendi')), isTrue);
   });
 
   test('a legacy/minimal save loads with safe defaults, no crash', () {
@@ -1279,17 +1346,20 @@ void main() {
 
   test('campaign, raid, companion and craft state survive a save', () {
     final fresh = StarterGameData.create();
-    final controller = GameController(fresh.copyWith(
-      obaFounded: true,
-      companionRoles: const {'kaya_atabek': 'warleader'},
-      raidCountdown: 2,
-      raidFrom: 'oguz',
-      marchTarget: 'otuken',
-      marchDaysLeft: 1,
-      craftQueue: const [CraftJob(recipeId: 'wood_shield', daysLeft: 1)],
-    ));
-    final decoded =
-        GameSerializer.decode(GameSerializer.encode(controller.state));
+    final controller = GameController(
+      fresh.copyWith(
+        obaFounded: true,
+        companionRoles: const {'kaya_atabek': 'warleader'},
+        raidCountdown: 2,
+        raidFrom: 'oguz',
+        marchTarget: 'otuken',
+        marchDaysLeft: 1,
+        craftQueue: const [CraftJob(recipeId: 'wood_shield', daysLeft: 1)],
+      ),
+    );
+    final decoded = GameSerializer.decode(
+      GameSerializer.encode(controller.state),
+    );
     expect(decoded, isNotNull);
     expect(decoded!.companionRoles['kaya_atabek'], 'warleader');
     expect(decoded.raidCountdown, 2);
@@ -1335,8 +1405,9 @@ void main() {
       },
     );
     final plain = GameController(base);
-    final withMerchant =
-        GameController(base.copyWith(companionRoles: const {'a': 'merchant'}));
+    final withMerchant = GameController(
+      base.copyWith(companionRoles: const {'a': 'merchant'}),
+    );
     final goldA = plain.state.resource(ResourceType.gold);
     final goldB = withMerchant.state.resource(ResourceType.gold);
     expect(plain.buyGood('salt'), isTrue);

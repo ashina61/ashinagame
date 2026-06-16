@@ -5,6 +5,7 @@ import '../../app/theme/app_text_styles.dart';
 import '../../core/assets/game_assets.dart';
 import '../../core/audio/audio_service.dart';
 import '../../core/utils/resource_visuals.dart';
+import '../../core/widgets/info_sheet.dart';
 import '../../core/widgets/ornate.dart';
 import '../../game/models/resource.dart';
 import '../../game/state/game_scope.dart';
@@ -39,6 +40,11 @@ class SceneHudOverlay extends StatelessWidget {
             for (final type in resources)
               (ResourceVisuals.icon(type), '${state.resource(type)}'),
           ],
+          onEntryTap: (i) => showResourceInfoSheet(
+            context,
+            resources[i],
+            state.resource(resources[i]),
+          ),
         ),
         Padding(
           padding: const EdgeInsets.fromLTRB(12, 0, 12, 4),

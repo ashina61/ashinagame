@@ -2,14 +2,18 @@ import 'package:flutter/material.dart';
 
 import '../../app/theme/app_colors.dart';
 import '../../app/theme/app_text_styles.dart';
+import '../assets/game_art.dart';
 import '../assets/game_assets.dart';
 import '../audio/audio_service.dart';
+import '../settings/app_settings.dart';
 
-/// Wraps a button callback so a tap also clicks, unless it is disabled.
+/// Wraps a button callback so a tap also clicks and gives a light haptic,
+/// unless it is disabled.
 VoidCallback? _tap(VoidCallback? onPressed) => onPressed == null
     ? null
     : () {
         AudioService.instance.playSfx('tap');
+        AppSettings.instance.tap();
         onPressed();
       };
 
@@ -18,11 +22,16 @@ class OrnateScaffold extends StatelessWidget {
   const OrnateScaffold({
     required this.child,
     this.backgroundAsset = GameAssets.bgScreenNight,
+    this.backgroundFallback,
     super.key,
   });
 
   final Widget child;
   final String backgroundAsset;
+
+  /// Art to use until [backgroundAsset] (often a produced [GameArt] path) is in
+  /// the bundle, so a screen can opt into scene art without regressing.
+  final String? backgroundFallback;
 
   @override
   Widget build(BuildContext context) {
@@ -33,7 +42,14 @@ class OrnateScaffold extends StatelessWidget {
           backgroundAsset,
           fit: BoxFit.cover,
           errorBuilder: (context, error, stackTrace) =>
-              const ColoredBox(color: AppColors.leatherDeep),
+              backgroundFallback == null
+                  ? const ColoredBox(color: AppColors.leatherDeep)
+                  : Image.asset(
+                      backgroundFallback!,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) =>
+                          const ColoredBox(color: AppColors.leatherDeep),
+                    ),
         ),
         SafeArea(child: child),
       ],
@@ -47,12 +63,17 @@ class OrnateHeader extends StatelessWidget {
     required this.title,
     this.showBack = false,
     this.showInfo = true,
+    this.onInfo,
     super.key,
   });
 
   final String title;
   final bool showBack;
   final bool showInfo;
+
+  /// Tapped when the info medallion is pressed. When null the medallion is
+  /// hidden, so a screen never shows a dead "i" button.
+  final VoidCallback? onInfo;
 
   @override
   Widget build(BuildContext context) {
@@ -81,8 +102,8 @@ class OrnateHeader extends StatelessWidget {
               ),
             ),
           ),
-          if (showInfo)
-            _MedallionButton(asset: GameAssets.uiButtonInfo, onTap: () {})
+          if (showInfo && onInfo != null)
+            _MedallionButton(asset: GameAssets.uiButtonInfo, onTap: onInfo!)
           else
             const SizedBox(width: 38),
         ],
@@ -108,34 +129,49 @@ class _MedallionButton extends StatelessWidget {
 
 /// Top resource strip on the five-slot ornate bar.
 class ResourceBar extends StatelessWidget {
-  const ResourceBar({required this.entries, super.key});
+  const ResourceBar({required this.entries, this.onEntryTap, super.key});
 
   final List<(String asset, String value)> entries;
+
+  /// Tapped with the entry index — used to pop a resource tooltip. Null leaves
+  /// the bar as a plain readout.
+  final ValueChanged<int>? onEntryTap;
 
   @override
   Widget build(BuildContext context) {
     return Container(
       height: 44,
       margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: _stretchedImage(GameAssets.uiBarResources),
+      decoration: BoxDecoration(
+        image: DecorationImage(
+          image: const AssetImage(GameArt.resourceBarFrame),
+          fit: BoxFit.fill,
+          // Swallow load errors so a missing frame never crashes the HUD.
+          onError: (_, __) {},
+        ),
+      ),
       child: Row(
         children: [
-          for (final (asset, value) in entries)
+          for (var i = 0; i < entries.length; i++)
             Expanded(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Image.asset(asset, width: 22, height: 22),
-                  const SizedBox(width: 4),
-                  Flexible(
-                    child: Text(
-                      value,
-                      style: AppTextStyles.value.copyWith(fontSize: 13),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: onEntryTap == null ? null : () => onEntryTap!(i),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Image.asset(entries[i].$1, width: 22, height: 22),
+                    const SizedBox(width: 4),
+                    Flexible(
+                      child: Text(
+                        entries[i].$2,
+                        style: AppTextStyles.value.copyWith(fontSize: 13),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
         ],
@@ -178,7 +214,10 @@ class OrnatePanel extends StatelessWidget {
         ),
         boxShadow: const [
           BoxShadow(
-              color: Colors.black54, blurRadius: 10, offset: Offset(0, 5)),
+            color: Colors.black54,
+            blurRadius: 10,
+            offset: Offset(0, 5),
+          ),
         ],
       ),
       child: ClipRRect(
@@ -355,10 +394,13 @@ class OrnateTabs extends StatelessWidget {
                   child: Text(
                     tabs[i].toUpperCase(),
                     style: i == index
-                        ? AppTextStyles.buttonDark
-                            .copyWith(color: AppColors.goldBright)
-                        : AppTextStyles.buttonDark
-                            .copyWith(color: AppColors.stone, fontSize: 11),
+                        ? AppTextStyles.buttonDark.copyWith(
+                            color: AppColors.goldBright,
+                          )
+                        : AppTextStyles.buttonDark.copyWith(
+                            color: AppColors.stone,
+                            fontSize: 11,
+                          ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -527,9 +569,9 @@ class OrnateNavBar extends StatelessWidget {
     return Container(
       height: 76,
       padding: const EdgeInsets.symmetric(horizontal: 6),
-      decoration: _stretchedImage(GameAssets.uiPanelNavBar).copyWith(
-        color: AppColors.ink,
-      ),
+      decoration: _stretchedImage(
+        GameAssets.uiPanelNavBar,
+      ).copyWith(color: AppColors.ink),
       child: Row(
         children: [
           for (var i = 0; i < items.length; i++)
@@ -562,8 +604,9 @@ class OrnateNavBar extends StatelessWidget {
                     Text(
                       items[i].$2,
                       style: i == index
-                          ? AppTextStyles.navLabel
-                              .copyWith(color: AppColors.goldBright)
+                          ? AppTextStyles.navLabel.copyWith(
+                              color: AppColors.goldBright,
+                            )
                           : AppTextStyles.navLabel,
                     ),
                   ],

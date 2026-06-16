@@ -181,4 +181,18 @@ class GameAssets {
   static const portraitMerchant =
       'assets/images/characters/portrait_merchant.png';
   static const iconYurtLarge = 'assets/images/icons/yurt_large.png';
+
+  /// The portraits the player can pick for their own leader. Curated from the
+  /// available character art; see the art-direction notes for the dedicated
+  /// young-traveller portrait set this should grow into.
+  // TODO(asset): once the produced young-traveller portraits land in
+  // assets/images/game/portraits/player/, swap this list to
+  // GameArt.playerPortraits (player_01..03).
+  static const playerPortraits = <String>[
+    characterLeader,
+    portraitTogan,
+    portraitTugan,
+    portraitKaya,
+    portraitBori,
+  ];
 }

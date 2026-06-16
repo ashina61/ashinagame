@@ -27,8 +27,10 @@ class KurultayScreen extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(12, 24, 12, 16),
           children: [
             Center(
-              child: Text('KURULTAY',
-                  style: AppTextStyles.display.copyWith(fontSize: 34)),
+              child: Text(
+                'KURULTAY',
+                style: AppTextStyles.display.copyWith(fontSize: 34),
+              ),
             ),
             const SizedBox(height: 4),
             OrnatePanel(
@@ -50,8 +52,10 @@ class KurultayScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(decision.title,
-                        style: AppTextStyles.bodyStrong.copyWith(fontSize: 16)),
+                    Text(
+                      decision.title,
+                      style: AppTextStyles.bodyStrong.copyWith(fontSize: 16),
+                    ),
                     const SizedBox(height: 4),
                     Text(decision.description, style: AppTextStyles.body),
                   ],
@@ -84,7 +88,8 @@ class _ApprovalBar extends StatelessWidget {
       children: [
         SizedBox(width: 76, child: Text(label, style: AppTextStyles.body)),
         Expanded(
-            child: StatBar(fraction: value / 100, height: 11, fill: color)),
+          child: StatBar(fraction: value / 100, height: 11, fill: color),
+        ),
         const SizedBox(width: 8),
         Text('$value/100', style: AppTextStyles.meta),
       ],
@@ -119,8 +124,10 @@ class _ChoicePanel extends StatelessWidget {
           Text(choice.label, style: AppTextStyles.bodyStrong),
           Text(choice.description, style: AppTextStyles.meta),
           const SizedBox(height: 4),
-          Text(parts,
-              style: AppTextStyles.meta.copyWith(color: AppColors.goldBright)),
+          Text(
+            parts,
+            style: AppTextStyles.meta.copyWith(color: AppColors.goldBright),
+          ),
           const SizedBox(height: 8),
           GoldButton(
             label: 'KARAR VER',

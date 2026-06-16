@@ -45,3 +45,45 @@ flutter:
     - assets/images/ui/
     - assets/audio/music/
     - assets/audio/sfx/
+    # Game-feel art pipeline. Drop produced art into these folders (see
+    # assets/images/game/README.md) and it is picked up with no code change.
+    - assets/images/game/scenes/camp/
+    - assets/images/game/scenes/tent/
+    - assets/images/game/scenes/market/
+    - assets/images/game/scenes/map/
+    - assets/images/game/scenes/oba/
+    - assets/images/game/scenes/conquest/
+    - assets/images/game/scenes/household/
+    - assets/images/game/scenes/workshop/
+    - assets/images/game/buildings/tent/
+    - assets/images/game/buildings/oba/
+    - assets/images/game/buildings/market/
+    - assets/images/game/buildings/workshop/
+    - assets/images/game/buildings/ritual/
+    - assets/images/game/objects/camp/
+    - assets/images/game/objects/tent/
+    - assets/images/game/objects/market/
+    - assets/images/game/objects/map/
+    - assets/images/game/portraits/player/
+    - assets/images/game/portraits/npc/
+    - assets/images/game/portraits/companions/
+    - assets/images/game/portraits/marriage/
+    - assets/images/game/items/weapons/
+    - assets/images/game/items/armor/
+    - assets/images/game/items/horse/
+    - assets/images/game/items/gifts/
+    - assets/images/game/symbols/tribes/
+    - assets/images/game/symbols/gokturk/
+    - assets/images/game/symbols/tamga/
+    - assets/images/game/ui/hud/
+    - assets/images/game/ui/panels/
+    - assets/images/game/ui/frames/
+    - assets/images/game/ui/buttons/
+    - assets/images/game/ui/bars/
+    - assets/images/game/ui/cards/
+    - assets/images/game/ui/icons/
+    - assets/images/game/ui/icons/skills/
+    - assets/images/game/ui/icons/resources/
+    - assets/images/game/ui/map/
+    - assets/images/game/ui/map/pins/
+    - assets/images/game/ui/milestones/

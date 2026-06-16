@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 
 import '../../app/theme/app_colors.dart';
 import '../../app/theme/app_text_styles.dart';
+import '../../core/assets/game_art.dart';
 import '../../core/assets/game_assets.dart';
 import '../../core/utils/formatters.dart';
+import '../../core/widgets/info_sheet.dart';
 import '../../core/widgets/ornate.dart';
+import '../../game/data/game_info.dart';
 import '../../game/data/starter_game_data.dart' show GameActions;
 import '../../game/logic/phase_logic.dart';
 import '../../game/models/resource.dart';
@@ -17,6 +20,7 @@ import '../journey/journey_scene.dart';
 import '../market/market_screen.dart';
 import '../people/nearby_people_scene.dart';
 import '../scene/floating_text.dart';
+import '../scene/scene_atmosphere.dart';
 import '../scene/scene_detail_panel.dart';
 import '../scene/scene_hotspot.dart';
 import '../scene/scene_hud_overlay.dart';
@@ -32,9 +36,7 @@ class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
   static void push(BuildContext context, Widget screen) {
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(builder: (_) => screen),
-    );
+    Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => screen));
   }
 
   @override
@@ -49,7 +51,7 @@ class HomeScreen extends StatelessWidget {
         title: 'Çadırım',
         x: 0.5,
         y: 0.38,
-        icon: GameAssets.iconYurtMedallion,
+        icon: GameArt.playerTentLv1,
         onTap: () => push(context, const TentScreen(showBack: true)),
       ),
       SceneHotspot(
@@ -57,7 +59,7 @@ class HomeScreen extends StatelessWidget {
         title: hasEvent ? 'Ateş Başı Olayı' : 'Ateş Ocağı',
         x: 0.66,
         y: 0.6,
-        icon: GameAssets.iconMoraleEmblem,
+        icon: GameArt.campFire,
         badge: hasEvent ? '!' : null,
         onTap: () => _openFire(context, controller),
       ),
@@ -66,7 +68,7 @@ class HomeScreen extends StatelessWidget {
         title: 'Sandık',
         x: 0.28,
         y: 0.62,
-        icon: GameAssets.iconChestMedallion,
+        icon: GameArt.campChest,
         onTap: () => push(context, const InventoryScreen()),
       ),
       SceneHotspot(
@@ -74,7 +76,7 @@ class HomeScreen extends StatelessWidget {
         title: 'At Bağı',
         x: 0.82,
         y: 0.4,
-        icon: GameAssets.iconMedallionHorse,
+        icon: GameArt.campHorseTie,
         onTap: () => _openHorse(context, controller),
       ),
       SceneHotspot(
@@ -82,7 +84,7 @@ class HomeScreen extends StatelessWidget {
         title: 'Çalışma Tezgâhı',
         x: 0.16,
         y: 0.4,
-        icon: GameAssets.iconGearEmblem,
+        icon: GameArt.campWorkbench,
         onTap: () => push(context, const AtelierScreen()),
       ),
       SceneHotspot(
@@ -96,7 +98,11 @@ class HomeScreen extends StatelessWidget {
     ];
 
     return SceneScreen(
-      background: GameAssets.bgSceneCampNight,
+      // Prefers produced camp art; falls back to the shipping night camp until
+      // it lands (see assets/images/game/README.md). TODO(asset): camp_night_bg.
+      background: GameArt.campNightBg,
+      backgroundFallback: GameAssets.bgSceneCampNight,
+      atmosphere: const EmberGlow(center: Alignment(0.32, 0.25)),
       hud: const _HomeHud(),
       hotspots: hotspots,
       foreground: const _CampTitlePlate(),
@@ -179,6 +185,11 @@ class _HomeHud extends StatelessWidget {
                 child: Text('ASHINA', style: AppTextStyles.display),
               ),
               IconButton(
+                icon: const Icon(Icons.help_outline, color: AppColors.gold),
+                tooltip: 'Yardım',
+                onPressed: () => showHelpSheet(context, HelpId.camp),
+              ),
+              IconButton(
                 icon: const Icon(Icons.settings, color: AppColors.gold),
                 tooltip: 'Ayarlar',
                 onPressed: () =>
@@ -206,10 +217,8 @@ class _CampTitlePlate extends StatelessWidget {
       left: 12,
       top: 6,
       child: GestureDetector(
-        onTap: () => HomeScreen.push(
-          context,
-          const CharacterScreen(showBack: true),
-        ),
+        onTap: () =>
+            HomeScreen.push(context, const CharacterScreen(showBack: true)),
         child: Container(
           width: 188,
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -257,8 +266,10 @@ class _MiniStat extends StatelessWidget {
         children: [
           SizedBox(
             width: 50,
-            child:
-                Text(label, style: AppTextStyles.meta.copyWith(fontSize: 11)),
+            child: Text(
+              label,
+              style: AppTextStyles.meta.copyWith(fontSize: 11),
+            ),
           ),
           Expanded(child: StatBar(fraction: value / 100, height: 7)),
         ],
@@ -307,6 +318,7 @@ class _CampBottom extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
+          _AmbientLine(day: state.day.day),
           if (state.raidLooming)
             Container(
               width: double.infinity,
@@ -319,15 +331,20 @@ class _CampBottom extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.warning_amber_rounded,
-                      size: 18, color: AppColors.danger),
+                  const Icon(
+                    Icons.warning_amber_rounded,
+                    size: 18,
+                    color: AppColors.danger,
+                  ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       'Düşman akını ${state.raidCountdown} gün sonra! '
                       'Ordunu güçlendir.',
-                      style: AppTextStyles.body
-                          .copyWith(fontSize: 13, color: AppColors.danger),
+                      style: AppTextStyles.body.copyWith(
+                        fontSize: 13,
+                        color: AppColors.danger,
+                      ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -343,13 +360,17 @@ class _CampBottom extends StatelessWidget {
               decoration: BoxDecoration(
                 color: AppColors.leatherDeep.withValues(alpha: 0.85),
                 borderRadius: BorderRadius.circular(10),
-                border:
-                    Border.all(color: AppColors.gold.withValues(alpha: 0.5)),
+                border: Border.all(
+                  color: AppColors.gold.withValues(alpha: 0.5),
+                ),
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.flag_circle,
-                      size: 18, color: AppColors.goldBright),
+                  const Icon(
+                    Icons.flag_circle,
+                    size: 18,
+                    color: AppColors.goldBright,
+                  ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
@@ -378,7 +399,9 @@ class _CampBottom extends StatelessWidget {
                       );
                       if (done) {
                         showFloatingGain(
-                            context, Formatters.resourceDelta(effects));
+                          context,
+                          Formatters.resourceDelta(effects),
+                        );
                       } else {
                         _toast(context, 'Aksiyon hakkı bitti. Günü bitir.');
                       }
@@ -399,8 +422,11 @@ class _CampBottom extends StatelessWidget {
                   onTap: () {
                     final done = controller.rest();
                     if (done) {
-                      showFloatingGain(context, 'Dinlendin',
-                          color: AppColors.success);
+                      showFloatingGain(
+                        context,
+                        'Dinlendin',
+                        color: AppColors.success,
+                      );
                     } else {
                       _toast(context, 'Aksiyon hakkı bitti. Günü bitir.');
                     }
@@ -419,6 +445,50 @@ class _CampBottom extends StatelessWidget {
   static void _toast(BuildContext context, String text) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(text), duration: const Duration(seconds: 2)),
+    );
+  }
+}
+
+/// A single drifting line of bozkır atmosphere above the day's work — sets the
+/// scene's mood without a wall of text. Rotates slowly with the day.
+class _AmbientLine extends StatelessWidget {
+  const _AmbientLine({required this.day});
+
+  final int day;
+
+  static const _lines = [
+    'Ateş sönmeden bir iş daha çıkar.',
+    'Gök sonsuz, bozkır geniş — adın yavaş yavaş duyuluyor.',
+    'Rüzgâr çadırın örtüsünü yokluyor; gece uzun.',
+    'Uzakta bir kurt uluyor. Yalnızsın ama yılmadın.',
+    'Bu çadır bir gün obanın kalbi olabilir.',
+    'Toprak seni çağırıyor — vakit, emek vakti.',
+    'Köz başında geçen her gün seni biraz büyütüyor.',
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    final line = _lines[day % _lines.length];
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8, left: 4, right: 4),
+      child: Row(
+        children: [
+          const Icon(Icons.local_fire_department,
+              size: 14, color: AppColors.ember),
+          const SizedBox(width: 6),
+          Expanded(
+            child: Text(
+              line,
+              style: AppTextStyles.meta.copyWith(
+                color: AppColors.sand,
+                fontStyle: FontStyle.italic,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -488,20 +558,14 @@ class _GoalChips extends StatelessWidget {
           child: _Chip(
             label: 'Yandaş Topla',
             done: followersDone,
-            onTap: () => HomeScreen.push(
-              context,
-              const NearbyPeopleScreen(),
-            ),
+            onTap: () => HomeScreen.push(context, const NearbyPeopleScreen()),
           ),
         ),
         Expanded(
           child: _Chip(
             label: 'Evlilik',
             done: marriedDone,
-            onTap: () => HomeScreen.push(
-              context,
-              const NearbyPeopleScreen(),
-            ),
+            onTap: () => HomeScreen.push(context, const NearbyPeopleScreen()),
           ),
         ),
         Expanded(
@@ -509,10 +573,8 @@ class _GoalChips extends StatelessWidget {
             label: 'Oba Kur',
             done: state.obaFounded,
             locked: !canFound && !state.obaFounded,
-            onTap: () => HomeScreen.push(
-              context,
-              const TentScreen(showBack: true),
-            ),
+            onTap: () =>
+                HomeScreen.push(context, const TentScreen(showBack: true)),
           ),
         ),
       ],

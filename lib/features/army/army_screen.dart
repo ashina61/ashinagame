@@ -44,19 +44,26 @@ class _ArmyScreenState extends State<ArmyScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Asker: ${state.totalSoldiers}',
-                            style: AppTextStyles.bodyStrong),
-                        Text('Yaralı: ${state.totalWounded}',
-                            style: AppTextStyles.meta),
+                        Text(
+                          'Asker: ${state.totalSoldiers}',
+                          style: AppTextStyles.bodyStrong,
+                        ),
+                        Text(
+                          'Yaralı: ${state.totalWounded}',
+                          style: AppTextStyles.meta,
+                        ),
                       ],
                     ),
                   ),
                   Column(
                     children: [
                       const Text('Ordu Gücü', style: AppTextStyles.meta),
-                      Text('${controller.armyStrength}',
-                          style: AppTextStyles.value
-                              .copyWith(color: AppColors.goldBright)),
+                      Text(
+                        '${controller.armyStrength}',
+                        style: AppTextStyles.value.copyWith(
+                          color: AppColors.goldBright,
+                        ),
+                      ),
                     ],
                   ),
                 ],
@@ -111,8 +118,9 @@ class _UnitPanel extends StatelessWidget {
     final controller = GameScope.of(context);
     final state = controller.state;
     final cost = UnitTypes.recruitCost(unit, 1);
-    final affordable =
-        cost.entries.every((e) => state.resource(e.key) >= e.value);
+    final affordable = cost.entries.every(
+      (e) => state.resource(e.key) >= e.value,
+    );
     final hasAp = state.dailyActionPoints > 0;
     final costText =
         cost.entries.map((e) => '${e.value} ${e.key.label}').join(', ');
@@ -124,11 +132,15 @@ class _UnitPanel extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                child: Text(unit.name,
-                    style: AppTextStyles.bodyStrong.copyWith(fontSize: 16)),
+                child: Text(
+                  unit.name,
+                  style: AppTextStyles.bodyStrong.copyWith(fontSize: 16),
+                ),
               ),
-              Text('x${state.unitCount(unit.id)}',
-                  style: AppTextStyles.value.copyWith(fontSize: 14)),
+              Text(
+                'x${state.unitCount(unit.id)}',
+                style: AppTextStyles.value.copyWith(fontSize: 14),
+              ),
             ],
           ),
           Text(
@@ -153,9 +165,11 @@ class _UnitPanel extends StatelessWidget {
                           AudioService.instance.playSfx(ok ? 'coin' : 'denied');
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              content: Text(ok
-                                  ? '${unit.name} orduya katıldı.'
-                                  : 'Aksiyon ya da kaynak yetersiz.'),
+                              content: Text(
+                                ok
+                                    ? '${unit.name} orduya katıldı.'
+                                    : 'Aksiyon ya da kaynak yetersiz.',
+                              ),
                               duration: const Duration(seconds: 2),
                             ),
                           );

@@ -17,9 +17,10 @@ class EquipmentData {
 
   static const slots = <EquipSlot>[
     EquipSlot(
-        id: 'weapon',
-        name: 'Silah',
-        recipeIds: ['iron_sword', 'composite_bow']),
+      id: 'weapon',
+      name: 'Silah',
+      recipeIds: ['iron_sword', 'composite_bow'],
+    ),
     EquipSlot(id: 'armor', name: 'Zırh', recipeIds: ['leather_armor']),
     EquipSlot(id: 'shield', name: 'Kalkan', recipeIds: ['wood_shield']),
     EquipSlot(id: 'mount', name: 'Koşum', recipeIds: ['saddle']),

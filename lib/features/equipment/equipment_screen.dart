@@ -33,9 +33,12 @@ class EquipmentScreen extends StatelessWidget {
                   Column(
                     children: [
                       const Text('Sefer Bonusu', style: AppTextStyles.meta),
-                      Text('+%${controller.equipmentBonus}',
-                          style: AppTextStyles.value
-                              .copyWith(color: AppColors.goldBright)),
+                      Text(
+                        '+%${controller.equipmentBonus}',
+                        style: AppTextStyles.value.copyWith(
+                          color: AppColors.goldBright,
+                        ),
+                      ),
                     ],
                   ),
                 ],

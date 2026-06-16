@@ -69,10 +69,7 @@ Future<void> showSceneDetail(
                   const SizedBox(height: 8),
                   Text(description, style: AppTextStyles.body),
                 ],
-                if (extra != null) ...[
-                  const SizedBox(height: 10),
-                  extra,
-                ],
+                if (extra != null) ...[const SizedBox(height: 10), extra],
                 const SizedBox(height: 12),
                 for (final action in actions) ...[
                   if (action.primary)
@@ -88,7 +85,9 @@ Future<void> showSceneDetail(
                     )
                   else
                     _DetailActionRow(
-                        action: action, sheetContext: sheetContext),
+                      action: action,
+                      sheetContext: sheetContext,
+                    ),
                   const SizedBox(height: 8),
                 ],
               ],

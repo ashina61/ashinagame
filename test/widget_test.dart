@@ -43,11 +43,13 @@ void main() {
     expect(find.textContaining('Gün 2 • İlkbahar'), findsOneWidget);
   });
 
-  testWidgets('the marriage proposal button weds a ready candidate',
-      (tester) async {
+  testWidgets('the marriage proposal button weds a ready candidate', (
+    tester,
+  ) async {
     final fresh = StarterGameData.create();
     final controller = GameController(
       fresh.copyWith(
+        profile: fresh.profile.copyWith(age: 18),
         resources: {
           ...fresh.resources,
           ResourceType.gold: 600,

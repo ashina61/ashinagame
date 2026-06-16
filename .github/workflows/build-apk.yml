@@ -2,8 +2,9 @@ name: Build Android APK
 
 on:
   push:
-    branches: [ main, master, work ]
+    branches: [ main, master, work, 'claude/**' ]
   pull_request:
+  workflow_dispatch:
 
 jobs:
   build-apk:
@@ -13,6 +14,10 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
+          # Pinned so the formatter and analyzer match what the code was
+          # written and verified against; "latest stable" drifts and the
+          # formatter's style has changed across releases.
+          flutter-version: 3.44.2
           cache: true
       - uses: actions/setup-java@v4
         with:

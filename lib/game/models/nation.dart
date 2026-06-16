@@ -50,7 +50,7 @@ class Nation {
 
   List<Castle> get outerCastles => [
         for (final c in castles)
-          if (!c.isCenter) c
+          if (!c.isCenter) c,
       ];
 
   Castle get center => castles.firstWhere((c) => c.isCenter);
