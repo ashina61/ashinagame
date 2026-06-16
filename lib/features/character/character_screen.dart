@@ -5,10 +5,12 @@ import '../../app/theme/app_text_styles.dart';
 import '../../core/assets/game_art.dart';
 import '../../core/assets/game_assets.dart';
 import '../../core/audio/audio_service.dart';
-import '../../core/widgets/asset_placeholder.dart';
 import '../../core/widgets/game_image.dart';
 import '../../core/widgets/info_sheet.dart';
 import '../../core/widgets/ornate.dart';
+import '../../core/widgets/portrait_frame.dart';
+import '../../core/widgets/skinned_button.dart';
+import '../../core/widgets/skinned_panel.dart';
 import '../../game/data/game_info.dart';
 import '../../game/models/marriage_candidate.dart';
 import '../../game/models/resource.dart';
@@ -206,48 +208,35 @@ class _PortraitFrame extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: SizedBox(
-        width: 120,
-        height: 170,
-        child: Stack(
-          children: [
-            Positioned.fill(
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(10),
-                child: Image.asset(
-                  asset,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) =>
-                      const AssetPlaceholder(
-                    assetPath: GameAssets.characterLeader,
-                    label: 'Karakter',
-                    height: 170,
-                    icon: Icons.person_rounded,
-                  ),
-                ),
+    return SizedBox(
+      width: 120,
+      height: 170,
+      child: Stack(
+        children: [
+          WolfPortraitFrame(
+            asset: asset,
+            width: 120,
+            height: 170,
+            onTap: onTap,
+          ),
+          Positioned(
+            right: 4,
+            bottom: 4,
+            child: Container(
+              padding: const EdgeInsets.all(5),
+              decoration: BoxDecoration(
+                color: AppColors.ink.withValues(alpha: 0.8),
+                shape: BoxShape.circle,
+                border: Border.all(color: AppColors.gold),
+              ),
+              child: const Icon(
+                Icons.edit,
+                size: 14,
+                color: AppColors.goldBright,
               ),
             ),
-            Positioned(
-              right: 4,
-              bottom: 4,
-              child: Container(
-                padding: const EdgeInsets.all(5),
-                decoration: BoxDecoration(
-                  color: AppColors.ink.withValues(alpha: 0.8),
-                  shape: BoxShape.circle,
-                  border: Border.all(color: AppColors.gold),
-                ),
-                child: const Icon(
-                  Icons.edit,
-                  size: 14,
-                  color: AppColors.goldBright,
-                ),
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -264,7 +253,8 @@ void _showPortraitPicker(BuildContext context) {
     builder: (sheetContext) => SafeArea(
       child: Padding(
         padding: const EdgeInsets.all(8),
-        child: OrnatePanel(
+        child: SkinnedPanel(
+          backgroundAsset: GameArt.dialogPanel,
           margin: EdgeInsets.zero,
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -293,28 +283,11 @@ void _showPortraitPicker(BuildContext context) {
                         AudioService.instance.playSfx('tap');
                         Navigator.of(sheetContext).maybePop();
                       },
-                      child: Container(
+                      child: WolfPortraitFrame(
+                        asset: asset,
                         width: 80,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                            color: selected
-                                ? AppColors.goldBright
-                                : AppColors.goldDim.withValues(alpha: 0.5),
-                            width: selected ? 2.4 : 1,
-                          ),
-                        ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(6),
-                          child: Image.asset(
-                            asset,
-                            fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => const ColoredBox(
-                              color: AppColors.leatherDeep,
-                              child: Icon(Icons.person, color: AppColors.gold),
-                            ),
-                          ),
-                        ),
+                        height: 112,
+                        selected: selected,
                       ),
                     );
                   },
@@ -548,8 +521,9 @@ class _CandidateCard extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                child: DarkButton(
+                child: SkinnedButton(
                   label: 'GÖRÜŞ',
+                  variant: SkinnedButtonVariant.secondary,
                   height: 34,
                   onPressed:
                       state.dailyActionPoints > 0 && candidate.isAvailable
@@ -562,8 +536,9 @@ class _CandidateCard extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               Expanded(
-                child: DarkButton(
+                child: SkinnedButton(
                   label: 'HEDİYE',
+                  variant: SkinnedButtonVariant.secondary,
                   height: 34,
                   onPressed: state.resource(ResourceType.gold) >= 50 &&
                           state.dailyActionPoints > 0 &&
@@ -577,7 +552,7 @@ class _CandidateCard extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               Expanded(
-                child: GoldButton(
+                child: SkinnedButton(
                   label: candidate.isMarriedToPlayer ? 'EŞİN' : 'TEKLİF',
                   height: 34,
                   onPressed:
@@ -607,7 +582,8 @@ class _CandidateCard extends StatelessWidget {
       context: context,
       builder: (dialogContext) => Dialog(
         backgroundColor: Colors.transparent,
-        child: OrnatePanel(
+        child: SkinnedPanel(
+          backgroundAsset: GameArt.dialogPanel,
           margin: EdgeInsets.zero,
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -639,7 +615,7 @@ class _CandidateCard extends StatelessWidget {
                 style: AppTextStyles.meta,
               ),
               const SizedBox(height: 12),
-              GoldButton(
+              SkinnedButton(
                 label: 'DEVAM',
                 onPressed: () => Navigator.of(dialogContext).maybePop(),
               ),

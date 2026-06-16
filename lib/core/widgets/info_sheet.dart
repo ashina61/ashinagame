@@ -5,7 +5,11 @@ import '../../app/theme/app_text_styles.dart';
 import '../../game/data/game_info.dart';
 import '../../game/models/resource.dart';
 import '../utils/resource_visuals.dart';
-import 'ornate.dart';
+import '../assets/game_art.dart';
+import 'skinned_panel.dart';
+import 'skinned_button.dart';
+
+void _ignoreAssetError(Object _, StackTrace? __) {}
 
 /// Slides up a compact, parchment-style game panel. Shared shell for the
 /// resource tooltips, skill detail panels and the living "i" help button — so
@@ -24,7 +28,8 @@ Future<void> _showPanel(
     builder: (sheetContext) => SafeArea(
       child: Padding(
         padding: const EdgeInsets.all(8),
-        child: OrnatePanel(
+        child: SkinnedPanel(
+          backgroundAsset: GameArt.tooltipPanel,
           margin: EdgeInsets.zero,
           child: SingleChildScrollView(
             child: Column(
@@ -43,11 +48,24 @@ Future<void> _showPanel(
                       const SizedBox(width: 10),
                     ],
                     Expanded(
-                      child: Text(
-                        title,
-                        style: AppTextStyles.title.copyWith(
-                          fontSize: 19,
-                          color: AppColors.goldBright,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 5,
+                        ),
+                        decoration: const BoxDecoration(
+                          image: DecorationImage(
+                            image: AssetImage(GameArt.titleBanner2),
+                            fit: BoxFit.fill,
+                            onError: _ignoreAssetError,
+                          ),
+                        ),
+                        child: Text(
+                          title,
+                          style: AppTextStyles.title.copyWith(
+                            fontSize: 19,
+                            color: AppColors.goldBright,
+                          ),
                         ),
                       ),
                     ),
@@ -61,7 +79,7 @@ Future<void> _showPanel(
                 const SizedBox(height: 10),
                 ...children,
                 const SizedBox(height: 12),
-                GoldButton(
+                SkinnedButton(
                   label: 'ANLADIM',
                   height: 42,
                   onPressed: () => Navigator.of(sheetContext).maybePop(),

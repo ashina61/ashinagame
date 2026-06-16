@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 
 import '../../app/theme/app_colors.dart';
 import '../../app/theme/app_text_styles.dart';
-import '../../core/widgets/ornate.dart';
+import '../../core/assets/game_art.dart';
+import '../../core/widgets/skinned_button.dart';
+import '../../core/widgets/skinned_panel.dart';
 
 /// A short end-of-day report: the day's headline, atmosphere and the latest
 /// chronicle lines (healed wounded, news, omens, raids, relations…). Shown as
@@ -18,7 +20,8 @@ Future<void> showDayReport(
     barrierColor: Colors.black54,
     builder: (dialogContext) => Dialog(
       backgroundColor: Colors.transparent,
-      child: OrnatePanel(
+      child: SkinnedPanel(
+        backgroundAsset: GameArt.dialogPanel,
         margin: EdgeInsets.zero,
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -48,7 +51,7 @@ Future<void> showDayReport(
                 ),
               ),
             const SizedBox(height: 12),
-            GoldButton(
+            SkinnedButton(
               label: 'DEVAM',
               height: 44,
               onPressed: () => Navigator.of(dialogContext).maybePop(),

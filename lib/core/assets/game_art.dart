@@ -89,6 +89,7 @@ class GameArt {
   static const characterInfoPanel = '$_base/ui/panels/character_info_panel.png';
   static const tooltipPanel = '$_base/ui/panels/tooltip_panel.png';
   static const confirmPanel = '$_base/ui/panels/confirm_panel.png';
+  static const dialogPanel = '$_base/ui/panels/dialog_panel.png';
   static const rewardPanel = '$_base/ui/panels/reward_panel.png';
   static const inventoryPanel = '$_base/ui/panels/inventory_panel.png';
   static const householdPanel = '$_base/ui/panels/household_panel.png';
@@ -169,6 +170,7 @@ class GameArt {
   static const stonePanel = '$_base/ui/panels/stone_panel.png';
   static const headerPlaque = '$_base/ui/bars/header_plaque.png';
   static const titleBanner = '$_base/ui/bars/title_banner.png';
+  static const titleBanner2 = '$_base/ui/bars/title_banner_2.png';
   static const runeBorderBar = '$_base/symbols/gokturk/rune_border.png';
   static const portraitCard = '$_base/ui/frames/portrait_card.png';
   static const itemSlot2 = '$_base/ui/frames/item_slot.png';

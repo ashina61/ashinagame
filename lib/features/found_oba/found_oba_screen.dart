@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 
 import '../../app/theme/app_colors.dart';
 import '../../app/theme/app_text_styles.dart';
-import '../../core/assets/game_assets.dart';
+import '../../core/assets/game_art.dart';
 import '../../core/audio/audio_service.dart';
 import '../../core/widgets/ornate.dart';
+import '../../core/widgets/skinned_button.dart';
+import '../../core/widgets/skinned_panel.dart';
 import '../../game/data/companion_roles.dart';
 import '../../game/data/tamgas.dart';
 import '../../game/models/npc.dart';
@@ -434,9 +436,9 @@ class _ResultCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Dialog(
       backgroundColor: Colors.transparent,
-      child: OrnatePanel(
+      child: SkinnedPanel(
+        backgroundAsset: GameArt.dialogPanel,
         margin: EdgeInsets.zero,
-        backgroundAsset: GameAssets.bgSceneCampNight,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -458,7 +460,7 @@ class _ResultCard extends StatelessWidget {
             const _ResultRow(Icons.favorite, 'Moral yükseldi'),
             const _ResultRow(Icons.lock_open, 'Oba, Boylar ve Seferler açıldı'),
             const SizedBox(height: 12),
-            GoldButton(label: 'OBANA GİR', onPressed: onClose),
+            SkinnedButton(label: 'OBANA GİR', onPressed: onClose),
           ],
         ),
       ),

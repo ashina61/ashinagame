@@ -5,6 +5,8 @@ import '../../app/theme/app_text_styles.dart';
 import '../../core/assets/game_art.dart';
 import '../../core/audio/audio_service.dart';
 import '../../core/widgets/ornate.dart';
+import '../../core/widgets/portrait_frame.dart';
+import '../../core/widgets/skinned_button.dart';
 import '../../game/state/game_scope.dart';
 
 class OnboardingScreen extends StatefulWidget {
@@ -71,7 +73,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             const SizedBox(height: 18),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 28),
-              child: GoldButton(
+              child: SkinnedButton(
                 label: 'OCAĞI YAK',
                 onPressed: () {
                   AudioService.instance.playSfx('reward');
@@ -126,39 +128,13 @@ class _PortraitPicker extends StatelessWidget {
                     AudioService.instance.playSfx('tap');
                     onSelect(asset);
                   },
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 180),
-                    width: 70,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                        color: isSelected
-                            ? AppColors.goldBright
-                            : AppColors.goldDim.withValues(alpha: 0.5),
-                        width: isSelected ? 2.4 : 1,
-                      ),
-                      boxShadow: isSelected
-                          ? const [
-                              BoxShadow(
-                                color: Color(0x80EEC36A),
-                                blurRadius: 12,
-                              ),
-                            ]
-                          : null,
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(6),
-                      child: Opacity(
-                        opacity: isSelected ? 1 : 0.55,
-                        child: Image.asset(
-                          asset,
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => const ColoredBox(
-                            color: AppColors.leatherDeep,
-                            child: Icon(Icons.person, color: AppColors.gold),
-                          ),
-                        ),
-                      ),
+                  child: Opacity(
+                    opacity: isSelected ? 1 : 0.62,
+                    child: WolfPortraitFrame(
+                      asset: asset,
+                      width: 70,
+                      height: 92,
+                      selected: isSelected,
                     ),
                   ),
                 );
