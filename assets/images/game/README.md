@@ -22,6 +22,15 @@ today (`GameImage` / `SceneBackground.fallback` / `OrnateScaffold.backgroundFall
   crests, 5 divider bars. Plus single UI panels/frames/bars and a ritual-fire
   object. The held oba/emblem sheets were consumed here.
 
+- **batch_04** (20): upgraded the wired icon sets in place — cleaner blue-gold
+  skill emblems and round resource icons (no code change). Cropped tamga/tribe
+  crests (wolf/eagle/sun/horse). Placed singles: arched wolf portrait frame,
+  Orhun stone stele, info/confirm/dialog panel skins, an isometric great-hall
+  diorama and a sacred-fire object. Remaining UI sheets (button skins, colored
+  map pins, route lines, card frames, badge sheets, HUD bars, roster panel)
+  archived in _incoming/batch_04 for the SkinnedButton/SkinnedPanel + boy/map
+  wiring pass.
+
 ## Batch workflow
 
 Art arrives in small batches, not all at once. For each batch:
