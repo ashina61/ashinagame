@@ -6,6 +6,7 @@ import '../../core/assets/game_art.dart';
 import '../../core/assets/game_assets.dart';
 import '../../core/audio/audio_service.dart';
 import '../../core/utils/formatters.dart';
+import '../../core/widgets/game_image.dart';
 import '../../core/widgets/info_sheet.dart';
 import '../../core/widgets/ornate.dart';
 import '../../game/data/game_info.dart';
@@ -271,35 +272,20 @@ class _MilestoneTile extends StatelessWidget {
         children: [
           Column(
             children: [
-              Container(
-                width: 30,
-                height: 30,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: met
-                      ? AppColors.gold.withValues(alpha: 0.25)
-                      : AppColors.ink.withValues(alpha: 0.6),
-                  border: Border.all(
-                    color: met ? AppColors.goldBright : AppColors.goldDim,
-                    width: met ? 2 : 1,
+              // A carved stone milestone medallion — bright when met, dimmed
+              // and ghosted while still to come.
+              SizedBox(
+                width: 46,
+                height: 46,
+                child: Opacity(
+                  opacity: met ? 1 : 0.4,
+                  child: GameImage(
+                    primary: GameArt.milestone(step - 1),
+                    fallback: GameAssets.iconScrollMedallion,
+                    fit: BoxFit.contain,
+                    placeholderIcon: met ? Icons.check_circle : Icons.circle,
                   ),
-                  boxShadow: met
-                      ? const [
-                          BoxShadow(color: Color(0x66EEC36A), blurRadius: 10)
-                        ]
-                      : null,
                 ),
-                alignment: Alignment.center,
-                child: met
-                    ? const Icon(Icons.check,
-                        size: 16, color: AppColors.goldBright)
-                    : Text(
-                        '$step',
-                        style: AppTextStyles.value.copyWith(
-                          fontSize: 13,
-                          color: AppColors.stone,
-                        ),
-                      ),
               ),
               if (!last)
                 Expanded(

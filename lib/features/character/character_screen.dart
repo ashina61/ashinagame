@@ -370,9 +370,13 @@ class _SpiritualCharacterPanel extends StatelessWidget {
   }
 }
 
-/// Atlas emblem for each skill, so the row reads as a glyph + bar, not a plain
-/// stat line.
-String _skillIcon(String stat) => switch (stat) {
+/// Produced emblem for each skill (falls back to an atlas emblem). The row
+/// reads as a glyph + bar, not a plain stat line.
+String _skillIcon(String stat) => GameArt.hasSkillIcon(stat)
+    ? GameArt.skillIcon(stat)
+    : _legacySkillIcon(stat);
+
+String _legacySkillIcon(String stat) => switch (stat) {
       'courage' => GameAssets.iconDaggersCrossed,
       'wisdom' => GameAssets.iconScrollMedallion,
       'leadership' => GameAssets.iconPeopleGroupGold,

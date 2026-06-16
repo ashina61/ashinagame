@@ -31,13 +31,15 @@ class GameArt {
   static const obaTrainingGround = '$_base/buildings/oba/training_ground.png';
   static const obaWatchtower = '$_base/buildings/oba/watchtower.png';
   static const obaRitualFire = '$_base/buildings/oba/ritual_fire.png';
+  static const obaHorsePen = '$_base/buildings/oba/horse_pen.png';
+  static const obaBigTent = '$_base/buildings/oba/big_tent.png';
 
   /// Player tent art for a given main-tent level (1..3), clamped.
-  static String playerTent(int level) => switch (level) {
-        <= 1 => playerTentLv1,
-        2 => playerTentLv2,
-        _ => playerTentLv3,
-      };
+  static String playerTent(int level) {
+    if (level <= 1) return playerTentLv1;
+    if (level == 2) return playerTentLv2;
+    return playerTentLv3;
+  }
 
   // ---- Camp objects (hotspots) -----------------------------------------
   static const campFire = '$_base/objects/camp/camp_fire.png';
@@ -124,4 +126,50 @@ class GameArt {
   static const itemShield = '$_base/items/armor/shield.png';
   static const itemHorseTack = '$_base/items/horse/horse_tack.png';
   static const itemMarriageGift = '$_base/items/gifts/marriage_gift.png';
+
+  // ---- Icon / milestone helpers ----------------------------------------
+
+  /// Emblem for a skill, keyed by the stat id (courage, wisdom, …, warfare).
+  static String skillIcon(String stat) => '$_base/ui/icons/skills/$stat.png';
+
+  /// Whether a produced emblem exists for [stat].
+  static bool hasSkillIcon(String stat) => _skillStats.contains(stat);
+  static const _skillStats = {
+    'courage',
+    'wisdom',
+    'leadership',
+    'endurance',
+    'trade',
+    'craft',
+    'archery',
+    'warfare',
+  };
+
+  /// Framed icon for a resource, keyed by the ResourceType name.
+  static String resourceIcon(String name) =>
+      '$_base/ui/icons/resources/$name.png';
+
+  /// Whether a produced framed icon exists for the resource [name].
+  static bool hasResourceIcon(String name) => _resourceIcons.contains(name);
+  static const _resourceIcons = {
+    'gold',
+    'food',
+    'wood',
+    'leather',
+    'horse',
+    'iron',
+  };
+
+  /// Stone medallion for founding milestone [index] (0..4).
+  static String milestone(int index) =>
+      '$_base/ui/milestones/milestone_$index.png';
+
+  // ---- UI skin singles -------------------------------------------------
+  static const panelWide = '$_base/ui/panels/panel_wide.png';
+  static const stonePanel = '$_base/ui/panels/stone_panel.png';
+  static const headerPlaque = '$_base/ui/bars/header_plaque.png';
+  static const titleBanner = '$_base/ui/bars/title_banner.png';
+  static const runeBorderBar = '$_base/symbols/gokturk/rune_border.png';
+  static const portraitCard = '$_base/ui/frames/portrait_card.png';
+  static const itemSlot2 = '$_base/ui/frames/item_slot.png';
 }

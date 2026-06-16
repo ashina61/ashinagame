@@ -148,16 +148,8 @@ class _PortraitPicker extends StatelessWidget {
                     ),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(6),
-                      child: ColorFiltered(
-                        colorFilter: isSelected
-                            ? const ColorFilter.mode(
-                                Colors.transparent,
-                                BlendMode.multiply,
-                              )
-                            : const ColorFilter.mode(
-                                Color(0x66000000),
-                                BlendMode.darken,
-                              ),
+                      child: Opacity(
+                        opacity: isSelected ? 1 : 0.55,
                         child: Image.asset(
                           asset,
                           fit: BoxFit.cover,

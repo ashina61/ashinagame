@@ -15,6 +15,12 @@ today (`GameImage` / `SceneBackground.fallback` / `OrnateScaffold.backgroundFall
   4 marriage-candidate portraits; +3 player portraits (now 6); npc/companion/kam
   portraits placed for a later NPC-screen pass. Held: 8-building oba sheet
   (needs cropping).
+- **batch_03** (20): cropped sheets into individual assets — 8 skill emblems
+  (wired to the character sheet), 6 framed resource icons (wired to the HUD via
+  ResourceVisuals), 5 founding-milestone medallions (wired to the Çadırım
+  track), 8 oba buildings (wired to the oba scene hotspots), 7 map pins, 8 tribe
+  crests, 5 divider bars. Plus single UI panels/frames/bars and a ritual-fire
+  object. The held oba/emblem sheets were consumed here.
 
 ## Batch workflow
 
