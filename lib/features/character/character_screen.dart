@@ -213,7 +213,12 @@ class _PortraitFrame extends StatelessWidget {
       height: 170,
       child: Stack(
         children: [
-          WolfPortraitFrame(asset: asset, width: 120, height: 170, onTap: onTap),
+          WolfPortraitFrame(
+            asset: asset,
+            width: 120,
+            height: 170,
+            onTap: onTap,
+          ),
           Positioned(
             right: 4,
             bottom: 4,

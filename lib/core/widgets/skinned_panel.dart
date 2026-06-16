@@ -64,7 +64,11 @@ class SkinnedPanel extends StatelessWidget {
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: AppColors.gold.withValues(alpha: 0.45)),
         boxShadow: const [
-          BoxShadow(color: Colors.black54, blurRadius: 10, offset: Offset(0, 5)),
+          BoxShadow(
+            color: Colors.black54,
+            blurRadius: 10,
+            offset: Offset(0, 5),
+          ),
         ],
       );
 }
