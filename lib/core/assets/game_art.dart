@@ -28,6 +28,7 @@ class GameArt {
   static const obaWorkshop = '$_base/buildings/oba/workshop.png';
   static const obaMarketTent = '$_base/buildings/oba/market_tent.png';
   static const obaShamanTent = '$_base/buildings/oba/shaman_tent.png';
+  static const obaShamanTentAlt = '$_base/buildings/oba/shaman_tent_alt.png';
   static const obaTrainingGround = '$_base/buildings/oba/training_ground.png';
   static const obaWatchtower = '$_base/buildings/oba/watchtower.png';
   static const obaRitualFire = '$_base/buildings/oba/ritual_fire.png';
@@ -118,6 +119,8 @@ class GameArt {
   static const runeBorder = '$_base/symbols/gokturk/rune_border.png';
   static const stoneInscription =
       '$_base/symbols/gokturk/stone_inscription.png';
+  static const stoneInscriptionFire =
+      '$_base/symbols/gokturk/stone_inscription_fire.png';
   static const wolfEmblem = '$_base/symbols/gokturk/wolf_emblem.png';
 
   // ---- Items -----------------------------------------------------------
