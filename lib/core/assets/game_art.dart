@@ -169,6 +169,7 @@ class GameArt {
   static const stonePanel = '$_base/ui/panels/stone_panel.png';
   static const headerPlaque = '$_base/ui/bars/header_plaque.png';
   static const titleBanner = '$_base/ui/bars/title_banner.png';
+  static const titleBanner2 = '$_base/ui/bars/title_banner_2.png';
   static const runeBorderBar = '$_base/symbols/gokturk/rune_border.png';
   static const portraitCard = '$_base/ui/frames/portrait_card.png';
   static const itemSlot2 = '$_base/ui/frames/item_slot.png';

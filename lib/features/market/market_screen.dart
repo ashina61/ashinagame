@@ -8,6 +8,8 @@ import '../../core/widgets/game_image.dart';
 import '../../core/audio/audio_service.dart';
 import '../../core/widgets/info_sheet.dart';
 import '../../core/widgets/ornate.dart';
+import '../../core/widgets/skinned_button.dart';
+import '../../core/widgets/skinned_panel.dart';
 import '../../game/data/companion_roles.dart';
 import '../../game/data/game_info.dart';
 import '../../game/data/han_offers.dart';
@@ -86,8 +88,9 @@ class _CompanionOffer extends StatelessWidget {
           const SizedBox(width: 10),
           SizedBox(
             width: 96,
-            child: DarkButton(
+            child: SkinnedButton(
               label: joined ? 'Yoldaşın' : 'KATIL',
+              variant: SkinnedButtonVariant.secondary,
               height: 34,
               onPressed: joined || !canAfford
                   ? null
@@ -155,8 +158,9 @@ class _MercenaryOffer extends StatelessWidget {
           const SizedBox(width: 10),
           SizedBox(
             width: 96,
-            child: DarkButton(
+            child: SkinnedButton(
               label: 'KİRALA',
+              variant: SkinnedButtonVariant.secondary,
               height: 34,
               onPressed: !canAfford
                   ? null
@@ -504,8 +508,9 @@ class _MarketScreenState extends State<MarketScreen> {
                   ],
                 ),
                 const SizedBox(width: 8),
-                DarkButton(
+                SkinnedButton(
                   label: 'SAT',
+                  variant: SkinnedButtonVariant.secondary,
                   height: 32,
                   onPressed: () {
                     final price = MarketLogic.sellPriceFor(
@@ -547,7 +552,8 @@ class _MarketScreenState extends State<MarketScreen> {
     return ListView(
       padding: const EdgeInsets.only(top: 2, bottom: 8),
       children: [
-        OrnatePanel(
+        SkinnedPanel(
+          backgroundAsset: GameArt.tooltipPanel,
           child: Row(
             children: [
               const Icon(Icons.campaign, color: AppColors.goldBright),
@@ -634,8 +640,9 @@ class _BuyRow extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 6),
-          DarkButton(
+          SkinnedButton(
             label: 'AL',
+            variant: SkinnedButtonVariant.secondary,
             height: 30,
             onPressed: () {
               if (good.grants == null && good.grantsItem == null) {
