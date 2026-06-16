@@ -53,9 +53,9 @@ Future<void> _showPanel(
                           horizontal: 12,
                           vertical: 5,
                         ),
-                        decoration: BoxDecoration(
+                        decoration: const BoxDecoration(
                           image: DecorationImage(
-                            image: const AssetImage(GameArt.titleBanner2),
+                            image: AssetImage(GameArt.titleBanner2),
                             fit: BoxFit.fill,
                             onError: _ignoreAssetError,
                           ),

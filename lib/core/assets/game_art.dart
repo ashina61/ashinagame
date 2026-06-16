@@ -89,6 +89,7 @@ class GameArt {
   static const characterInfoPanel = '$_base/ui/panels/character_info_panel.png';
   static const tooltipPanel = '$_base/ui/panels/tooltip_panel.png';
   static const confirmPanel = '$_base/ui/panels/confirm_panel.png';
+  static const dialogPanel = '$_base/ui/panels/dialog_panel.png';
   static const rewardPanel = '$_base/ui/panels/reward_panel.png';
   static const inventoryPanel = '$_base/ui/panels/inventory_panel.png';
   static const householdPanel = '$_base/ui/panels/household_panel.png';
