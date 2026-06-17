@@ -178,8 +178,8 @@ class TentScreen extends StatelessWidget {
                 color: AppColors.goldBright,
               );
             } else {
-              final reason = controller.tentUpgradeBlockReason() ??
-                  'şartlar eksik.';
+              final reason =
+                  controller.tentUpgradeBlockReason() ?? 'şartlar eksik.';
               AudioService.instance.playSfx('denied');
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(

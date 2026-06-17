@@ -373,10 +373,7 @@ class GameSerializer {
     List<String> fallback = const [],
   }) {
     if (raw is! List) return List<String>.from(fallback);
-    return [
-      for (final item in raw)
-        if (item is String) item,
-    ];
+    return [for (final item in raw) if (item is String) item];
   }
 
   static Map<String, String> _decodeStringMap(

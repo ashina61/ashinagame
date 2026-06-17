@@ -144,9 +144,8 @@ class HomeScreen extends StatelessWidget {
   }
 
   void _openHorse(BuildContext context, GameController controller) {
-    final horse = controller.state.horses.isEmpty
-        ? null
-        : controller.state.horses.first;
+    final horse =
+        controller.state.horses.isEmpty ? null : controller.state.horses.first;
     final market = controller.horseMarket();
     final gold = controller.state.resource(ResourceType.gold);
     showSceneDetail(
@@ -179,7 +178,8 @@ class HomeScreen extends StatelessWidget {
         for (final offer in market)
           SceneAction(
             label: 'Satın al: ${offer.name}',
-            subtitle: '${offer.breed} • ${offer.rarity} • ${offer.price} altın',
+            subtitle: '${offer.breed} • ${offer.rarity} • '
+                '${offer.price} altın',
             enabled: offer.price <= gold,
             onTap: () => controller.buyHorse(offer),
           ),

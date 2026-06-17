@@ -1057,11 +1057,11 @@ class GameController extends ChangeNotifier {
     final uses = _state.actionUsesToday[action.id] ?? 0;
     final spammed = uses > 0;
     final outputFactor = spammed ? 0.45 : 1.0;
+    int adjustedOutput(int value) =>
+        value < 0 ? value : (value * outputFactor).round();
     final resources = ResourceLogic.apply(_state.resources, {
       for (final entry in action.outputs.entries)
-        entry.key: entry.value < 0
-            ? entry.value
-            : (entry.value * outputFactor).round(),
+        entry.key: adjustedOutput(entry.value),
     });
     final food = Map<String, int>.from(_state.foodInventory);
     for (final entry in action.foodInputs.entries) {
