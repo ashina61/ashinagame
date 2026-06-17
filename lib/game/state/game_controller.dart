@@ -891,13 +891,13 @@ class GameController extends ChangeNotifier {
         resources: resources,
         household: household,
         faithState: _state.faithState.apply(ritual.faithEffects).copyWith(
-              lastRitualDay: _state.day.day,
-              ritualCooldownDays: ritual.cooldownDays,
-              activeBlessings: [
-                '${ritual.name} (${ritual.bonusDurationDays} gün)',
-                ..._state.faithState.activeBlessings,
-              ].take(4).toList(),
-            ),
+          lastRitualDay: _state.day.day,
+          ritualCooldownDays: ritual.cooldownDays,
+          activeBlessings: [
+            '${ritual.name} (${ritual.bonusDurationDays} gün)',
+            ..._state.faithState.activeBlessings,
+          ].take(4).toList(),
+        ),
         ritualCooldowns: {
           ..._state.ritualCooldowns,
           ritual.id: _state.day.day,

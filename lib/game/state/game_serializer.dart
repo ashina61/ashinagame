@@ -180,6 +180,8 @@ class GameSerializer {
         profile['reputation'] as int? ?? 0,
       ].reduce((a, b) => a > b ? a : b).clamp(0, 100).toInt();
       resources[ResourceType.reputation] = reputation;
+      final recentDialogues =
+          json['npcRecentDialogues'] as Map<String, dynamic>? ?? {};
       return GameState(
         profile: PlayerProfile(
           name: profile['name'] as String,
@@ -301,10 +303,7 @@ class GameSerializer {
         npcRelations: (json['npcRelations'] as Map<String, dynamic>? ?? {})
             .cast<String, int>(),
         npcRecentDialogues: {
-          for (final e in (json['npcRecentDialogues']
-                      as Map<String, dynamic>? ??
-                  {})
-              .entries)
+          for (final e in recentDialogues.entries)
             e.key: (e.value as List<dynamic>).cast<String>(),
         },
         npcLastTalkDay:

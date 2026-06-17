@@ -128,6 +128,9 @@ class TentScreen extends StatelessWidget {
     final affordable = building.upgradeCost.entries.every(
       (e) => controller.state.resource(e.key) >= e.value,
     );
+    final upgradeCostText = Formatters.resourceDelta({
+      for (final e in building.upgradeCost.entries) e.key: -e.value,
+    });
     showSceneDetail(
       context,
       title: isMainTent
@@ -155,10 +158,7 @@ class TentScreen extends StatelessWidget {
                   ? 'Maliyet hazır; yükseltme uygulanır.'
                   : tentReasons.first
               : building.canUpgrade
-                  ? 'Maliyet: ${Formatters.resourceDelta({
-                          for (final e in building.upgradeCost.entries)
-                            e.key: -e.value
-                        })}'
+                  ? 'Maliyet: $upgradeCostText'
                   : null,
           primary: true,
           enabled: isMainTent
