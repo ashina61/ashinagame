@@ -1133,6 +1133,28 @@ void main() {
     expect(controller.state.horses.first.hunger, greaterThan(before));
   });
 
+  test('old saves migrate survival and horse defaults safely', () {
+    final raw = jsonDecode(GameSerializer.encode(StarterGameData.create()))
+        as Map<String, dynamic>;
+    raw
+      ..remove('survival')
+      ..remove('foodInventory')
+      ..remove('foodAges')
+      ..remove('actionCooldowns')
+      ..remove('actionUsesToday')
+      ..remove('dailyOpportunities')
+      ..remove('questChainProgress')
+      ..remove('horses')
+      ..remove('locationStates');
+
+    final decoded = GameSerializer.decode(jsonEncode(raw));
+    expect(decoded, isNotNull);
+    expect(decoded!.survival.hunger, 80);
+    expect(decoded.foodInventory['raw_meat'], 1);
+    expect(decoded.horses, isNotEmpty);
+    expect(decoded.actionCooldowns, isEmpty);
+  });
+
   test('a dialogue can summon the council', () {
     final controller = GameController.starter();
     expect(controller.state.currentKurultay, isNull);

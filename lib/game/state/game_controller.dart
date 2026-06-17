@@ -1125,6 +1125,14 @@ class GameController extends ChangeNotifier {
 
   bool careForHorse(String horseId, String care) {
     if (_state.dailyActionPoints < 1) return false;
+    if (!_state.horses.any((horse) => horse.id == horseId)) return false;
+    final resourceCost = switch (care) {
+      'feed' => const {ResourceType.food: -2},
+      _ => const <ResourceType, int>{},
+    };
+    for (final entry in resourceCost.entries) {
+      if (_state.resource(entry.key) < -entry.value) return false;
+    }
     final horses = [
       for (final horse in _state.horses)
         if (horse.id == horseId)
@@ -1154,6 +1162,7 @@ class GameController extends ChangeNotifier {
     _commit(
       _state.copyWith(
         dailyActionPoints: _state.dailyActionPoints - 1,
+        resources: ResourceLogic.apply(_state.resources, resourceCost),
         horses: horses,
         log: _prependLog('At bakımı yapıldı: $care.'),
       ),
