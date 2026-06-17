@@ -217,7 +217,7 @@ class _DialogueSheet extends StatelessWidget {
                         SnackBar(
                           content: Text(
                             ok
-                                ? choice.reply
+                                ? controller.lastTalkFeedback ?? choice.reply
                                 : 'Konuşmak için aksiyon gerekiyor.',
                           ),
                           duration: const Duration(seconds: 3),

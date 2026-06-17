@@ -55,6 +55,9 @@ flutter:
     - assets/images/game/scenes/conquest/
     - assets/images/game/scenes/household/
     - assets/images/game/scenes/workshop/
+    - assets/images/game/backgrounds/interiors/
+    - assets/images/game/maps/
+    - assets/images/game/references/
     - assets/images/game/buildings/tent/
     - assets/images/game/buildings/oba/
     - assets/images/game/buildings/market/

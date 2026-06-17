@@ -9,8 +9,6 @@ import '../assets/game_art.dart';
 import 'skinned_panel.dart';
 import 'skinned_button.dart';
 
-void _ignoreAssetError(Object _, StackTrace? __) {}
-
 /// Slides up a compact, parchment-style game panel. Shared shell for the
 /// resource tooltips, skill detail panels and the living "i" help button — so
 /// every explanation reads like the same in-world note, not an app dialog.
@@ -29,7 +27,7 @@ Future<void> _showPanel(
       child: Padding(
         padding: const EdgeInsets.all(8),
         child: SkinnedPanel(
-          backgroundAsset: GameArt.tooltipPanel,
+          backgroundAsset: GameArt.stonePanelTall,
           margin: EdgeInsets.zero,
           child: SingleChildScrollView(
             child: Column(
@@ -48,25 +46,35 @@ Future<void> _showPanel(
                       const SizedBox(width: 10),
                     ],
                     Expanded(
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 5,
-                        ),
-                        decoration: const BoxDecoration(
-                          image: DecorationImage(
-                            image: AssetImage(GameArt.titleBanner2),
-                            fit: BoxFit.fill,
-                            onError: _ignoreAssetError,
+                      child: Stack(
+                        fit: StackFit.passthrough,
+                        children: [
+                          Positioned.fill(
+                            child: Image.asset(
+                              GameArt.titleBannerGoldLong,
+                              fit: BoxFit.fill,
+                              errorBuilder: (_, __, ___) => Image.asset(
+                                GameArt.titleBanner2,
+                                fit: BoxFit.fill,
+                                errorBuilder: (_, __, ___) =>
+                                    const SizedBox.shrink(),
+                              ),
+                            ),
                           ),
-                        ),
-                        child: Text(
-                          title,
-                          style: AppTextStyles.title.copyWith(
-                            fontSize: 19,
-                            color: AppColors.goldBright,
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 5,
+                            ),
+                            child: Text(
+                              title,
+                              style: AppTextStyles.title.copyWith(
+                                fontSize: 19,
+                                color: AppColors.goldBright,
+                              ),
+                            ),
                           ),
-                        ),
+                        ],
                       ),
                     ),
                     if (value != null)

@@ -46,7 +46,8 @@ class _CampScreenState extends State<CampScreen> {
     ('market_tent', 'Pazar Çadırı', 0.5, 0.56, GameArt.obaMarketTent),
     ('workshop', 'Atölye', 0.16, 0.72, GameArt.obaWorkshop),
     ('kam_tent', 'Kam Çadırı', 0.34, 0.78, GameArt.obaShamanTent),
-    ('healer', 'Şifacı Çadırı', 0.66, 0.78, GameArt.obaBigTent),
+    ('sacred_fire', 'Ritüel Ateşi', 0.66, 0.78, GameArt.obaRitualFire),
+    ('healer', 'Şifacı Çadırı', 0.64, 0.66, GameArt.obaBigTent),
     ('training', 'Eğitim Alanı', 0.86, 0.74, GameAssets.iconSwordsCrossed),
   ];
 
