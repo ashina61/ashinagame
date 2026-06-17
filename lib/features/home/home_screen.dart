@@ -9,6 +9,7 @@ import '../../core/widgets/info_sheet.dart';
 import '../../core/widgets/ornate.dart';
 import '../../game/data/game_info.dart';
 import '../../game/data/starter_game_data.dart' show GameActions;
+import '../../game/data/survival_catalog.dart';
 import '../../game/logic/phase_logic.dart';
 import '../../game/models/resource.dart';
 import '../../game/state/game_controller.dart';
@@ -99,7 +100,8 @@ class HomeScreen extends StatelessWidget {
 
     return SceneScreen(
       // Prefers produced camp art; falls back to the shipping night camp until
-      // it lands (see assets/images/game/README.md). TODO(asset): camp_night_bg.
+      // it lands (see assets/images/game/README.md).
+      // TODO(asset): camp_night_bg.
       background: GameArt.campNightBg,
       backgroundFallback: GameAssets.bgSceneCampNight,
       atmosphere: const EmberGlow(center: Alignment(0.32, 0.25)),
@@ -116,8 +118,7 @@ class HomeScreen extends StatelessWidget {
       context,
       title: event?.title ?? 'Ateş Ocağı',
       icon: GameAssets.iconMoraleEmblem,
-      description:
-          event?.description ??
+      description: event?.description ??
           'Ocağın başında dinlenir, yorgunluğunu atarsın.',
       actions: event == null
           ? [
@@ -143,30 +144,45 @@ class HomeScreen extends StatelessWidget {
   }
 
   void _openHorse(BuildContext context, GameController controller) {
-    final horses = controller.state.resource(ResourceType.horse);
+    final horse =
+        controller.state.horses.isEmpty ? null : controller.state.horses.first;
+    final market = controller.horseMarket();
+    final gold = controller.state.resource(ResourceType.gold);
     showSceneDetail(
       context,
       title: 'At Bağı',
       icon: GameAssets.iconMedallionHorse,
-      description:
-          'Bozkırda atın canındır. Şu an $horses at bağlı. İyi beslenmiş bir '
-          'at seni daha uzaklara taşır.',
+      description: horse == null
+          ? 'Bağ boş. Pazarda at bakabilir, ilk yol arkadaşını seçebilirsin.'
+          : '${horse.name} (${horse.breed}) • sağlık ${horse.health}, '
+              'açlık ${horse.hunger}, sadakat ${horse.loyalty}, '
+              'talim ${horse.training}.',
       actions: [
-        SceneAction(
-          label: 'Atını besle',
-          subtitle: 'Erzak -4, moral +2',
-          enabled:
-              controller.state.dailyActionPoints > 0 &&
-              controller.state.resource(ResourceType.food) >= 4,
-          onTap: () => controller.performCampAction(
-            GameActions.rest,
-            'Atını besle',
-            const {ResourceType.food: -4, ResourceType.morale: 2},
-            energyCost: 4,
-            fatigueGain: 2,
-            xp: 6,
+        if (horse != null) ...[
+          SceneAction(
+            label: 'Atı besle',
+            subtitle: 'At açlığı +22, ruh hâli +4',
+            onTap: () => controller.careForHorse(horse.id, 'feed'),
           ),
-        ),
+          SceneAction(
+            label: 'Atı tımar et',
+            subtitle: 'Temizlik +25, sadakat +2',
+            onTap: () => controller.careForHorse(horse.id, 'clean'),
+          ),
+          SceneAction(
+            label: 'At binme talimi',
+            subtitle: 'Talim +8, yorgunluk +12',
+            onTap: () => controller.careForHorse(horse.id, 'train'),
+          ),
+        ],
+        for (final offer in market)
+          SceneAction(
+            label: 'Satın al: ${offer.name}',
+            subtitle: '${offer.breed} • ${offer.rarity} • '
+                '${offer.price} altın',
+            enabled: offer.price <= gold,
+            onTap: () => controller.buyHorse(offer),
+          ),
       ],
     );
   }
@@ -201,7 +217,54 @@ class _HomeHud extends StatelessWidget {
           ),
         ),
         const SceneHudOverlay(),
+        const _SurvivalStrip(),
       ],
+    );
+  }
+}
+
+class _SurvivalStrip extends StatelessWidget {
+  const _SurvivalStrip();
+
+  @override
+  Widget build(BuildContext context) {
+    final state = GameScope.of(context).state;
+    final s = state.survival;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+      child: Wrap(
+        spacing: 6,
+        runSpacing: 4,
+        children: [
+          _StatChip('Açlık', s.hunger),
+          _StatChip('Susuzluk', s.thirst),
+          _StatChip('Yorgunluk', s.fatigue, dangerHigh: true),
+          _StatChip('Sağlık', state.profile.health),
+          _StatChip('Moral', state.resource(ResourceType.morale)),
+        ],
+      ),
+    );
+  }
+}
+
+class _StatChip extends StatelessWidget {
+  const _StatChip(this.label, this.value, {this.dangerHigh = false});
+
+  final String label;
+  final int value;
+  final bool dangerHigh;
+
+  @override
+  Widget build(BuildContext context) {
+    final healthScore = dangerHigh ? 100 - value : value;
+    final color = healthScore >= 55
+        ? AppColors.success
+        : healthScore >= 30
+            ? AppColors.gold
+            : AppColors.danger;
+    return Text(
+      '$label $value',
+      style: AppTextStyles.meta.copyWith(color: color, fontSize: 11),
     );
   }
 }
@@ -385,6 +448,8 @@ class _CampBottom extends StatelessWidget {
                 ],
               ),
             ),
+          const _BigGoalPanel(),
+          const _OpportunityPanel(),
           Row(
             children: [
               for (final (asset, action, label, effects, xp) in _jobs)
@@ -438,6 +503,7 @@ class _CampBottom extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 8),
+          const _SurvivalActionRail(),
           const _GoalChips(),
         ],
       ),
@@ -447,6 +513,91 @@ class _CampBottom extends StatelessWidget {
   static void _toast(BuildContext context, String text) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(text), duration: const Duration(seconds: 2)),
+    );
+  }
+}
+
+class _BigGoalPanel extends StatelessWidget {
+  const _BigGoalPanel();
+
+  @override
+  Widget build(BuildContext context) {
+    final goal = GameScope.of(context).nextBigGoal();
+    if (goal == null) return const SizedBox.shrink();
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: AppColors.leatherDeep.withValues(alpha: 0.82),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: AppColors.goldDim),
+      ),
+      child: Text(
+        'Sıradaki Büyük Hedef: ${goal.title} — ${goal.detail}',
+        style: AppTextStyles.body.copyWith(fontSize: 12),
+        maxLines: 2,
+        overflow: TextOverflow.ellipsis,
+      ),
+    );
+  }
+}
+
+class _OpportunityPanel extends StatelessWidget {
+  const _OpportunityPanel();
+
+  @override
+  Widget build(BuildContext context) {
+    final ops = GameScope.of(context).todaysOpportunities();
+    if (ops.isEmpty) return const SizedBox.shrink();
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: AppColors.leatherDeep.withValues(alpha: 0.78),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Text(
+        'Bugünün fırsatları: ${ops.take(3).map((o) => o.title).join(' • ')}',
+        style: AppTextStyles.meta,
+        maxLines: 2,
+        overflow: TextOverflow.ellipsis,
+      ),
+    );
+  }
+}
+
+class _SurvivalActionRail extends StatelessWidget {
+  const _SurvivalActionRail();
+
+  @override
+  Widget build(BuildContext context) {
+    final controller = GameScope.of(context);
+    final actions = SurvivalCatalog.actions.take(8).toList();
+    return SizedBox(
+      height: 34,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        itemCount: actions.length,
+        separatorBuilder: (_, __) => const SizedBox(width: 6),
+        itemBuilder: (context, index) {
+          final action = actions[index];
+          final cooling = controller.state.actionCooldowns[action.id] ?? 0;
+          return DarkButton(
+            label: cooling > 0 ? '${action.name} ($cooling)' : action.name,
+            onPressed: cooling > 0
+                ? null
+                : () {
+                    final ok = controller.performSurvivalAction(action.id);
+                    _CampBottom._toast(
+                      context,
+                      ok ? '${action.name} yapıldı.' : 'Bu iş bugün olmaz.',
+                    );
+                  },
+          );
+        },
+      ),
     );
   }
 }
@@ -475,11 +626,8 @@ class _AmbientLine extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 8, left: 4, right: 4),
       child: Row(
         children: [
-          const Icon(
-            Icons.local_fire_department,
-            size: 14,
-            color: AppColors.ember,
-          ),
+          const Icon(Icons.local_fire_department,
+              size: 14, color: AppColors.ember),
           const SizedBox(width: 6),
           Expanded(
             child: Text(
@@ -623,8 +771,8 @@ class _Chip extends StatelessWidget {
               done
                   ? Icons.check_circle
                   : locked
-                  ? Icons.lock
-                  : Icons.flag,
+                      ? Icons.lock
+                      : Icons.flag,
               size: 13,
               color: done ? AppColors.success : AppColors.sand,
             ),

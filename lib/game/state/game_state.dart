@@ -10,6 +10,8 @@ import '../models/marriage_candidate.dart';
 import '../models/player_profile.dart';
 import '../models/quest.dart';
 import '../models/resource.dart';
+import '../models/horse.dart';
+import '../models/survival.dart';
 import '../models/tribe_relation.dart';
 
 class GameState {
@@ -70,6 +72,9 @@ class GameState {
     this.army = const {},
     this.wounded = const {},
     this.npcRelations = const {},
+    this.npcRecentDialogues = const {},
+    this.npcLastTalkDay = const {},
+    this.npcLastTalkType = const {},
     this.nationPolicies = const {},
     this.pendingNationPolicy,
     this.nationLoyalty = const {},
@@ -80,6 +85,15 @@ class GameState {
     this.raidFrom = '',
     this.marchTarget = '',
     this.marchDaysLeft = 0,
+    this.survival = const SurvivalStats(),
+    this.foodInventory = const {},
+    this.foodAges = const {},
+    this.actionCooldowns = const {},
+    this.actionUsesToday = const {},
+    this.dailyOpportunities = const [],
+    this.questChainProgress = const {},
+    this.horses = const [],
+    this.locationStates = const {},
   });
 
   static const baseDailyActionPoints = 4;
@@ -172,6 +186,15 @@ class GameState {
   /// How each named figure feels about the leader (0–100), 50 by default.
   final Map<String, int> npcRelations;
 
+  /// Recent dialogue ids per NPC, used to avoid back-to-back repeated lines.
+  final Map<String, List<String>> npcRecentDialogues;
+
+  /// Last day each NPC was spoken to; same-day repeats give reduced rewards.
+  final Map<String, int> npcLastTalkDay;
+
+  /// Last selected talk type/label per NPC, used for spam feedback.
+  final Map<String, String> npcLastTalkType;
+
   /// Governance choice taken for each fully-conquered nation (id → policy id).
   final Map<String, String> nationPolicies;
 
@@ -210,6 +233,16 @@ class GameState {
 
   /// Days until the marching army reaches [marchTarget].
   final int marchDaysLeft;
+
+  final SurvivalStats survival;
+  final Map<String, int> foodInventory;
+  final Map<String, int> foodAges;
+  final Map<String, int> actionCooldowns;
+  final Map<String, int> actionUsesToday;
+  final List<String> dailyOpportunities;
+  final Map<String, int> questChainProgress;
+  final List<Horse> horses;
+  final Map<String, String> locationStates;
 
   /// True while an army is on campaign toward a castle.
   bool get marching => marchTarget.isNotEmpty;
@@ -338,6 +371,9 @@ class GameState {
     Map<String, int>? army,
     Map<String, int>? wounded,
     Map<String, int>? npcRelations,
+    Map<String, List<String>>? npcRecentDialogues,
+    Map<String, int>? npcLastTalkDay,
+    Map<String, String>? npcLastTalkType,
     Map<String, String>? nationPolicies,
     String? pendingNationPolicy,
     bool clearPendingNation = false,
@@ -349,6 +385,15 @@ class GameState {
     String? raidFrom,
     String? marchTarget,
     int? marchDaysLeft,
+    SurvivalStats? survival,
+    Map<String, int>? foodInventory,
+    Map<String, int>? foodAges,
+    Map<String, int>? actionCooldowns,
+    Map<String, int>? actionUsesToday,
+    List<String>? dailyOpportunities,
+    Map<String, int>? questChainProgress,
+    List<Horse>? horses,
+    Map<String, String>? locationStates,
   }) {
     final nextMax = maxDailyActionPoints ?? this.maxDailyActionPoints;
     final nextAp = (dailyActionPoints ?? energy ?? this.dailyActionPoints)
@@ -410,6 +455,9 @@ class GameState {
       army: army ?? this.army,
       wounded: wounded ?? this.wounded,
       npcRelations: npcRelations ?? this.npcRelations,
+      npcRecentDialogues: npcRecentDialogues ?? this.npcRecentDialogues,
+      npcLastTalkDay: npcLastTalkDay ?? this.npcLastTalkDay,
+      npcLastTalkType: npcLastTalkType ?? this.npcLastTalkType,
       nationPolicies: nationPolicies ?? this.nationPolicies,
       pendingNationPolicy: clearPendingNation
           ? null
@@ -422,6 +470,15 @@ class GameState {
       raidFrom: raidFrom ?? this.raidFrom,
       marchTarget: marchTarget ?? this.marchTarget,
       marchDaysLeft: marchDaysLeft ?? this.marchDaysLeft,
+      survival: survival ?? this.survival,
+      foodInventory: foodInventory ?? this.foodInventory,
+      foodAges: foodAges ?? this.foodAges,
+      actionCooldowns: actionCooldowns ?? this.actionCooldowns,
+      actionUsesToday: actionUsesToday ?? this.actionUsesToday,
+      dailyOpportunities: dailyOpportunities ?? this.dailyOpportunities,
+      questChainProgress: questChainProgress ?? this.questChainProgress,
+      horses: horses ?? this.horses,
+      locationStates: locationStates ?? this.locationStates,
     );
   }
 }

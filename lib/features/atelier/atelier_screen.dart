@@ -42,8 +42,8 @@ class _AtelierScreenState extends State<AtelierScreen> {
     final selected = CraftRecipes.byId(_selectedId) ?? CraftRecipes.all.first;
 
     return OrnateScaffold(
-      backgroundAsset: GameArt.workshopBg,
-      backgroundFallback: GameAssets.bgScreenNight,
+      backgroundAsset: GameArt.workshopInteriorNight,
+      backgroundFallback: GameArt.workshopBg,
       child: Column(
         children: [
           OrnateHeader(

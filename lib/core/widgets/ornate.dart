@@ -89,16 +89,35 @@ class OrnateHeader extends StatelessWidget {
           else
             const SizedBox(width: 38),
           Expanded(
-            child: Container(
-              height: 46,
-              margin: const EdgeInsets.symmetric(horizontal: 8),
-              decoration: _stretchedImage(GameAssets.uiPanelPlaque),
-              alignment: Alignment.center,
-              child: Text(
-                title.toUpperCase(),
-                style: AppTextStyles.header,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              child: SizedBox(
+                height: 46,
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    Image.asset(
+                      GameArt.titleBannerWolfSlim,
+                      fit: BoxFit.fill,
+                      errorBuilder: (_, __, ___) => Image.asset(
+                        GameAssets.uiPanelPlaque,
+                        fit: BoxFit.fill,
+                        errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      child: Center(
+                        child: Text(
+                          title.toUpperCase(),
+                          style: AppTextStyles.header,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -253,20 +272,35 @@ class SectionPlaque extends StatelessWidget {
     return Container(
       height: 38,
       margin: const EdgeInsets.fromLTRB(12, 2, 12, 8),
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: _stretchedImage(GameAssets.uiPanelTitleWide),
-      child: Row(
+      child: Stack(
+        fit: StackFit.expand,
         children: [
-          Expanded(
-            child: Text(
-              label,
-              style: AppTextStyles.section,
-              textAlign: TextAlign.center,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
+          Image.asset(
+            GameArt.sectionBarDarkRune,
+            fit: BoxFit.fill,
+            errorBuilder: (_, __, ___) => Image.asset(
+              GameAssets.uiPanelTitleWide,
+              fit: BoxFit.fill,
+              errorBuilder: (_, __, ___) => const SizedBox.shrink(),
             ),
           ),
-          if (trailing != null) trailing!,
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    label,
+                    style: AppTextStyles.section,
+                    textAlign: TextAlign.center,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                if (trailing != null) trailing!,
+              ],
+            ),
+          ),
         ],
       ),
     );

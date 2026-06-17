@@ -25,7 +25,7 @@ class UnlockLogic {
   static bool recruitment(GameState s) => s.completedExpeditions.isNotEmpty;
 
   static bool foundOba(GameState s) =>
-      _tentLevel(s) >= 2 && s.profile.reputation >= 30;
+      _tentLevel(s) >= 3 && s.profile.reputation >= 30;
 
   /// A short, ordered hint of the next thing to chase. Null once everything
   /// is open.

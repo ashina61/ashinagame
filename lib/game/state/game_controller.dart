@@ -14,6 +14,7 @@ import '../data/nations.dart';
 import '../data/npc_dialogues.dart';
 import '../data/recruitment.dart';
 import '../data/starter_game_data.dart';
+import '../data/survival_catalog.dart';
 import '../logic/event_logic.dart';
 import '../logic/life_logic.dart';
 import '../logic/market_logic.dart';
@@ -21,6 +22,7 @@ import '../logic/phase_logic.dart';
 import '../logic/progression_logic.dart';
 import '../logic/resource_logic.dart';
 import '../logic/season_logic.dart';
+import '../logic/tent_upgrade_logic.dart';
 import '../models/achievement.dart';
 import '../models/battle_report.dart';
 import '../models/clan.dart';
@@ -28,10 +30,12 @@ import '../models/craft.dart';
 import '../models/event_choice.dart';
 import '../models/faith.dart';
 import '../models/expedition.dart';
+import '../models/horse.dart';
 import '../models/nation.dart';
 import '../models/npc.dart';
 import '../models/quest.dart';
 import '../models/resource.dart';
+import '../models/season.dart';
 import '../models/unit_type.dart';
 import 'game_state.dart';
 import 'game_storage.dart';
@@ -40,16 +44,16 @@ enum CraftStart { started, noResources, queueFull }
 
 class GameController extends ChangeNotifier {
   GameController(this._state, {GameStorage? storage, Random? random})
-    : _storage = storage,
-      _random = random ?? Random();
+      : _storage = storage,
+        _random = random ?? Random();
 
   factory GameController.starter() => GameController(StarterGameData.create());
 
   /// Restores the saved run, or starts a fresh one.
   factory GameController.restored(GameStorage storage) => GameController(
-    storage.load() ?? StarterGameData.create(),
-    storage: storage,
-  );
+        storage.load() ?? StarterGameData.create(),
+        storage: storage,
+      );
 
   static const campActionCost = 1;
   static const exploreCost = 1;
@@ -119,8 +123,7 @@ class GameController extends ChangeNotifier {
 
   /// Final success chance for a site, clamped to 5–95 percent.
   int successChanceFor(ExpeditionSite site) {
-    final chance =
-        site.baseChance +
+    final chance = site.baseChance +
         _state.profile.courage +
         _state.profile.warfare * 2 +
         equipmentBonus +
@@ -185,7 +188,10 @@ class GameController extends ChangeNotifier {
     _commit(
       _state.copyWith(
         quests: quests,
-        resources: ResourceLogic.apply(_state.resources, quest.resourceRewards),
+        resources: ResourceLogic.apply(
+          _state.resources,
+          quest.resourceRewards,
+        ),
         profile: ProgressionLogic.addXp(
           ProgressionLogic.applyStats(_state.profile, quest.statRewards),
           quest.xpReward,
@@ -211,9 +217,8 @@ class GameController extends ChangeNotifier {
     }
     final enduranceDiscount = (_state.profile.endurance / 4).floor();
     final winterTax = _state.day.season.name == 'winter' ? 3 : 0;
-    final adjustedEnergy = (energyCost + winterTax - enduranceDiscount)
-        .clamp(3, 30)
-        .toInt();
+    final adjustedEnergy =
+        (energyCost + winterTax - enduranceDiscount).clamp(3, 30).toInt();
     final profile = ProgressionLogic.addXp(
       _state.profile.copyWith(
         energy: _state.profile.energy - adjustedEnergy,
@@ -335,9 +340,8 @@ class GameController extends ChangeNotifier {
     final discount = companionCraftDiscount;
     final costs = {
       for (final entry in recipe.costs.entries)
-        entry.key: (entry.value * (100 - discount) ~/ 100)
-            .clamp(1, 1 << 30)
-            .toInt(),
+        entry.key:
+            (entry.value * (100 - discount) ~/ 100).clamp(1, 1 << 30).toInt(),
     };
     for (final entry in costs.entries) {
       if (_state.resource(entry.key) < entry.value) {
@@ -369,12 +373,11 @@ class GameController extends ChangeNotifier {
         _state.stockOf(good.id) <= 0) {
       return false;
     }
-    final price =
-        (MarketLogic.priceFor(good, _state.day.day) *
-                (100 - companionMarketDiscount) ~/
-                100)
-            .clamp(1, 1 << 30)
-            .toInt();
+    final price = (MarketLogic.priceFor(good, _state.day.day) *
+            (100 - companionMarketDiscount) ~/
+            100)
+        .clamp(1, 1 << 30)
+        .toInt();
     if (_state.resource(ResourceType.gold) < price) {
       return false;
     }
@@ -435,6 +438,37 @@ class GameController extends ChangeNotifier {
       'Gün ${nextDay.day} başladı. ${nextDay.season.label} '
       'etkileri uygulandı.',
     );
+    var survival = _state.survival.copyWith(
+      hunger: _state.survival.hunger - 8,
+      thirst: _state.survival.thirst - 10,
+      fatigue: _state.survival.fatigue - 12,
+      warmth: nextDay.season == Season.winter
+          ? _state.survival.warmth - 12
+          : _state.survival.warmth - 3,
+    );
+    var profile = _recoverProfile(resources);
+    if (survival.hunger < 25) {
+      resources = ResourceLogic.apply(resources, const {
+        ResourceType.morale: -3,
+      });
+      profile = profile.copyWith(health: profile.health - 3);
+      log = ['Açlık bastırıyor; sağlık ve moral düştü.', ...log]
+          .take(6)
+          .toList();
+    }
+    if (survival.thirst < 25) {
+      survival = survival.copyWith(fatigue: survival.fatigue + 10);
+      profile = profile.copyWith(health: profile.health - 5);
+      log = ['Susuzluk yorgunluğu artırdı; sağlık azaldı.', ...log]
+          .take(6)
+          .toList();
+    }
+    if (survival.warmth < 25) {
+      profile = profile.copyWith(health: profile.health - 4);
+      log = ['Soğuk gece çadırı yokladı; sıcaklık düşük.', ...log]
+          .take(6)
+          .toList();
+    }
 
     // Starvation bites once the granary is empty.
     if ((resources[ResourceType.food] ?? 0) <= 0) {
@@ -478,7 +512,6 @@ class GameController extends ChangeNotifier {
     }
 
     // The leader ages a year each time the seasons come full circle.
-    var profile = _recoverProfile(resources);
     var pendingSuccession = false;
     if (LifeLogic.isYearBoundary(nextDay.day)) {
       final agedTo = profile.age + 1;
@@ -724,19 +757,40 @@ class GameController extends ChangeNotifier {
         activeWarnings: const [],
       );
     }
+    final spoil = _spoilFood(nextDay.season);
+    final actionCooldowns = {
+      for (final entry in _state.actionCooldowns.entries)
+        if (entry.value > 1) entry.key: entry.value - 1,
+    };
+    final opportunities = _generateOpportunities(nextDay.day, nextDay.season);
+    if (spoil.notes.isNotEmpty) {
+      log = [...spoil.notes, ...log].take(6).toList();
+    }
+    log = [
+      'Yaş ${profile.age}, yıl ${LifeLogic.yearOf(nextDay.day)}, '
+          '${nextDay.season.label}. Açlık ${survival.hunger}, '
+          'susuzluk ${survival.thirst}, yorgunluk ${survival.fatigue}.',
+      ...log,
+    ].take(6).toList();
     _commit(
       _state.copyWith(
         day: nextDay,
         resources: resources,
         dailyActionPoints: _dailyActionLimit(resources),
         profile: profile,
+        survival: survival,
+        foodInventory: spoil.inventory,
+        foodAges: spoil.ages,
+        actionCooldowns: actionCooldowns,
+        actionUsesToday: const {},
+        dailyOpportunities: opportunities,
         household: household,
         faithState: omenState,
         collapseDays: collapseDays,
         gameOver: gameOver,
         gameOverReason: gameOver
             ? 'Moral günlerce sıfırda kaldı; oba dağıldı ve halk '
-                  'başka beyliklere göçtü.'
+                'başka beyliklere göçtü.'
             : null,
         pendingSuccession: pendingSuccession,
         currentKurultay: kurultayId,
@@ -750,9 +804,8 @@ class GameController extends ChangeNotifier {
         craftQueue: queue,
         craftedItems: crafted,
         marketStock: MarketGoods.startingStock(),
-        currentEvent: pendingSuccession
-            ? null
-            : EventLogic.nextEvent(eventIndex),
+        currentEvent:
+            pendingSuccession ? null : EventLogic.nextEvent(eventIndex),
         clearEvent: pendingSuccession,
         eventIndex: eventIndex,
         raidCountdown: raidCountdown,
@@ -802,7 +855,9 @@ class GameController extends ChangeNotifier {
         ),
         quests: _trackAction(actionId),
         clearEvent: true,
-        log: _prependLog('Olay seçimi: ${choice.label}. ${choice.description}'),
+        log: _prependLog(
+          'Olay seçimi: ${choice.label}. ${choice.description}',
+        ),
       ),
     );
     return true;
@@ -835,17 +890,18 @@ class GameController extends ChangeNotifier {
         dailyActionPoints: _state.dailyActionPoints - ritual.actionCost,
         resources: resources,
         household: household,
-        faithState: _state.faithState
-            .apply(ritual.faithEffects)
-            .copyWith(
-              lastRitualDay: _state.day.day,
-              ritualCooldownDays: ritual.cooldownDays,
-              activeBlessings: [
-                '${ritual.name} (${ritual.bonusDurationDays} gün)',
-                ..._state.faithState.activeBlessings,
-              ].take(4).toList(),
-            ),
-        ritualCooldowns: {..._state.ritualCooldowns, ritual.id: _state.day.day},
+        faithState: _state.faithState.apply(ritual.faithEffects).copyWith(
+          lastRitualDay: _state.day.day,
+          ritualCooldownDays: ritual.cooldownDays,
+          activeBlessings: [
+            '${ritual.name} (${ritual.bonusDurationDays} gün)',
+            ..._state.faithState.activeBlessings,
+          ].take(4).toList(),
+        ),
+        ritualCooldowns: {
+          ..._state.ritualCooldowns,
+          ritual.id: _state.day.day,
+        },
         profile: ProgressionLogic.addXp(
           ProgressionLogic.applyStats(
             _state.profile.copyWith(
@@ -886,23 +942,18 @@ class GameController extends ChangeNotifier {
         resources: ResourceLogic.apply(_state.resources, {
           ResourceType.morale: isBadOmen ? 3 : 1,
         }),
-        faithState: _state.faithState
-            .apply(effects)
-            .copyWith(
-              omen: isBadOmen
-                  ? 'Kam alameti yatıştırdı.'
-                  : _state.faithState.omen,
-              omenSeverity: isBadOmen
-                  ? OmenSeverity.neutral
-                  : _state.faithState.omenSeverity,
-              activeWarnings: isBadOmen
-                  ? const []
-                  : _state.faithState.activeWarnings,
-              activeBlessings: [
-                '${advisor.name} yorumu',
-                ..._state.faithState.activeBlessings,
-              ].take(4).toList(),
-            ),
+        faithState: _state.faithState.apply(effects).copyWith(
+          omen: isBadOmen ? 'Kam alameti yatıştırdı.' : _state.faithState.omen,
+          omenSeverity: isBadOmen
+              ? OmenSeverity.neutral
+              : _state.faithState.omenSeverity,
+          activeWarnings:
+              isBadOmen ? const [] : _state.faithState.activeWarnings,
+          activeBlessings: [
+            '${advisor.name} yorumu',
+            ..._state.faithState.activeBlessings,
+          ].take(4).toList(),
+        ),
         profile: ProgressionLogic.addXp(_state.profile, 12),
         quests: _trackAction(GameActions.advisor),
         log: _prependLog('${advisor.name} alameti yorumladı.'),
@@ -923,15 +974,16 @@ class GameController extends ChangeNotifier {
     _commit(
       _state.copyWith(
         dailyActionPoints: _state.dailyActionPoints - 1,
-        resources: ResourceLogic.apply(_state.resources, place.resourceEffects),
-        faithState: _state.faithState
-            .apply(place.faithEffects)
-            .copyWith(
-              visitedSacredPlaces: {
-                ..._state.faithState.visitedSacredPlaces,
-                place.id: _state.day.day,
-              },
-            ),
+        resources: ResourceLogic.apply(
+          _state.resources,
+          place.resourceEffects,
+        ),
+        faithState: _state.faithState.apply(place.faithEffects).copyWith(
+          visitedSacredPlaces: {
+            ..._state.faithState.visitedSacredPlaces,
+            place.id: _state.day.day,
+          },
+        ),
         profile: ProgressionLogic.addXp(
           _state.profile.copyWith(
             energy: _state.profile.energy - place.energyCost,
@@ -961,12 +1013,186 @@ class GameController extends ChangeNotifier {
     return true;
   }
 
+  List<OpportunityDef> todaysOpportunities() {
+    final ids = _state.dailyOpportunities.isEmpty
+        ? _generateOpportunities(_state.day.day, _state.day.season)
+        : _state.dailyOpportunities;
+    return [
+      for (final id in ids)
+        for (final item in SurvivalCatalog.opportunities)
+          if (item.id == id) item,
+    ];
+  }
+
+  BigGoalDef? nextBigGoal() {
+    for (final goal in SurvivalCatalog.bigGoals) {
+      if (_state.profile.age < goal.minAge) continue;
+      if (goal.id == 'survive_week' && _state.day.day >= 7) continue;
+      if (goal.id == 'tent_lv2' &&
+          (_state.building('main_tent')?.level ?? 1) >= 2) {
+        continue;
+      }
+      if (goal.id == 'tent_lv3' &&
+          (_state.building('main_tent')?.level ?? 1) >= 3) {
+        continue;
+      }
+      if (goal.id == 'found_oba' && _state.obaFounded) continue;
+      return goal;
+    }
+    return SurvivalCatalog.bigGoals.last;
+  }
+
+  bool performSurvivalAction(String actionId) {
+    SurvivalActionDef? action;
+    for (final item in SurvivalCatalog.actions) {
+      if (item.id == actionId) {
+        action = item;
+        break;
+      }
+    }
+    if (action == null) return false;
+    if (_state.dailyActionPoints < action.apCost) return false;
+    if ((_state.actionCooldowns[action.id] ?? 0) > 0) return false;
+    if (_state.profile.health < 15) return false;
+    for (final entry in action.outputs.entries) {
+      if (entry.value < 0 && _state.resource(entry.key) < -entry.value) {
+        return false;
+      }
+    }
+    for (final entry in action.foodInputs.entries) {
+      if ((_state.foodInventory[entry.key] ?? 0) < entry.value) return false;
+    }
+
+    final uses = _state.actionUsesToday[action.id] ?? 0;
+    final spammed = uses > 0;
+    final outputFactor = spammed ? 0.45 : 1.0;
+    int adjustedOutput(int value) =>
+        value < 0 ? value : (value * outputFactor).round();
+    final resources = ResourceLogic.apply(_state.resources, {
+      for (final entry in action.outputs.entries)
+        entry.key: adjustedOutput(entry.value),
+    });
+    final food = Map<String, int>.from(_state.foodInventory);
+    for (final entry in action.foodInputs.entries) {
+      food[entry.key] = (food[entry.key] ?? 0) - entry.value;
+      if ((food[entry.key] ?? 0) <= 0) food.remove(entry.key);
+    }
+    for (final entry in action.foodOutputs.entries) {
+      final amount = (entry.value * outputFactor).round().clamp(0, 99).toInt();
+      if (amount > 0) food[entry.key] = (food[entry.key] ?? 0) + amount;
+    }
+    final survival = _state.survival.copyWith(
+      hunger: _state.survival.hunger - action.hungerCost,
+      thirst: _state.survival.thirst - action.thirstCost,
+      fatigue: _state.survival.fatigue + action.fatigueCost,
+    );
+    final cooldowns = {..._state.actionCooldowns};
+    if (action.cooldownDays > 0) cooldowns[action.id] = action.cooldownDays;
+    _commit(
+      _state.copyWith(
+        dailyActionPoints: _state.dailyActionPoints - action.apCost,
+        resources: resources,
+        foodInventory: food,
+        survival: survival,
+        actionCooldowns: cooldowns,
+        actionUsesToday: {..._state.actionUsesToday, action.id: uses + 1},
+        log: _prependLog(
+          spammed
+              ? '${action.name} verimsiz geçti. '
+                  '${action.hint.isEmpty ? 'Başka işe yönel.' : action.hint}'
+              : '${action.name} tamamlandı; ${action.category} ilerledi.',
+        ),
+      ),
+    );
+    return true;
+  }
+
+  List<Horse> horseMarket() => [
+        Horse(
+          id: 'market_steppe_${_state.day.day}',
+          name: 'Pazar Bozu',
+          breed: 'Bozkır Atı',
+          price: 55,
+          acquiredDay: _state.day.day,
+        ),
+        Horse(
+          id: 'market_pack_${_state.day.day}',
+          name: 'Yükçü Kara',
+          breed: 'Yük Atı',
+          rarity: 'İyi',
+          price: 85,
+          endurance: 6,
+          carryingCapacity: 35,
+          acquiredDay: _state.day.day,
+        ),
+      ];
+
+  bool buyHorse(Horse horse) {
+    if (_state.resource(ResourceType.gold) < horse.price) return false;
+    _commit(
+      _state.copyWith(
+        resources: ResourceLogic.apply(
+          _state.resources,
+          {ResourceType.gold: -horse.price, ResourceType.horse: 1},
+        ),
+        horses: [..._state.horses, horse],
+        log: _prependLog('${horse.name} satın alındı (${horse.breed}).'),
+      ),
+    );
+    return true;
+  }
+
+  bool careForHorse(String horseId, String care) {
+    if (_state.dailyActionPoints < 1) return false;
+    if (!_state.horses.any((horse) => horse.id == horseId)) return false;
+    var resources = _state.resources;
+    if (care == 'feed') {
+      if (_state.resource(ResourceType.food) < 2) return false;
+      resources = ResourceLogic.apply(resources, {ResourceType.food: -2});
+    }
+    final horses = [
+      for (final horse in _state.horses)
+        if (horse.id == horseId)
+          switch (care) {
+            'feed' => horse.copyWith(
+              hunger: horse.hunger + 22,
+              mood: horse.mood + 4,
+            ),
+            'clean' => horse.copyWith(
+              cleanliness: horse.cleanliness + 25,
+              loyalty: horse.loyalty + 2,
+            ),
+            'rest' => horse.copyWith(
+              fatigue: horse.fatigue - 25,
+              health: horse.health + 3,
+            ),
+            'train' => horse.copyWith(
+              training: horse.training + 8,
+              fatigue: horse.fatigue + 12,
+              loyalty: horse.loyalty + 1,
+            ),
+            _ => horse,
+          }
+        else
+          horse,
+    ];
+    _commit(
+      _state.copyWith(
+        dailyActionPoints: _state.dailyActionPoints - 1,
+        resources: resources,
+        horses: horses,
+        log: _prependLog('At bakımı yapıldı: $care.'),
+      ),
+    );
+    return true;
+  }
+
   bool upgradeBuilding(String id) {
+    if (id == 'main_tent') return upgradeTent();
     final building = _state.building(id);
     if (building == null || !building.canUpgrade) return false;
-    final craftDiscount = id == 'workshop'
-        ? (_state.profile.craft / 5).floor()
-        : 0;
+    final craftDiscount =
+        id == 'workshop' ? (_state.profile.craft / 5).floor() : 0;
     final cost = {
       for (final entry in building.upgradeCost.entries)
         entry.key: (entry.value - craftDiscount).clamp(1, 9999).toInt(),
@@ -991,7 +1217,53 @@ class GameController extends ChangeNotifier {
           buildings: buildings,
         ),
         profile: ProgressionLogic.addXp(_state.profile, 20),
-        log: _prependLog('${building.name} seviye ${building.level + 1} oldu.'),
+        log: _prependLog(
+          '${building.name} seviye ${building.level + 1} oldu.',
+        ),
+      ),
+    );
+    return true;
+  }
+
+  TentUpgradeTarget? tentUpgradeTarget() =>
+      TentUpgradeLogic.nextTarget(_state);
+
+  List<String> tentUpgradeBlockReasons() =>
+      TentUpgradeLogic.blockReasons(_state);
+
+  String? tentUpgradeBlockReason() {
+    final reasons = tentUpgradeBlockReasons();
+    return reasons.isEmpty ? null : reasons.first;
+  }
+
+  bool canUpgradeTent() => TentUpgradeLogic.canUpgrade(_state);
+
+  bool upgradeTent() {
+    final building = _state.building('main_tent');
+    final target = TentUpgradeLogic.nextTarget(_state);
+    if (building == null || target == null || !canUpgradeTent()) return false;
+    final buildings = [
+      for (final item in _state.buildings)
+        item.id == 'main_tent' ? item.copyWith(level: target.level) : item,
+    ];
+    final moraleBonus = target.level == 2 ? 2 : target.level == 3 ? 5 : 8;
+    final resources = ResourceLogic.apply(_state.resources, {
+      for (final entry in target.cost.entries) entry.key: -entry.value,
+      ResourceType.morale: moraleBonus,
+    });
+    _commit(
+      _state.copyWith(
+        buildings: buildings,
+        resources: resources,
+        maxDailyActionPoints: _dailyActionLimit(
+          resources,
+          buildings: buildings,
+        ),
+        profile: ProgressionLogic.addXp(_state.profile, 25),
+        quests: _trackAction(GameActions.tentUpgrade),
+        log: _prependLog(
+          'Bugün çadır direklerini güçlendirdin: ${target.name} kuruldu.',
+        ),
       ),
     );
     return true;
@@ -1006,8 +1278,7 @@ class GameController extends ChangeNotifier {
     switch (action) {
       case 'gift':
         resourceCost = const {ResourceType.gold: -100};
-        delta =
-            8 +
+        delta = 8 +
             (_state.profile.trade / 5).floor() +
             (_state.faithState.kut / 35).floor();
         break;
@@ -1017,8 +1288,7 @@ class GameController extends ChangeNotifier {
         tradeOpen = true;
         break;
       case 'envoy':
-        delta =
-            _state.profile.wisdom +
+        delta = _state.profile.wisdom +
                     _state.profile.trade +
                     (_state.faithState.kut / 25).floor() >=
                 10
@@ -1062,7 +1332,8 @@ class GameController extends ChangeNotifier {
         profile: ProgressionLogic.addXp(_state.profile, 14),
         quests: _trackAction(GameActions.diplomacy),
         log: _prependLog(
-          '${tribe.name}: diplomasi ($action), ilişki ${delta >= 0 ? '+' : ''}$delta.',
+          '${tribe.name}: diplomasi ($action), ilişki '
+          '${delta >= 0 ? '+' : ''}$delta.',
         ),
       ),
     );
@@ -1199,7 +1470,7 @@ class GameController extends ChangeNotifier {
     final main = _buildingById(source, 'main_tent');
     var max =
         GameState.baseDailyActionPoints + ((main?.level ?? 1) >= 3 ? 1 : 0);
-    if (_state.profile.fatigue >= 75) {
+    if (_state.profile.fatigue >= 75 || _state.survival.fatigue >= 75) {
       max -= 1;
     }
     if ((resources[ResourceType.morale] ?? 0) >= 80 &&
@@ -1452,7 +1723,8 @@ class GameController extends ChangeNotifier {
   }
 
   /// How many wounded the healer's çadırı mends each day.
-  int get healCapacity => 2 + ((_state.building('healer')?.level ?? 1) - 1) * 2;
+  int get healCapacity =>
+      2 + ((_state.building('healer')?.level ?? 1) - 1) * 2;
 
   /// Raises [qty] soldiers of a type, paying gold (and horses for riders).
   bool recruitUnit(String unitId, int qty) {
@@ -1529,8 +1801,7 @@ class GameController extends ChangeNotifier {
     Map<String, int> wounded,
     Map<String, int> lost,
     Map<String, int> hurt,
-  })
-  _battleCasualties(double woundFrac, double lostFrac) {
+  }) _battleCasualties(double woundFrac, double lostFrac) {
     final army = <String, int>{};
     final wounded = Map<String, int>.from(_state.wounded);
     final lostMap = <String, int>{};
@@ -1566,13 +1837,13 @@ class GameController extends ChangeNotifier {
   /// The most recent battle's outcome, for the UI to recount. Transient — not
   /// part of the saved state.
   BattleReport? lastBattle;
+  String? lastTalkFeedback;
 
   /// Military weight thrown behind a regional war. Attack drives the punch,
   /// defence steadies the line, and the leader and realm add their weight. A
   /// Savaşçı Başı (warleader role) lifts the whole host by a percent.
   int get warStrength {
-    final base =
-        armyStrength * 4 +
+    final base = armyStrength * 4 +
         armyDefense * 2 +
         _state.resource(ResourceType.population) +
         _state.profile.warfare * 8 +
@@ -1728,7 +1999,8 @@ class GameController extends ChangeNotifier {
       lost: casualties.lost,
       wounded: casualties.hurt,
     );
-    final ap = costAp ? _state.dailyActionPoints - 1 : _state.dailyActionPoints;
+    final ap =
+        costAp ? _state.dailyActionPoints - 1 : _state.dailyActionPoints;
     if (success) {
       _commit(
         _takeCastle(
@@ -1785,8 +2057,7 @@ class GameController extends ChangeNotifier {
   }) {
     final conquered = [..._state.conqueredRegions, castle.id];
     final nation = Nations.nationOf(castle.id);
-    final nationDone =
-        castle.isCenter &&
+    final nationDone = castle.isCenter &&
         nation != null &&
         nation.castles.every((c) => conquered.contains(c.id));
     return _state.copyWith(
@@ -1914,9 +2185,13 @@ class GameController extends ChangeNotifier {
     return true;
   }
 
-  /// Whether [nationId] is a held province that can revolt (razed lands cannot).
+  /// Whether [nationId] is a held province that can revolt.
+  ///
+  /// Razed lands cannot revolt.
   bool _isHeldProvince(String nationId) {
-    final policy = NationPolicyInfo.byId(_state.nationPolicies[nationId] ?? '');
+    final policy = NationPolicyInfo.byId(
+      _state.nationPolicies[nationId] ?? '',
+    );
     return policy != null && policy != NationPolicy.yik;
   }
 
@@ -2100,14 +2375,12 @@ class GameController extends ChangeNotifier {
     Map<String, int> loyalty,
     List<String> freedCastles,
     List<String> notes,
-  })
-  _driftProvinces() {
+  }) _driftProvinces() {
     final policies = Map<String, String>.from(_state.nationPolicies);
     final loyalty = Map<String, int>.from(_state.nationLoyalty);
     final freed = <String>[];
     final notes = <String>[];
-    final hold =
-        (_state.peopleApproval >= 60 ? 1 : 0) +
+    final hold = (_state.peopleApproval >= 60 ? 1 : 0) +
         (_state.profile.reputation >= 50 ? 1 : 0) +
         (_state.isKhan ? 1 : 0);
     for (final entry in policies.entries.toList()) {
@@ -2244,19 +2517,18 @@ class GameController extends ChangeNotifier {
       return;
     }
     final choice = decision.choices[choiceIndex];
-    final people = (_state.peopleApproval + choice.peopleEffect)
-        .clamp(0, 100)
-        .toInt();
-    final council = (_state.councilApproval + choice.councilEffect)
-        .clamp(0, 100)
-        .toInt();
+    final people =
+        (_state.peopleApproval + choice.peopleEffect).clamp(0, 100).toInt();
+    final council =
+        (_state.councilApproval + choice.councilEffect).clamp(0, 100).toInt();
 
     // A verdict echoes through the named beys it touches.
     var relations = _state.npcRelations;
     if (choice.npcEffects.isNotEmpty) {
       relations = Map<String, int>.from(relations);
       for (final e in choice.npcEffects.entries) {
-        relations[e.key] = (_state.relationWith(e.key) + e.value).clamp(0, 100);
+        relations[e.key] =
+            (_state.relationWith(e.key) + e.value).clamp(0, 100);
       }
     }
 
@@ -2303,33 +2575,60 @@ class GameController extends ChangeNotifier {
   /// The exchange [npcId] offers right now; dialogues rotate by the day so a
   /// figure does not repeat the same line each visit. Returns null if unknown.
   Dialogue? dialogueFor(String npcId) {
-    final pool = NpcDialogues.forNpc(npcId);
+    final pool = NpcDialogues.contextualFor(npcId, _state);
     if (pool.isEmpty) return null;
-    return pool[_state.day.day % pool.length];
+    final recent = _state.npcRecentDialogues[npcId] ?? const <String>[];
+    final candidates = [
+      for (final d in pool)
+        if (!recent.contains(d.id)) d,
+    ];
+    final usable = candidates.isEmpty ? pool : candidates;
+    final relationShift = (_state.relationWith(npcId) / 20).floor();
+    final index = (_state.day.day + _state.profile.age + relationShift) %
+        usable.length;
+    return usable[index];
   }
 
   /// Speaks with an NPC: costs one action point, shifts the bond with the
   /// speaker, and may sway the people, the council or the treasury.
   bool talkTo(String npcId, DialogueChoice choice) {
     if (_state.dailyActionPoints < 1) return false;
+    lastTalkFeedback = null;
     final npc = NpcCharacters.byId(npcId);
+    final offered = dialogueFor(npcId);
+    final sameDay = _state.npcLastTalkDay[npcId] == _state.day.day;
+    final sameType = _state.npcLastTalkType[npcId] == choice.label;
+    final spammed = sameDay && sameType;
     final relations = Map<String, int>.from(_state.npcRelations);
-    relations[npcId] = (_state.relationWith(npcId) + choice.relationEffect)
-        .clamp(0, 100);
+    final relationEffect = spammed
+        ? 0
+        : (sameDay ? choice.relationEffect ~/ 2 : choice.relationEffect);
+    relations[npcId] =
+        (_state.relationWith(npcId) + relationEffect).clamp(0, 100);
 
     var resources = ResourceLogic.apply(
       _state.resources,
-      choice.resourceEffects,
+      spammed ? const {} : choice.resourceEffects,
     );
-    var people = _state.peopleApproval + choice.peopleEffect;
-    var council = _state.councilApproval + choice.councilEffect;
+    var people = _state.peopleApproval + (spammed ? 0 : choice.peopleEffect);
+    var council =
+        _state.councilApproval + (spammed ? 0 : choice.councilEffect);
     final notes = <String>[
-      '${npc?.name ?? 'Biri'} ile konuşuldu: ${choice.label}',
+      spammed
+          ? '${npc?.name ?? 'Biri'} aynı sözü uzatmadı.'
+          : '${npc?.name ?? 'Biri'} ile konuşuldu: ${choice.label}',
     ];
+    if (spammed) {
+      lastTalkFeedback = 'Bugün bunu zaten konuştuk.';
+    } else if (sameDay) {
+      lastTalkFeedback =
+          'Kısa konuştunuz; aynı gün ikinci sözün etkisi azaldı.';
+    }
 
     // A word can summon the council, if one is not already in session.
     var kurultayId = _state.currentKurultay;
-    if (choice.triggersKurultay != null &&
+    if (!spammed &&
+        choice.triggersKurultay != null &&
         kurultayId == null &&
         KurultayDecisions.byId(choice.triggersKurultay!) != null) {
       kurultayId = choice.triggersKurultay;
@@ -2340,7 +2639,7 @@ class GameController extends ChangeNotifier {
     var army = _state.army;
     var wounded = _state.wounded;
     lastBattle = null;
-    if (choice.raidPower > 0) {
+    if (!spammed && choice.raidPower > 0) {
       final s = warStrength;
       final chance = (s * 100 / (s + choice.raidPower)).round().clamp(10, 90);
       final won = _random.nextInt(100) < chance;
@@ -2378,6 +2677,9 @@ class GameController extends ChangeNotifier {
       _state.copyWith(
         dailyActionPoints: _state.dailyActionPoints - 1,
         npcRelations: relations,
+        npcRecentDialogues: _rememberDialogue(npcId, offered?.id),
+        npcLastTalkDay: {..._state.npcLastTalkDay, npcId: _state.day.day},
+        npcLastTalkType: {..._state.npcLastTalkType, npcId: choice.label},
         peopleApproval: people,
         councilApproval: council,
         resources: resources,
@@ -2430,8 +2732,7 @@ class GameController extends ChangeNotifier {
   List<Quest> _trackAction(String actionId) {
     return _state.quests
         .map(
-          (quest) =>
-              !quest.completed &&
+          (quest) => !quest.completed &&
                   quest.goalType == QuestGoalType.action &&
                   quest.goalAction == actionId &&
                   quest.progress < quest.goalTarget
@@ -2487,8 +2788,8 @@ class GameController extends ChangeNotifier {
         omen: good
             ? 'Ateş beklenmedik şekilde gür yandı.'
             : badPressure
-            ? 'Sabah rüzgârı kuzeyden sert esti.'
-            : 'Kurt uluması oba yakınında duyuldu.',
+                ? 'Sabah rüzgârı kuzeyden sert esti.'
+                : 'Kurt uluması oba yakınında duyuldu.',
         omenSeverity: good ? OmenSeverity.good : OmenSeverity.bad,
         activeBlessings: good
             ? ['İyi alamet', ...faith.activeBlessings].take(4).toList()
@@ -2511,6 +2812,60 @@ class GameController extends ChangeNotifier {
     );
   }
 
+  Map<String, List<String>> _rememberDialogue(String npcId, String? id) {
+    if (id == null) return _state.npcRecentDialogues;
+    final current = _state.npcRecentDialogues[npcId] ?? const <String>[];
+    return {
+      ..._state.npcRecentDialogues,
+      npcId: [id, ...current.where((item) => item != id)].take(4).toList(),
+    };
+  }
+
+  _FoodSpoilResult _spoilFood(Season season) {
+    final inventory = Map<String, int>.from(_state.foodInventory);
+    final ages = <String, int>{};
+    final notes = <String>[];
+    final storageLevel = _state.building('storage')?.level ?? 0;
+    for (final entry in inventory.entries.toList()) {
+      final food = SurvivalCatalog.foods.firstWhere(
+        (item) => item.id == entry.key,
+        orElse: () => SurvivalCatalog.foods.first,
+      );
+      final age = (_state.foodAges[entry.key] ?? 0) + 1;
+      final protection = storageLevel + (season == Season.winter ? 2 : 0);
+      if (age > food.spoilDays + protection) {
+        final lost = (entry.value / 2).ceil();
+        inventory[entry.key] = (entry.value - lost).clamp(0, 999).toInt();
+        if (inventory[entry.key] == 0) inventory.remove(entry.key);
+        notes.add('${food.name} bozuldu: -$lost.');
+      } else {
+        ages[entry.key] = age;
+      }
+    }
+    return _FoodSpoilResult(inventory, ages, notes);
+  }
+
+  List<String> _generateOpportunities(int day, Season season) {
+    final pool = [
+      for (final item in SurvivalCatalog.opportunities)
+        if (season == Season.winter
+            ? item.category != 'su' || _state.survival.thirst < 55
+            : true)
+          item,
+    ];
+    final count = 3 + (day % 3);
+    return [
+      for (var i = 0; i < count; i++) pool[(day + i * 2) % pool.length].id,
+    ];
+  }
+
   List<String> _prependLog(String message) =>
       [message, ..._state.log].take(6).toList();
+}
+
+class _FoodSpoilResult {
+  const _FoodSpoilResult(this.inventory, this.ages, this.notes);
+  final Map<String, int> inventory;
+  final Map<String, int> ages;
+  final List<String> notes;
 }

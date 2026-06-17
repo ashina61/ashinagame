@@ -41,7 +41,7 @@ class PhaseLogic {
   // Founding thresholds — the gateway from a lone tent to a living oba.
   static const reputationToFound = 50;
   static const followersToFound = 3;
-  static const tentLevelToFound = 2;
+  static const tentLevelToFound = 3;
 
   static int tentLevel(GameState s) => s.building('main_tent')?.level ?? 1;
 

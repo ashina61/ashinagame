@@ -4,6 +4,7 @@ import '../models/event_choice.dart';
 import '../models/faith.dart';
 import '../models/game_day.dart';
 import '../models/household.dart';
+import '../models/horse.dart';
 import '../models/marriage_candidate.dart';
 import '../models/player_profile.dart';
 import '../models/quest.dart';
@@ -32,62 +33,96 @@ class GameActions {
   static const expedition = 'expedition';
   static const event = 'event';
   static const trade = 'trade';
+  static const tentUpgrade = 'tent_upgrade';
 }
 
 class StarterGameData {
   const StarterGameData._();
 
   static GameState create() => GameState(
-    profile: const PlayerProfile(
-      name: 'Bumin',
-      title: 'Yolcu',
-      age: 14,
-      reputation: 5,
-      courage: 3,
-      wisdom: 3,
-      leadership: 2,
-      endurance: 3,
-      trade: 2,
-      craft: 2,
-      archery: 3,
-      warfare: 3,
-    ),
-    // Before founding an oba, "clan" simply names the lone tent the
-    // traveller pitches. It becomes the oba's name once one is founded.
-    clan: const Clan(
-      name: 'Kendi Çadırın',
-      motto: 'Önce kendini, çadırını ve adını büyüt.',
-    ),
-    day: const GameDay(day: 1, season: Season.spring),
-    // A small, lonely start: a little of everything and a single horse.
-    resources: const {
-      ResourceType.gold: 40,
-      ResourceType.food: 30,
-      ResourceType.wood: 15,
-      ResourceType.leather: 5,
-      ResourceType.stone: 8,
-      ResourceType.iron: 4,
-      ResourceType.horse: 1,
-      ResourceType.reputation: 5,
-      ResourceType.morale: 60,
-      ResourceType.population: 1,
-    },
-    quests: [...dailyQuestsFor(1), ...storyQuests],
-    currentEvent: events.first,
-    eventIndex: 0,
-    log: const ['Tek bir çadır kuruldu. Genç bir yolcunun ömrü başlıyor.'],
-    buildings: campBuildings,
-    tribes: tribes,
-    household: const Household(),
-    marriageCandidates: marriageCandidates,
-    faithState: const FaithState(),
-    spiritualAdvisor: spiritualAdvisor,
-    rituals: rituals,
-    sacredPlaces: sacredPlaces,
-    marketStock: MarketGoods.startingStock(),
-    obaFounded: false,
-    landScouted: false,
-  );
+        profile: const PlayerProfile(
+          name: 'Bumin',
+          title: 'Yolcu',
+          age: 14,
+          reputation: 5,
+          courage: 3,
+          wisdom: 3,
+          leadership: 2,
+          endurance: 3,
+          trade: 2,
+          craft: 2,
+          archery: 3,
+          warfare: 3,
+        ),
+        // Before founding an oba, "clan" simply names the lone tent the
+        // traveller pitches. It becomes the oba's name once one is founded.
+        clan: const Clan(
+          name: 'Kendi Çadırın',
+          motto: 'Önce kendini, çadırını ve adını büyüt.',
+        ),
+        day: const GameDay(day: 1, season: Season.spring),
+        // A small, lonely start: a little of everything and a single horse.
+        resources: const {
+          ResourceType.gold: 40,
+          ResourceType.food: 30,
+          ResourceType.wood: 15,
+          ResourceType.leather: 5,
+          ResourceType.stone: 8,
+          ResourceType.iron: 4,
+          ResourceType.horse: 1,
+          ResourceType.reputation: 5,
+          ResourceType.morale: 60,
+          ResourceType.population: 1,
+        },
+        quests: [...dailyQuestsFor(1), ...storyQuests],
+        currentEvent: events.first,
+        eventIndex: 0,
+        log: const ['Tek bir çadır kuruldu. Genç bir yolcunun ömrü başlıyor.'],
+        buildings: campBuildings,
+        tribes: tribes,
+        household: const Household(),
+        marriageCandidates: marriageCandidates,
+        faithState: const FaithState(),
+        spiritualAdvisor: spiritualAdvisor,
+        rituals: rituals,
+        sacredPlaces: sacredPlaces,
+        marketStock: MarketGoods.startingStock(),
+        foodInventory: const {
+          'raw_meat': 1,
+          'root_vegetable': 2,
+          'water_skin': 1,
+        },
+        dailyOpportunities: const [
+          'fish_river',
+          'cold_night',
+          'youth_training',
+        ],
+        questChainProgress: const {
+          'first_fire': 0,
+          'winter_prep': 0,
+          'first_bow': 0,
+          'old_inscription': 0,
+          'oba_road': 0,
+        },
+        horses: const [
+          Horse(
+            id: 'boz_yele',
+            name: 'Boz Yele',
+            breed: 'Bozkır Atı',
+            acquiredDay: 1,
+          ),
+        ],
+        locationStates: const {
+          'hunting_ground': 'discovered',
+          'forest_edge': 'discovered',
+          'river_bank': 'undiscovered',
+          'old_inscription': 'undiscovered',
+          'market_road': 'undiscovered',
+          'salt_bed': 'undiscovered',
+        },
+        obaFounded: false,
+        landScouted: false,
+      );
 
   static const spiritualAdvisor = SpiritualAdvisor(
     id: 'aruk_kam',
