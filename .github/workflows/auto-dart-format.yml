@@ -2,12 +2,20 @@ name: Auto Dart Format
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - 'lib/**'
+      - 'test/**'
+      - '.github/workflows/auto-dart-format.yml'
 
 permissions:
   contents: write
 
 jobs:
   format:
+    if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
 
     steps:
