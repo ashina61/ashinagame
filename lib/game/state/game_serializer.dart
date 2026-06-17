@@ -250,7 +250,9 @@ class GameSerializer {
         },
         buildings: _decodeBuildings(json['buildings'] as List<dynamic>?),
         tribes: _decodeTribes(json['tribes'] as List<dynamic>?),
-        household: _decodeHousehold(json['household'] as Map<String, dynamic>?),
+        household: _decodeHousehold(
+          json['household'] as Map<String, dynamic>?,
+        ),
         marriageCandidates: _decodeCandidates(
           json['marriageCandidates'] as List<dynamic>?,
         ),
@@ -292,7 +294,8 @@ class GameSerializer {
         councilApproval: json['councilApproval'] as int? ?? 60,
         currentKurultay: json['currentKurultay'] as String?,
         lastKurultayDay: json['lastKurultayDay'] as int? ?? 0,
-        army: (json['army'] as Map<String, dynamic>? ?? {}).cast<String, int>(),
+        army: (json['army'] as Map<String, dynamic>? ?? {})
+            .cast<String, int>(),
         wounded: (json['wounded'] as Map<String, dynamic>? ?? {})
             .cast<String, int>(),
         npcRelations: (json['npcRelations'] as Map<String, dynamic>? ?? {})
@@ -391,7 +394,8 @@ class GameSerializer {
   static List<Horse> _decodeHorses(List<dynamic>? entries, int legacyCount) {
     if (entries != null && entries.isNotEmpty) {
       return [
-        for (final e in entries.cast<Map<String, dynamic>>()) Horse.fromJson(e),
+        for (final e in entries.cast<Map<String, dynamic>>())
+          Horse.fromJson(e),
       ];
     }
     if (legacyCount <= 0) return const [];

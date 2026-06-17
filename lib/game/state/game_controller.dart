@@ -188,7 +188,10 @@ class GameController extends ChangeNotifier {
     _commit(
       _state.copyWith(
         quests: quests,
-        resources: ResourceLogic.apply(_state.resources, quest.resourceRewards),
+        resources: ResourceLogic.apply(
+          _state.resources,
+          quest.resourceRewards,
+        ),
         profile: ProgressionLogic.addXp(
           ProgressionLogic.applyStats(_state.profile, quest.statRewards),
           quest.xpReward,
@@ -852,7 +855,9 @@ class GameController extends ChangeNotifier {
         ),
         quests: _trackAction(actionId),
         clearEvent: true,
-        log: _prependLog('Olay seçimi: ${choice.label}. ${choice.description}'),
+        log: _prependLog(
+          'Olay seçimi: ${choice.label}. ${choice.description}',
+        ),
       ),
     );
     return true;
@@ -893,7 +898,10 @@ class GameController extends ChangeNotifier {
                 ..._state.faithState.activeBlessings,
               ].take(4).toList(),
             ),
-        ritualCooldowns: {..._state.ritualCooldowns, ritual.id: _state.day.day},
+        ritualCooldowns: {
+          ..._state.ritualCooldowns,
+          ritual.id: _state.day.day,
+        },
         profile: ProgressionLogic.addXp(
           ProgressionLogic.applyStats(
             _state.profile.copyWith(
@@ -968,7 +976,10 @@ class GameController extends ChangeNotifier {
     _commit(
       _state.copyWith(
         dailyActionPoints: _state.dailyActionPoints - 1,
-        resources: ResourceLogic.apply(_state.resources, place.resourceEffects),
+        resources: ResourceLogic.apply(
+          _state.resources,
+          place.resourceEffects,
+        ),
         faithState: _state.faithState.apply(place.faithEffects).copyWith(
           visitedSacredPlaces: {
             ..._state.faithState.visitedSacredPlaces,
@@ -1208,13 +1219,16 @@ class GameController extends ChangeNotifier {
           buildings: buildings,
         ),
         profile: ProgressionLogic.addXp(_state.profile, 20),
-        log: _prependLog('${building.name} seviye ${building.level + 1} oldu.'),
+        log: _prependLog(
+          '${building.name} seviye ${building.level + 1} oldu.',
+        ),
       ),
     );
     return true;
   }
 
-  TentUpgradeTarget? tentUpgradeTarget() => TentUpgradeLogic.nextTarget(_state);
+  TentUpgradeTarget? tentUpgradeTarget() =>
+      TentUpgradeLogic.nextTarget(_state);
 
   List<String> tentUpgradeBlockReasons() =>
       TentUpgradeLogic.blockReasons(_state);
@@ -1711,7 +1725,8 @@ class GameController extends ChangeNotifier {
   }
 
   /// How many wounded the healer's çadırı mends each day.
-  int get healCapacity => 2 + ((_state.building('healer')?.level ?? 1) - 1) * 2;
+  int get healCapacity =>
+      2 + ((_state.building('healer')?.level ?? 1) - 1) * 2;
 
   /// Raises [qty] soldiers of a type, paying gold (and horses for riders).
   bool recruitUnit(String unitId, int qty) {
@@ -1986,7 +2001,8 @@ class GameController extends ChangeNotifier {
       lost: casualties.lost,
       wounded: casualties.hurt,
     );
-    final ap = costAp ? _state.dailyActionPoints - 1 : _state.dailyActionPoints;
+    final ap =
+        costAp ? _state.dailyActionPoints - 1 : _state.dailyActionPoints;
     if (success) {
       _commit(
         _takeCastle(
@@ -2175,7 +2191,9 @@ class GameController extends ChangeNotifier {
   ///
   /// Razed lands cannot revolt.
   bool _isHeldProvince(String nationId) {
-    final policy = NationPolicyInfo.byId(_state.nationPolicies[nationId] ?? '');
+    final policy = NationPolicyInfo.byId(
+      _state.nationPolicies[nationId] ?? '',
+    );
     return policy != null && policy != NationPolicy.yik;
   }
 
@@ -2511,7 +2529,8 @@ class GameController extends ChangeNotifier {
     if (choice.npcEffects.isNotEmpty) {
       relations = Map<String, int>.from(relations);
       for (final e in choice.npcEffects.entries) {
-        relations[e.key] = (_state.relationWith(e.key) + e.value).clamp(0, 100);
+        relations[e.key] =
+            (_state.relationWith(e.key) + e.value).clamp(0, 100);
       }
     }
 
@@ -2594,7 +2613,8 @@ class GameController extends ChangeNotifier {
       spammed ? const {} : choice.resourceEffects,
     );
     var people = _state.peopleApproval + (spammed ? 0 : choice.peopleEffect);
-    var council = _state.councilApproval + (spammed ? 0 : choice.councilEffect);
+    var council =
+        _state.councilApproval + (spammed ? 0 : choice.councilEffect);
     final notes = <String>[
       spammed
           ? '${npc?.name ?? 'Biri'} aynı sözü uzatmadı.'

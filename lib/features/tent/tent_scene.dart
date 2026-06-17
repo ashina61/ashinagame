@@ -199,7 +199,10 @@ class TentScreen extends StatelessWidget {
 }
 
 class _TentUpgradeDetails extends StatelessWidget {
-  const _TentUpgradeDetails({required this.target, required this.blockReasons});
+  const _TentUpgradeDetails({
+    required this.target,
+    required this.blockReasons,
+  });
 
   final TentUpgradeTarget target;
   final List<String> blockReasons;
@@ -210,7 +213,10 @@ class _TentUpgradeDetails extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Sonraki seviye: ${target.name}', style: AppTextStyles.bodyStrong),
+        Text(
+          'Sonraki seviye: ${target.name}',
+          style: AppTextStyles.bodyStrong,
+        ),
         const SizedBox(height: 8),
         Text('Maliyet', style: AppTextStyles.section),
         const SizedBox(height: 4),
@@ -293,7 +299,9 @@ class _ObaPathPanel extends StatelessWidget {
               const SizedBox(height: 6),
               Text(
                 '${reqs.where((r) => r.met).length}/${reqs.length} adım tamam',
-                style: AppTextStyles.meta.copyWith(color: AppColors.goldBright),
+                style: AppTextStyles.meta.copyWith(
+                  color: AppColors.goldBright,
+                ),
               ),
               const SizedBox(height: 12),
               for (var i = 0; i < reqs.length; i++)
