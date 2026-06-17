@@ -14,6 +14,7 @@ import '../data/nations.dart';
 import '../data/npc_dialogues.dart';
 import '../data/recruitment.dart';
 import '../data/starter_game_data.dart';
+import '../data/survival_catalog.dart';
 import '../logic/event_logic.dart';
 import '../logic/life_logic.dart';
 import '../logic/market_logic.dart';
@@ -29,10 +30,12 @@ import '../models/craft.dart';
 import '../models/event_choice.dart';
 import '../models/faith.dart';
 import '../models/expedition.dart';
+import '../models/horse.dart';
 import '../models/nation.dart';
 import '../models/npc.dart';
 import '../models/quest.dart';
 import '../models/resource.dart';
+import '../models/season.dart';
 import '../models/unit_type.dart';
 import 'game_state.dart';
 import 'game_storage.dart';
@@ -432,6 +435,37 @@ class GameController extends ChangeNotifier {
       'Gün ${nextDay.day} başladı. ${nextDay.season.label} '
       'etkileri uygulandı.',
     );
+    var survival = _state.survival.copyWith(
+      hunger: _state.survival.hunger - 8,
+      thirst: _state.survival.thirst - 10,
+      fatigue: _state.survival.fatigue - 12,
+      warmth: nextDay.season == Season.winter
+          ? _state.survival.warmth - 12
+          : _state.survival.warmth - 3,
+    );
+    var profile = _recoverProfile(resources);
+    if (survival.hunger < 25) {
+      resources = ResourceLogic.apply(resources, const {
+        ResourceType.morale: -3,
+      });
+      profile = profile.copyWith(health: profile.health - 3);
+      log = ['Açlık bastırıyor; sağlık ve moral düştü.', ...log]
+          .take(6)
+          .toList();
+    }
+    if (survival.thirst < 25) {
+      survival = survival.copyWith(fatigue: survival.fatigue + 10);
+      profile = profile.copyWith(health: profile.health - 5);
+      log = ['Susuzluk yorgunluğu artırdı; sağlık azaldı.', ...log]
+          .take(6)
+          .toList();
+    }
+    if (survival.warmth < 25) {
+      profile = profile.copyWith(health: profile.health - 4);
+      log = ['Soğuk gece çadırı yokladı; sıcaklık düşük.', ...log]
+          .take(6)
+          .toList();
+    }
 
     // Starvation bites once the granary is empty.
     if ((resources[ResourceType.food] ?? 0) <= 0) {
@@ -475,7 +509,6 @@ class GameController extends ChangeNotifier {
     }
 
     // The leader ages a year each time the seasons come full circle.
-    var profile = _recoverProfile(resources);
     var pendingSuccession = false;
     if (LifeLogic.isYearBoundary(nextDay.day)) {
       final agedTo = profile.age + 1;
@@ -721,12 +754,33 @@ class GameController extends ChangeNotifier {
         activeWarnings: const [],
       );
     }
+    final spoil = _spoilFood(nextDay.season);
+    final actionCooldowns = {
+      for (final entry in _state.actionCooldowns.entries)
+        if (entry.value > 1) entry.key: entry.value - 1,
+    };
+    final opportunities = _generateOpportunities(nextDay.day, nextDay.season);
+    if (spoil.notes.isNotEmpty) {
+      log = [...spoil.notes, ...log].take(6).toList();
+    }
+    log = [
+      'Yaş ${profile.age}, yıl ${LifeLogic.yearOf(nextDay.day)}, '
+          '${nextDay.season.label}. Açlık ${survival.hunger}, '
+          'susuzluk ${survival.thirst}, yorgunluk ${survival.fatigue}.',
+      ...log,
+    ].take(6).toList();
     _commit(
       _state.copyWith(
         day: nextDay,
         resources: resources,
         dailyActionPoints: _dailyActionLimit(resources),
         profile: profile,
+        survival: survival,
+        foodInventory: spoil.inventory,
+        foodAges: spoil.ages,
+        actionCooldowns: actionCooldowns,
+        actionUsesToday: const {},
+        dailyOpportunities: opportunities,
         household: household,
         faithState: omenState,
         collapseDays: collapseDays,
@@ -945,6 +999,163 @@ class GameController extends ChangeNotifier {
       _state.copyWith(
         profile: next,
         log: _prependLog('Beceri puanı harcandı: $stat +1.'),
+      ),
+    );
+    return true;
+  }
+
+  List<OpportunityDef> todaysOpportunities() => [
+        for (final id in _state.dailyOpportunities)
+          for (final item in SurvivalCatalog.opportunities)
+            if (item.id == id) item,
+      ];
+
+  BigGoalDef? nextBigGoal() {
+    for (final goal in SurvivalCatalog.bigGoals) {
+      if (_state.profile.age < goal.minAge) continue;
+      if (goal.id == 'survive_week' && _state.day.day >= 7) continue;
+      if (goal.id == 'tent_lv2' && (_state.building('main_tent')?.level ?? 1) >= 2) {
+        continue;
+      }
+      if (goal.id == 'tent_lv3' && (_state.building('main_tent')?.level ?? 1) >= 3) {
+        continue;
+      }
+      if (goal.id == 'found_oba' && _state.obaFounded) continue;
+      return goal;
+    }
+    return SurvivalCatalog.bigGoals.last;
+  }
+
+  bool performSurvivalAction(String actionId) {
+    SurvivalActionDef? action;
+    for (final item in SurvivalCatalog.actions) {
+      if (item.id == actionId) {
+        action = item;
+        break;
+      }
+    }
+    if (action == null) return false;
+    if (_state.dailyActionPoints < action.apCost) return false;
+    if ((_state.actionCooldowns[action.id] ?? 0) > 0) return false;
+    if (_state.profile.health < 15) return false;
+    for (final entry in action.outputs.entries) {
+      if (entry.value < 0 && _state.resource(entry.key) < -entry.value) {
+        return false;
+      }
+    }
+    for (final entry in action.foodInputs.entries) {
+      if ((_state.foodInventory[entry.key] ?? 0) < entry.value) return false;
+    }
+
+    final uses = _state.actionUsesToday[action.id] ?? 0;
+    final spammed = uses > 0;
+    final outputFactor = spammed ? 0.45 : 1.0;
+    final resources = ResourceLogic.apply(_state.resources, {
+      for (final entry in action.outputs.entries)
+        entry.key: (entry.value * outputFactor).round(),
+    });
+    final food = Map<String, int>.from(_state.foodInventory);
+    for (final entry in action.foodInputs.entries) {
+      food[entry.key] = (food[entry.key] ?? 0) - entry.value;
+      if ((food[entry.key] ?? 0) <= 0) food.remove(entry.key);
+    }
+    for (final entry in action.foodOutputs.entries) {
+      final amount = (entry.value * outputFactor).round().clamp(0, 99).toInt();
+      if (amount > 0) food[entry.key] = (food[entry.key] ?? 0) + amount;
+    }
+    final survival = _state.survival.copyWith(
+      hunger: _state.survival.hunger - action.hungerCost,
+      thirst: _state.survival.thirst - action.thirstCost,
+      fatigue: _state.survival.fatigue + action.fatigueCost,
+    );
+    final cooldowns = {..._state.actionCooldowns};
+    if (action.cooldownDays > 0) cooldowns[action.id] = action.cooldownDays;
+    _commit(
+      _state.copyWith(
+        dailyActionPoints: _state.dailyActionPoints - action.apCost,
+        resources: resources,
+        foodInventory: food,
+        survival: survival,
+        actionCooldowns: cooldowns,
+        actionUsesToday: {..._state.actionUsesToday, action.id: uses + 1},
+        log: _prependLog(
+          spammed
+              ? '${action.name} verimsiz geçti. ${action.hint.isEmpty ? 'Başka işe yönel.' : action.hint}'
+              : '${action.name} tamamlandı; ${action.category} ilerledi.',
+        ),
+      ),
+    );
+    return true;
+  }
+
+  List<Horse> horseMarket() => [
+        Horse(
+          id: 'market_steppe_${_state.day.day}',
+          name: 'Pazar Bozu',
+          breed: 'Bozkır Atı',
+          price: 55,
+          acquiredDay: _state.day.day,
+        ),
+        Horse(
+          id: 'market_pack_${_state.day.day}',
+          name: 'Yükçü Kara',
+          breed: 'Yük Atı',
+          rarity: 'İyi',
+          price: 85,
+          endurance: 6,
+          carryingCapacity: 35,
+          acquiredDay: _state.day.day,
+        ),
+      ];
+
+  bool buyHorse(Horse horse) {
+    if (_state.resource(ResourceType.gold) < horse.price) return false;
+    _commit(
+      _state.copyWith(
+        resources: ResourceLogic.apply(
+          _state.resources,
+          {ResourceType.gold: -horse.price, ResourceType.horse: 1},
+        ),
+        horses: [..._state.horses, horse],
+        log: _prependLog('${horse.name} satın alındı (${horse.breed}).'),
+      ),
+    );
+    return true;
+  }
+
+  bool careForHorse(String horseId, String care) {
+    if (_state.dailyActionPoints < 1) return false;
+    final horses = [
+      for (final horse in _state.horses)
+        if (horse.id == horseId)
+          switch (care) {
+            'feed' => horse.copyWith(
+                hunger: horse.hunger + 22,
+                mood: horse.mood + 4,
+              ),
+            'clean' => horse.copyWith(
+                cleanliness: horse.cleanliness + 25,
+                loyalty: horse.loyalty + 2,
+              ),
+            'rest' => horse.copyWith(
+                fatigue: horse.fatigue - 25,
+                health: horse.health + 3,
+              ),
+            'train' => horse.copyWith(
+                training: horse.training + 8,
+                fatigue: horse.fatigue + 12,
+                loyalty: horse.loyalty + 1,
+              ),
+            _ => horse,
+          }
+        else
+          horse,
+    ];
+    _commit(
+      _state.copyWith(
+        dailyActionPoints: _state.dailyActionPoints - 1,
+        horses: horses,
+        log: _prependLog('At bakımı yapıldı: $care.'),
       ),
     );
     return true;
@@ -1229,7 +1440,7 @@ class GameController extends ChangeNotifier {
     final main = _buildingById(source, 'main_tent');
     var max =
         GameState.baseDailyActionPoints + ((main?.level ?? 1) >= 3 ? 1 : 0);
-    if (_state.profile.fatigue >= 75) {
+    if (_state.profile.fatigue >= 75 || _state.survival.fatigue >= 75) {
       max -= 1;
     }
     if ((resources[ResourceType.morale] ?? 0) >= 80 &&
@@ -2571,6 +2782,51 @@ class GameController extends ChangeNotifier {
     };
   }
 
+  _FoodSpoilResult _spoilFood(Season season) {
+    final inventory = Map<String, int>.from(_state.foodInventory);
+    final ages = <String, int>{};
+    final notes = <String>[];
+    final storageLevel = _state.building('storage')?.level ?? 0;
+    for (final entry in inventory.entries.toList()) {
+      final food = SurvivalCatalog.foods.firstWhere(
+        (item) => item.id == entry.key,
+        orElse: () => SurvivalCatalog.foods.first,
+      );
+      final age = (_state.foodAges[entry.key] ?? 0) + 1;
+      final protection = storageLevel + (season == Season.winter ? 2 : 0);
+      if (age > food.spoilDays + protection) {
+        final lost = (entry.value / 2).ceil();
+        inventory[entry.key] = (entry.value - lost).clamp(0, 999).toInt();
+        if (inventory[entry.key] == 0) inventory.remove(entry.key);
+        notes.add('${food.name} bozuldu: -$lost.');
+      } else {
+        ages[entry.key] = age;
+      }
+    }
+    return _FoodSpoilResult(inventory, ages, notes);
+  }
+
+  List<String> _generateOpportunities(int day, Season season) {
+    final pool = [
+      for (final item in SurvivalCatalog.opportunities)
+        if (season == Season.winter
+            ? item.category != 'su' || _state.survival.thirst < 55
+            : true)
+          item,
+    ];
+    final count = 3 + (day % 3);
+    return [
+      for (var i = 0; i < count; i++) pool[(day + i * 2) % pool.length].id,
+    ];
+  }
+
   List<String> _prependLog(String message) =>
       [message, ..._state.log].take(6).toList();
+}
+
+class _FoodSpoilResult {
+  const _FoodSpoilResult(this.inventory, this.ages, this.notes);
+  final Map<String, int> inventory;
+  final Map<String, int> ages;
+  final List<String> notes;
 }

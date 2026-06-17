@@ -12,6 +12,7 @@ import '../../core/widgets/portrait_frame.dart';
 import '../../core/widgets/skinned_button.dart';
 import '../../core/widgets/skinned_panel.dart';
 import '../../game/data/game_info.dart';
+import '../../game/logic/life_logic.dart';
 import '../../game/models/marriage_candidate.dart';
 import '../../game/models/resource.dart';
 import '../../game/state/game_controller.dart';
@@ -29,6 +30,13 @@ class CharacterScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final state = GameScope.of(context).state;
     final profile = state.profile;
+    final nextAgeGate = profile.age < 16
+        ? '16: Yoldaşlık, pazar yolu, at eğitimi'
+        : profile.age < 18
+            ? '18: Oba kurma hazırlıkları'
+            : profile.age < 21
+                ? '21: Boy / sefer / kağanlık yolu'
+                : 'Geç oyun: antlaşma, sefer ve kağanlık';
     return Scaffold(
       body: OrnateScaffold(
         child: Column(
@@ -60,6 +68,15 @@ class CharacterScreen extends StatelessWidget {
                                 style: AppTextStyles.title,
                               ),
                               Text(profile.title, style: AppTextStyles.meta),
+                              Text(
+                                'Yıl ${LifeLogic.yearOf(state.day.day)} • '
+                                'Hayat evresi: ${profile.title}',
+                                style: AppTextStyles.meta,
+                              ),
+                              Text(
+                                'Sıradaki eşik: $nextAgeGate',
+                                style: AppTextStyles.meta,
+                              ),
                               const SizedBox(height: 6),
                               Text(
                                 'Seviye ${profile.level} • XP ${profile.xp}/${profile.xpToNextLevel}',
@@ -79,6 +96,12 @@ class CharacterScreen extends StatelessWidget {
                               ),
                               Text(
                                 'Sağlık ${profile.health}/100 • Enerji ${profile.energy}/100 • Yorgunluk ${profile.fatigue}/100',
+                                style: AppTextStyles.meta,
+                              ),
+                              Text(
+                                'Açlık ${state.survival.hunger}/100 • '
+                                'Susuzluk ${state.survival.thirst}/100 • '
+                                'Sıcaklık ${state.survival.warmth}/100',
                                 style: AppTextStyles.meta,
                               ),
                               Text(

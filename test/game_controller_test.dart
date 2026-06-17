@@ -1101,6 +1101,38 @@ void main() {
     expect(PhaseLogic.tentLevel(decoded!), 2);
   });
 
+  test('survival systems age, rotate opportunities and punish action spam', () {
+    final controller = GameController.starter();
+    expect(controller.state.survival.hunger, 80);
+    expect(controller.todaysOpportunities(), hasLength(3));
+    expect(controller.performSurvivalAction('fish'), isTrue);
+    final fishAfterFirst = controller.state.foodInventory['fish'] ?? 0;
+    expect(controller.performSurvivalAction('fish'), isTrue);
+    expect(controller.state.foodInventory['fish'], greaterThan(fishAfterFirst));
+    expect(controller.state.log.first, contains('verimsiz'));
+
+    for (var i = 0; i < 39; i++) {
+      controller.endDay();
+    }
+    expect(controller.state.profile.age, 15);
+    expect(controller.state.dailyOpportunities.length, inInclusiveRange(3, 5));
+  });
+
+  test('horse market and care use the singular horse model', () {
+    final base = StarterGameData.create();
+    final controller = GameController(
+      base.copyWith(
+        resources: {...base.resources, ResourceType.gold: 120},
+      ),
+    );
+    final offer = controller.horseMarket().first;
+    expect(controller.buyHorse(offer), isTrue);
+    expect(controller.state.horses.any((h) => h.id == offer.id), isTrue);
+    final before = controller.state.horses.first.hunger;
+    expect(controller.careForHorse(controller.state.horses.first.id, 'feed'), isTrue);
+    expect(controller.state.horses.first.hunger, greaterThan(before));
+  });
+
   test('a dialogue can summon the council', () {
     final controller = GameController.starter();
     expect(controller.state.currentKurultay, isNull);

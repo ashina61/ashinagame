@@ -4,6 +4,7 @@ import '../models/event_choice.dart';
 import '../models/faith.dart';
 import '../models/game_day.dart';
 import '../models/household.dart';
+import '../models/horse.dart';
 import '../models/marriage_candidate.dart';
 import '../models/player_profile.dart';
 import '../models/quest.dart';
@@ -86,6 +87,39 @@ class StarterGameData {
         rituals: rituals,
         sacredPlaces: sacredPlaces,
         marketStock: MarketGoods.startingStock(),
+        foodInventory: const {
+          'raw_meat': 1,
+          'root_vegetable': 2,
+          'water_skin': 1,
+        },
+        dailyOpportunities: const [
+          'fish_river',
+          'cold_night',
+          'youth_training',
+        ],
+        questChainProgress: const {
+          'first_fire': 0,
+          'winter_prep': 0,
+          'first_bow': 0,
+          'old_inscription': 0,
+          'oba_road': 0,
+        },
+        horses: const [
+          Horse(
+            id: 'boz_yele',
+            name: 'Boz Yele',
+            breed: 'Bozkır Atı',
+            acquiredDay: 1,
+          ),
+        ],
+        locationStates: const {
+          'hunting_ground': 'discovered',
+          'forest_edge': 'discovered',
+          'river_bank': 'undiscovered',
+          'old_inscription': 'undiscovered',
+          'market_road': 'undiscovered',
+          'salt_bed': 'undiscovered',
+        },
         obaFounded: false,
         landScouted: false,
       );
