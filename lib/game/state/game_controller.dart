@@ -40,16 +40,16 @@ enum CraftStart { started, noResources, queueFull }
 
 class GameController extends ChangeNotifier {
   GameController(this._state, {GameStorage? storage, Random? random})
-      : _storage = storage,
-        _random = random ?? Random();
+    : _storage = storage,
+      _random = random ?? Random();
 
   factory GameController.starter() => GameController(StarterGameData.create());
 
   /// Restores the saved run, or starts a fresh one.
   factory GameController.restored(GameStorage storage) => GameController(
-        storage.load() ?? StarterGameData.create(),
-        storage: storage,
-      );
+    storage.load() ?? StarterGameData.create(),
+    storage: storage,
+  );
 
   static const campActionCost = 1;
   static const exploreCost = 1;
@@ -119,7 +119,8 @@ class GameController extends ChangeNotifier {
 
   /// Final success chance for a site, clamped to 5–95 percent.
   int successChanceFor(ExpeditionSite site) {
-    final chance = site.baseChance +
+    final chance =
+        site.baseChance +
         _state.profile.courage +
         _state.profile.warfare * 2 +
         equipmentBonus +
@@ -210,8 +211,9 @@ class GameController extends ChangeNotifier {
     }
     final enduranceDiscount = (_state.profile.endurance / 4).floor();
     final winterTax = _state.day.season.name == 'winter' ? 3 : 0;
-    final adjustedEnergy =
-        (energyCost + winterTax - enduranceDiscount).clamp(3, 30).toInt();
+    final adjustedEnergy = (energyCost + winterTax - enduranceDiscount)
+        .clamp(3, 30)
+        .toInt();
     final profile = ProgressionLogic.addXp(
       _state.profile.copyWith(
         energy: _state.profile.energy - adjustedEnergy,
@@ -333,8 +335,9 @@ class GameController extends ChangeNotifier {
     final discount = companionCraftDiscount;
     final costs = {
       for (final entry in recipe.costs.entries)
-        entry.key:
-            (entry.value * (100 - discount) ~/ 100).clamp(1, 1 << 30).toInt(),
+        entry.key: (entry.value * (100 - discount) ~/ 100)
+            .clamp(1, 1 << 30)
+            .toInt(),
     };
     for (final entry in costs.entries) {
       if (_state.resource(entry.key) < entry.value) {
@@ -366,11 +369,12 @@ class GameController extends ChangeNotifier {
         _state.stockOf(good.id) <= 0) {
       return false;
     }
-    final price = (MarketLogic.priceFor(good, _state.day.day) *
-            (100 - companionMarketDiscount) ~/
-            100)
-        .clamp(1, 1 << 30)
-        .toInt();
+    final price =
+        (MarketLogic.priceFor(good, _state.day.day) *
+                (100 - companionMarketDiscount) ~/
+                100)
+            .clamp(1, 1 << 30)
+            .toInt();
     if (_state.resource(ResourceType.gold) < price) {
       return false;
     }
@@ -732,7 +736,7 @@ class GameController extends ChangeNotifier {
         gameOver: gameOver,
         gameOverReason: gameOver
             ? 'Moral günlerce sıfırda kaldı; oba dağıldı ve halk '
-                'başka beyliklere göçtü.'
+                  'başka beyliklere göçtü.'
             : null,
         pendingSuccession: pendingSuccession,
         currentKurultay: kurultayId,
@@ -746,8 +750,9 @@ class GameController extends ChangeNotifier {
         craftQueue: queue,
         craftedItems: crafted,
         marketStock: MarketGoods.startingStock(),
-        currentEvent:
-            pendingSuccession ? null : EventLogic.nextEvent(eventIndex),
+        currentEvent: pendingSuccession
+            ? null
+            : EventLogic.nextEvent(eventIndex),
         clearEvent: pendingSuccession,
         eventIndex: eventIndex,
         raidCountdown: raidCountdown,
@@ -830,7 +835,9 @@ class GameController extends ChangeNotifier {
         dailyActionPoints: _state.dailyActionPoints - ritual.actionCost,
         resources: resources,
         household: household,
-        faithState: _state.faithState.apply(ritual.faithEffects).copyWith(
+        faithState: _state.faithState
+            .apply(ritual.faithEffects)
+            .copyWith(
               lastRitualDay: _state.day.day,
               ritualCooldownDays: ritual.cooldownDays,
               activeBlessings: [
@@ -879,15 +886,18 @@ class GameController extends ChangeNotifier {
         resources: ResourceLogic.apply(_state.resources, {
           ResourceType.morale: isBadOmen ? 3 : 1,
         }),
-        faithState: _state.faithState.apply(effects).copyWith(
+        faithState: _state.faithState
+            .apply(effects)
+            .copyWith(
               omen: isBadOmen
                   ? 'Kam alameti yatıştırdı.'
                   : _state.faithState.omen,
               omenSeverity: isBadOmen
                   ? OmenSeverity.neutral
                   : _state.faithState.omenSeverity,
-              activeWarnings:
-                  isBadOmen ? const [] : _state.faithState.activeWarnings,
+              activeWarnings: isBadOmen
+                  ? const []
+                  : _state.faithState.activeWarnings,
               activeBlessings: [
                 '${advisor.name} yorumu',
                 ..._state.faithState.activeBlessings,
@@ -914,12 +924,14 @@ class GameController extends ChangeNotifier {
       _state.copyWith(
         dailyActionPoints: _state.dailyActionPoints - 1,
         resources: ResourceLogic.apply(_state.resources, place.resourceEffects),
-        faithState: _state.faithState.apply(place.faithEffects).copyWith(
-          visitedSacredPlaces: {
-            ..._state.faithState.visitedSacredPlaces,
-            place.id: _state.day.day,
-          },
-        ),
+        faithState: _state.faithState
+            .apply(place.faithEffects)
+            .copyWith(
+              visitedSacredPlaces: {
+                ..._state.faithState.visitedSacredPlaces,
+                place.id: _state.day.day,
+              },
+            ),
         profile: ProgressionLogic.addXp(
           _state.profile.copyWith(
             energy: _state.profile.energy - place.energyCost,
@@ -952,8 +964,9 @@ class GameController extends ChangeNotifier {
   bool upgradeBuilding(String id) {
     final building = _state.building(id);
     if (building == null || !building.canUpgrade) return false;
-    final craftDiscount =
-        id == 'workshop' ? (_state.profile.craft / 5).floor() : 0;
+    final craftDiscount = id == 'workshop'
+        ? (_state.profile.craft / 5).floor()
+        : 0;
     final cost = {
       for (final entry in building.upgradeCost.entries)
         entry.key: (entry.value - craftDiscount).clamp(1, 9999).toInt(),
@@ -993,7 +1006,8 @@ class GameController extends ChangeNotifier {
     switch (action) {
       case 'gift':
         resourceCost = const {ResourceType.gold: -100};
-        delta = 8 +
+        delta =
+            8 +
             (_state.profile.trade / 5).floor() +
             (_state.faithState.kut / 35).floor();
         break;
@@ -1003,7 +1017,8 @@ class GameController extends ChangeNotifier {
         tradeOpen = true;
         break;
       case 'envoy':
-        delta = _state.profile.wisdom +
+        delta =
+            _state.profile.wisdom +
                     _state.profile.trade +
                     (_state.faithState.kut / 25).floor() >=
                 10
@@ -1514,7 +1529,8 @@ class GameController extends ChangeNotifier {
     Map<String, int> wounded,
     Map<String, int> lost,
     Map<String, int> hurt,
-  }) _battleCasualties(double woundFrac, double lostFrac) {
+  })
+  _battleCasualties(double woundFrac, double lostFrac) {
     final army = <String, int>{};
     final wounded = Map<String, int>.from(_state.wounded);
     final lostMap = <String, int>{};
@@ -1555,7 +1571,8 @@ class GameController extends ChangeNotifier {
   /// defence steadies the line, and the leader and realm add their weight. A
   /// Savaşçı Başı (warleader role) lifts the whole host by a percent.
   int get warStrength {
-    final base = armyStrength * 4 +
+    final base =
+        armyStrength * 4 +
         armyDefense * 2 +
         _state.resource(ResourceType.population) +
         _state.profile.warfare * 8 +
@@ -1768,7 +1785,8 @@ class GameController extends ChangeNotifier {
   }) {
     final conquered = [..._state.conqueredRegions, castle.id];
     final nation = Nations.nationOf(castle.id);
-    final nationDone = castle.isCenter &&
+    final nationDone =
+        castle.isCenter &&
         nation != null &&
         nation.castles.every((c) => conquered.contains(c.id));
     return _state.copyWith(
@@ -2082,12 +2100,14 @@ class GameController extends ChangeNotifier {
     Map<String, int> loyalty,
     List<String> freedCastles,
     List<String> notes,
-  }) _driftProvinces() {
+  })
+  _driftProvinces() {
     final policies = Map<String, String>.from(_state.nationPolicies);
     final loyalty = Map<String, int>.from(_state.nationLoyalty);
     final freed = <String>[];
     final notes = <String>[];
-    final hold = (_state.peopleApproval >= 60 ? 1 : 0) +
+    final hold =
+        (_state.peopleApproval >= 60 ? 1 : 0) +
         (_state.profile.reputation >= 50 ? 1 : 0) +
         (_state.isKhan ? 1 : 0);
     for (final entry in policies.entries.toList()) {
@@ -2224,10 +2244,12 @@ class GameController extends ChangeNotifier {
       return;
     }
     final choice = decision.choices[choiceIndex];
-    final people =
-        (_state.peopleApproval + choice.peopleEffect).clamp(0, 100).toInt();
-    final council =
-        (_state.councilApproval + choice.councilEffect).clamp(0, 100).toInt();
+    final people = (_state.peopleApproval + choice.peopleEffect)
+        .clamp(0, 100)
+        .toInt();
+    final council = (_state.councilApproval + choice.councilEffect)
+        .clamp(0, 100)
+        .toInt();
 
     // A verdict echoes through the named beys it touches.
     var relations = _state.npcRelations;
@@ -2292,8 +2314,8 @@ class GameController extends ChangeNotifier {
     if (_state.dailyActionPoints < 1) return false;
     final npc = NpcCharacters.byId(npcId);
     final relations = Map<String, int>.from(_state.npcRelations);
-    relations[npcId] =
-        (_state.relationWith(npcId) + choice.relationEffect).clamp(0, 100);
+    relations[npcId] = (_state.relationWith(npcId) + choice.relationEffect)
+        .clamp(0, 100);
 
     var resources = ResourceLogic.apply(
       _state.resources,
@@ -2408,7 +2430,8 @@ class GameController extends ChangeNotifier {
   List<Quest> _trackAction(String actionId) {
     return _state.quests
         .map(
-          (quest) => !quest.completed &&
+          (quest) =>
+              !quest.completed &&
                   quest.goalType == QuestGoalType.action &&
                   quest.goalAction == actionId &&
                   quest.progress < quest.goalTarget
@@ -2464,8 +2487,8 @@ class GameController extends ChangeNotifier {
         omen: good
             ? 'Ateş beklenmedik şekilde gür yandı.'
             : badPressure
-                ? 'Sabah rüzgârı kuzeyden sert esti.'
-                : 'Kurt uluması oba yakınında duyuldu.',
+            ? 'Sabah rüzgârı kuzeyden sert esti.'
+            : 'Kurt uluması oba yakınında duyuldu.',
         omenSeverity: good ? OmenSeverity.good : OmenSeverity.bad,
         activeBlessings: good
             ? ['İyi alamet', ...faith.activeBlessings].take(4).toList()

@@ -11,7 +11,8 @@ class NpcDialogues {
     Dialogue(
       id: 'bori_tore',
       npcId: 'bori_bey',
-      line: 'Genç bey, töre eskidikçe sağlamlaşır. Yeni usuller meclisi '
+      line:
+          'Genç bey, töre eskidikçe sağlamlaşır. Yeni usuller meclisi '
           'huzursuz ediyor. Sözümü dinler misin?',
       choices: [
         DialogueChoice(
@@ -40,7 +41,8 @@ class NpcDialogues {
     Dialogue(
       id: 'bori_gift',
       npcId: 'bori_bey',
-      line: 'Meclisin desteğini umuyorsan, eski beyleri unutma. Bir armağan '
+      line:
+          'Meclisin desteğini umuyorsan, eski beyleri unutma. Bir armağan '
           'gönlü yumuşatır.',
       choices: [
         DialogueChoice(
@@ -62,7 +64,8 @@ class NpcDialogues {
     Dialogue(
       id: 'kaya_drill',
       npcId: 'kaya_atabek',
-      line: 'Atlılar talimsiz kalırsa kılıç paslanır, bey. Bir talim '
+      line:
+          'Atlılar talimsiz kalırsa kılıç paslanır, bey. Bir talim '
           'düzenleyelim mi?',
       choices: [
         DialogueChoice(
@@ -82,7 +85,8 @@ class NpcDialogues {
     Dialogue(
       id: 'kaya_raid',
       npcId: 'kaya_atabek',
-      line: 'Komşu bir kervan korumasız geçiyor. Akın edersek hazine dolar '
+      line:
+          'Komşu bir kervan korumasız geçiyor. Akın edersek hazine dolar '
           'ama kan da dökülür.',
       choices: [
         DialogueChoice(
@@ -105,7 +109,8 @@ class NpcDialogues {
     Dialogue(
       id: 'kaya_council',
       npcId: 'kaya_atabek',
-      line: 'Beyler sefer için söyleniyor, bey. Meclisi toplayıp divan '
+      line:
+          'Beyler sefer için söyleniyor, bey. Meclisi toplayıp divan '
           'kuralım mı?',
       choices: [
         DialogueChoice(
@@ -126,7 +131,8 @@ class NpcDialogues {
     Dialogue(
       id: 'alis_winter',
       npcId: 'alis_hatun',
-      line: 'Bey, kışlık erzak az. Çocuklar üşüyor. Ocaklara biraz pay '
+      line:
+          'Bey, kışlık erzak az. Çocuklar üşüyor. Ocaklara biraz pay '
           'ayırır mısın?',
       choices: [
         DialogueChoice(
@@ -149,7 +155,8 @@ class NpcDialogues {
     Dialogue(
       id: 'alis_wedding',
       npcId: 'alis_hatun',
-      line: 'İki genç birbirine söz verdi. Bir düğün obayı şenlendirir, ne '
+      line:
+          'İki genç birbirine söz verdi. Bir düğün obayı şenlendirir, ne '
           'dersin?',
       choices: [
         DialogueChoice(
@@ -172,7 +179,8 @@ class NpcDialogues {
     Dialogue(
       id: 'tugan_taunt',
       npcId: 'tugan_bey',
-      line: 'Senin obanın otlağı bana dar geliyor, bey. Sınırı geri çekersen '
+      line:
+          'Senin obanın otlağı bana dar geliyor, bey. Sınırı geri çekersen '
           'kavga çıkmaz.',
       choices: [
         DialogueChoice(
@@ -202,7 +210,8 @@ class NpcDialogues {
     Dialogue(
       id: 'bezirgan_news',
       npcId: 'bezirgan',
-      line: 'İpek Yolu’ndan geldim, bey. Bilgi de mal kadar kıymetli. Bir '
+      line:
+          'İpek Yolu’ndan geldim, bey. Bilgi de mal kadar kıymetli. Bir '
           'kese altına yolların hâlini anlatayım mı?',
       choices: [
         DialogueChoice(
@@ -223,7 +232,8 @@ class NpcDialogues {
     Dialogue(
       id: 'togan_loyalty',
       npcId: 'togan_kagan',
-      line: 'Beyim, kağanlığa bağlılığın sürüyor mu? Sadık obalar ödülsüz '
+      line:
+          'Beyim, kağanlığa bağlılığın sürüyor mu? Sadık obalar ödülsüz '
           'kalmaz.',
       choices: [
         DialogueChoice(
@@ -245,7 +255,7 @@ class NpcDialogues {
 
   /// All dialogues belonging to [npcId].
   static List<Dialogue> forNpc(String npcId) => [
-        for (final d in all)
-          if (d.npcId == npcId) d,
-      ];
+    for (final d in all)
+      if (d.npcId == npcId) d,
+  ];
 }

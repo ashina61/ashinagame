@@ -122,8 +122,9 @@ class _UnitPanel extends StatelessWidget {
       (e) => state.resource(e.key) >= e.value,
     );
     final hasAp = state.dailyActionPoints > 0;
-    final costText =
-        cost.entries.map((e) => '${e.value} ${e.key.label}').join(', ');
+    final costText = cost.entries
+        .map((e) => '${e.value} ${e.key.label}')
+        .join(', ');
 
     return OrnatePanel(
       child: Column(

@@ -137,8 +137,11 @@ class CharacterScreen extends StatelessWidget {
                     const OrnatePanel(
                       child: Row(
                         children: [
-                          Icon(Icons.lock_clock,
-                              size: 18, color: AppColors.stone),
+                          Icon(
+                            Icons.lock_clock,
+                            size: 18,
+                            color: AppColors.stone,
+                          ),
                           SizedBox(width: 8),
                           Expanded(
                             child: Text(
@@ -350,16 +353,16 @@ String _skillIcon(String stat) => GameArt.hasSkillIcon(stat)
     : _legacySkillIcon(stat);
 
 String _legacySkillIcon(String stat) => switch (stat) {
-      'courage' => GameAssets.iconDaggersCrossed,
-      'wisdom' => GameAssets.iconScrollMedallion,
-      'leadership' => GameAssets.iconPeopleGroupGold,
-      'endurance' => GameAssets.iconHeartMedallion,
-      'trade' => GameAssets.iconCoinsMedallion,
-      'craft' => GameAssets.iconGearEmblem,
-      'archery' => GameAssets.iconItemBow,
-      'warfare' => GameAssets.iconArmyEmblem,
-      _ => GameAssets.iconStarMedallion,
-    };
+  'courage' => GameAssets.iconDaggersCrossed,
+  'wisdom' => GameAssets.iconScrollMedallion,
+  'leadership' => GameAssets.iconPeopleGroupGold,
+  'endurance' => GameAssets.iconHeartMedallion,
+  'trade' => GameAssets.iconCoinsMedallion,
+  'craft' => GameAssets.iconGearEmblem,
+  'archery' => GameAssets.iconItemBow,
+  'warfare' => GameAssets.iconArmyEmblem,
+  _ => GameAssets.iconStarMedallion,
+};
 
 class _SkillBar extends StatelessWidget {
   const _SkillBar(this.label, this.stat, this.value);
@@ -432,8 +435,9 @@ class _SkillBar extends StatelessWidget {
             child: GoldButton(
               label: '+',
               height: 30,
-              onPressed:
-                  canSpend ? () => controller.spendSkillPoint(stat) : null,
+              onPressed: canSpend
+                  ? () => controller.spendSkillPoint(stat)
+                  : null,
             ),
           ),
         ],
@@ -483,16 +487,17 @@ class _CandidateCard extends StatelessWidget {
                         Expanded(
                           child: Text(
                             '${candidate.name}, ${candidate.age}',
-                            style:
-                                AppTextStyles.bodyStrong.copyWith(fontSize: 16),
+                            style: AppTextStyles.bodyStrong.copyWith(
+                              fontSize: 16,
+                            ),
                           ),
                         ),
                         Text(
                           candidate.isMarriedToPlayer
                               ? 'EŞ'
                               : candidate.isAvailable
-                                  ? 'Uygun'
-                                  : 'Kapalı',
+                              ? 'Uygun'
+                              : 'Kapalı',
                           style: AppTextStyles.meta.copyWith(
                             color: candidate.isAvailable
                                 ? AppColors.success
@@ -527,11 +532,11 @@ class _CandidateCard extends StatelessWidget {
                   height: 34,
                   onPressed:
                       state.dailyActionPoints > 0 && candidate.isAvailable
-                          ? () {
-                              controller.meetCandidate(candidate.id);
-                              AudioService.instance.playSfx('tap');
-                            }
-                          : null,
+                      ? () {
+                          controller.meetCandidate(candidate.id);
+                          AudioService.instance.playSfx('tap');
+                        }
+                      : null,
                 ),
               ),
               const SizedBox(width: 8),
@@ -540,7 +545,8 @@ class _CandidateCard extends StatelessWidget {
                   label: 'HEDİYE',
                   variant: SkinnedButtonVariant.secondary,
                   height: 34,
-                  onPressed: state.resource(ResourceType.gold) >= 50 &&
+                  onPressed:
+                      state.resource(ResourceType.gold) >= 50 &&
                           state.dailyActionPoints > 0 &&
                           candidate.isAvailable
                       ? () {
@@ -555,8 +561,9 @@ class _CandidateCard extends StatelessWidget {
                 child: SkinnedButton(
                   label: candidate.isMarriedToPlayer ? 'EŞİN' : 'TEKLİF',
                   height: 34,
-                  onPressed:
-                      offerable ? () => _propose(context, controller) : null,
+                  onPressed: offerable
+                      ? () => _propose(context, controller)
+                      : null,
                 ),
               ),
             ],

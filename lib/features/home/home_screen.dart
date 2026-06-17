@@ -116,7 +116,8 @@ class HomeScreen extends StatelessWidget {
       context,
       title: event?.title ?? 'Ateş Ocağı',
       icon: GameAssets.iconMoraleEmblem,
-      description: event?.description ??
+      description:
+          event?.description ??
           'Ocağın başında dinlenir, yorgunluğunu atarsın.',
       actions: event == null
           ? [
@@ -154,7 +155,8 @@ class HomeScreen extends StatelessWidget {
         SceneAction(
           label: 'Atını besle',
           subtitle: 'Erzak -4, moral +2',
-          enabled: controller.state.dailyActionPoints > 0 &&
+          enabled:
+              controller.state.dailyActionPoints > 0 &&
               controller.state.resource(ResourceType.food) >= 4,
           onTap: () => controller.performCampAction(
             GameActions.rest,
@@ -473,8 +475,11 @@ class _AmbientLine extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 8, left: 4, right: 4),
       child: Row(
         children: [
-          const Icon(Icons.local_fire_department,
-              size: 14, color: AppColors.ember),
+          const Icon(
+            Icons.local_fire_department,
+            size: 14,
+            color: AppColors.ember,
+          ),
           const SizedBox(width: 6),
           Expanded(
             child: Text(
@@ -618,8 +623,8 @@ class _Chip extends StatelessWidget {
               done
                   ? Icons.check_circle
                   : locked
-                      ? Icons.lock
-                      : Icons.flag,
+                  ? Icons.lock
+                  : Icons.flag,
               size: 13,
               color: done ? AppColors.success : AppColors.sand,
             ),

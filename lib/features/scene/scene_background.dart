@@ -61,7 +61,7 @@ class SceneBackground extends StatelessWidget {
                 colors: [
                   Color(0x00000000),
                   Color(0x00000000),
-                  Color(0x88000000)
+                  Color(0x88000000),
                 ],
                 stops: [0.0, 0.6, 1.0],
               ),

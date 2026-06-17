@@ -20,7 +20,8 @@ class NearbyPeopleScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return NpcScreen(
       title: 'Yakınlar',
-      intro: 'Güven kazan, ismini yükselt. Konuştukça bağ kurar, bağ '
+      intro:
+          'Güven kazan, ismini yükselt. Konuştukça bağ kurar, bağ '
           'derinleştikçe yandaş toplarsın. 75 güvene ulaşan biri sana yoldaş '
           'olur.',
       topPanel: const _FollowersPanel(),

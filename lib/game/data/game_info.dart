@@ -49,7 +49,8 @@ class GameInfo {
       summary: 'İtibar. Adının bozkırda ne kadar duyulduğu — 0–100.',
       howToEarn:
           'Ticaret, görev, yardım, av/keşif, diplomasi ve sefer itibar kazandırır.',
-      note: 'Tek bir itibar vardır: her ekranda aynı değeri görürsün. Oba '
+      note:
+          'Tek bir itibar vardır: her ekranda aynı değeri görürsün. Oba '
           'kurmak için 50, evlilik için 20 itibar gerekir.',
     ),
     ResourceType.morale: ResourceInfo(
@@ -131,7 +132,8 @@ class GameInfo {
         'Sandık, at ve tezgâha dokun; çevreni keşfet.',
         'Üstteki kaynak ikonlarına dokunup ne işe yaradıklarını öğren.',
       ],
-      tip: 'Bu küçük çadır bir gün obanın kalbi olacak. İtibarını 50’ye '
+      tip:
+          'Bu küçük çadır bir gün obanın kalbi olacak. İtibarını 50’ye '
           'çıkar, yandaş ve güçlü bir bağ kur, toprağı keşfet — sonra oba kur.',
     ),
     HelpId.character: HelpTopic(
@@ -156,7 +158,8 @@ class GameInfo {
         'Oba kurma şartlarını gözden geçir; eksiğini tamamla.',
         'Tüm şartlar tamamsa kendi obanı kur.',
       ],
-      tip: 'Oba kurmak için: itibar 50, 3 yandaş, çadır Lv.2, güçlü bir bağ '
+      tip:
+          'Oba kurmak için: itibar 50, 3 yandaş, çadır Lv.2, güçlü bir bağ '
           've keşfedilmiş toprak gerekir.',
     ),
     HelpId.people: HelpTopic(
@@ -186,7 +189,8 @@ class GameInfo {
     ),
     HelpId.market: HelpTopic(
       title: 'Pazar / Han',
-      purpose: 'Alıp sattığın, paralı savaşçı ve yoldaş bulduğun yer. Fiyatlar '
+      purpose:
+          'Alıp sattığın, paralı savaşçı ve yoldaş bulduğun yer. Fiyatlar '
           'günden güne oynar; ucuza al, pahalıya sat.',
       steps: [
         'Sat sekmesinde fazlanı altına çevir.',

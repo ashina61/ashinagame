@@ -34,12 +34,12 @@ class TentScreen extends StatelessWidget {
   /// underlying building ids and placed around the tent scene.
   static const _parts =
       <(String id, String label, double x, double y, String icon)>[
-    ('main_tent', 'Ana Çadır', 0.5, 0.34, GameArt.playerTentLv1),
-    ('storage', 'Sandık', 0.24, 0.6, GameArt.campChest),
-    ('workshop', 'Çalışma Tezgâhı', 0.16, 0.34, GameArt.campWorkbench),
-    ('horse_herd', 'At Bağı', 0.82, 0.4, GameArt.campHorseTie),
-    ('healer', 'Korunak', 0.76, 0.66, GameAssets.iconHeartMedallion),
-  ];
+        ('main_tent', 'Ana Çadır', 0.5, 0.34, GameArt.playerTentLv1),
+        ('storage', 'Sandık', 0.24, 0.6, GameArt.campChest),
+        ('workshop', 'Çalışma Tezgâhı', 0.16, 0.34, GameArt.campWorkbench),
+        ('horse_herd', 'At Bağı', 0.82, 0.4, GameArt.campHorseTie),
+        ('healer', 'Korunak', 0.76, 0.66, GameAssets.iconHeartMedallion),
+      ];
 
   @override
   Widget build(BuildContext context) {
@@ -130,10 +130,7 @@ class TentScreen extends StatelessWidget {
         SceneAction(
           label: building.canUpgrade ? 'Yükselt' : 'Azami seviye',
           subtitle: building.canUpgrade
-              ? 'Maliyet: ${Formatters.resourceDelta({
-                      for (final e in building.upgradeCost.entries)
-                        e.key: -e.value
-                    })}'
+              ? 'Maliyet: ${Formatters.resourceDelta({for (final e in building.upgradeCost.entries) e.key: -e.value})}'
               : null,
           primary: true,
           enabled: building.canUpgrade && affordable,
@@ -181,9 +178,9 @@ class _ObaPathPanel extends StatelessWidget {
               Text(
                 state.obaFounded
                     ? '${state.clan.name} kuruldu. Bu çadır artık bir obanın '
-                        'kalbi.'
+                          'kalbi.'
                     : 'Yalnız bir yolcusun. Bu çadır bir gün obanın kalbi '
-                        'olacak — yol şöyle:',
+                          'olacak — yol şöyle:',
                 style: AppTextStyles.body,
               ),
               const SizedBox(height: 6),
@@ -208,10 +205,10 @@ class _ObaPathPanel extends StatelessWidget {
               label: canFound ? 'OBANI KUR' : 'ŞARTLAR EKSİK',
               onPressed: canFound
                   ? () => Navigator.of(context).push(
-                        MaterialPageRoute<void>(
-                          builder: (_) => const FoundObaScreen(),
-                        ),
-                      )
+                      MaterialPageRoute<void>(
+                        builder: (_) => const FoundObaScreen(),
+                      ),
+                    )
                   : null,
             ),
           ),

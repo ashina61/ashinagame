@@ -29,18 +29,17 @@ class MarriageCandidate {
     int? relation,
     bool? isAvailable,
     bool? isMarriedToPlayer,
-  }) =>
-      MarriageCandidate(
-        id: id,
-        name: name,
-        age: age,
-        tribeName: tribeName,
-        personality: personality,
-        compatibility: compatibility,
-        relation: (relation ?? this.relation).clamp(0, 100).toInt(),
-        diplomaticValue: diplomaticValue,
-        bonusType: bonusType,
-        isAvailable: isAvailable ?? this.isAvailable,
-        isMarriedToPlayer: isMarriedToPlayer ?? this.isMarriedToPlayer,
-      );
+  }) => MarriageCandidate(
+    id: id,
+    name: name,
+    age: age,
+    tribeName: tribeName,
+    personality: personality,
+    compatibility: compatibility,
+    relation: (relation ?? this.relation).clamp(0, 100).toInt(),
+    diplomaticValue: diplomaticValue,
+    bonusType: bonusType,
+    isAvailable: isAvailable ?? this.isAvailable,
+    isMarriedToPlayer: isMarriedToPlayer ?? this.isMarriedToPlayer,
+  );
 }

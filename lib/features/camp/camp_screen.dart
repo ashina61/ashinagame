@@ -39,16 +39,16 @@ class _CampScreenState extends State<CampScreen> {
   /// Each oba structure placed around the settlement scene.
   static const _spots =
       <(String id, String label, double x, double y, String icon)>[
-    ('main_tent', 'Ana Çadır', 0.5, 0.3, GameArt.obaMainTent),
-    ('watchtower', 'Gözcü Kulesi', 0.85, 0.22, GameArt.obaWatchtower),
-    ('storage', 'Depo', 0.2, 0.46, GameArt.obaStorage),
-    ('pen', 'Ağıl', 0.8, 0.48, GameArt.obaHorsePen),
-    ('market_tent', 'Pazar Çadırı', 0.5, 0.56, GameArt.obaMarketTent),
-    ('workshop', 'Atölye', 0.16, 0.72, GameArt.obaWorkshop),
-    ('kam_tent', 'Kam Çadırı', 0.34, 0.78, GameArt.obaShamanTent),
-    ('healer', 'Şifacı Çadırı', 0.66, 0.78, GameArt.obaBigTent),
-    ('training', 'Eğitim Alanı', 0.86, 0.74, GameAssets.iconSwordsCrossed),
-  ];
+        ('main_tent', 'Ana Çadır', 0.5, 0.3, GameArt.obaMainTent),
+        ('watchtower', 'Gözcü Kulesi', 0.85, 0.22, GameArt.obaWatchtower),
+        ('storage', 'Depo', 0.2, 0.46, GameArt.obaStorage),
+        ('pen', 'Ağıl', 0.8, 0.48, GameArt.obaHorsePen),
+        ('market_tent', 'Pazar Çadırı', 0.5, 0.56, GameArt.obaMarketTent),
+        ('workshop', 'Atölye', 0.16, 0.72, GameArt.obaWorkshop),
+        ('kam_tent', 'Kam Çadırı', 0.34, 0.78, GameArt.obaShamanTent),
+        ('healer', 'Şifacı Çadırı', 0.66, 0.78, GameArt.obaBigTent),
+        ('training', 'Eğitim Alanı', 0.86, 0.74, GameAssets.iconSwordsCrossed),
+      ];
 
   @override
   Widget build(BuildContext context) {
@@ -133,9 +133,7 @@ class _CampScreenState extends State<CampScreen> {
         SceneAction(
           label: b.canUpgrade ? 'Yükselt' : 'Azami seviye',
           subtitle: b.canUpgrade
-              ? 'Maliyet: ${Formatters.resourceDelta({
-                      for (final e in b.upgradeCost.entries) e.key: -e.value
-                    })}'
+              ? 'Maliyet: ${Formatters.resourceDelta({for (final e in b.upgradeCost.entries) e.key: -e.value})}'
               : null,
           primary: true,
           enabled: b.canUpgrade && affordable,
@@ -543,9 +541,7 @@ class _RitualCard extends StatelessWidget {
             children: [
               Expanded(
                 child: Text(
-                  'Maliyet: ${Formatters.resourceDelta({
-                        for (final e in ritual.cost.entries) e.key: -e.value
-                      })}${cooldownLeft > 0 ? ' • $cooldownLeft gün bekle' : ''}',
+                  'Maliyet: ${Formatters.resourceDelta({for (final e in ritual.cost.entries) e.key: -e.value})}${cooldownLeft > 0 ? ' • $cooldownLeft gün bekle' : ''}',
                   style: AppTextStyles.meta,
                 ),
               ),
@@ -554,7 +550,8 @@ class _RitualCard extends StatelessWidget {
                 child: GoldButton(
                   label: 'TÖREN',
                   height: 34,
-                  onPressed: state.dailyActionPoints >= ritual.actionCost &&
+                  onPressed:
+                      state.dailyActionPoints >= ritual.actionCost &&
                           affordable &&
                           cooldownLeft == 0
                       ? () {
@@ -620,10 +617,7 @@ class _BuildingCard extends StatelessWidget {
               Expanded(
                 child: Text(
                   building.canUpgrade
-                      ? 'Maliyet: ${Formatters.resourceDelta({
-                              for (final e in building.upgradeCost.entries)
-                                e.key: -e.value
-                            })}'
+                      ? 'Maliyet: ${Formatters.resourceDelta({for (final e in building.upgradeCost.entries) e.key: -e.value})}'
                       : 'Azami seviyeye ulaştı',
                   style: AppTextStyles.meta,
                 ),
