@@ -57,8 +57,9 @@ class WolfPortraitFrame extends StatelessWidget {
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      color:
-                          selected ? AppColors.goldBright : AppColors.goldDim,
+                      color: selected
+                          ? AppColors.goldBright
+                          : AppColors.goldDim,
                       width: selected ? 2.4 : 1.2,
                     ),
                   ),

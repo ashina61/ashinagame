@@ -33,10 +33,10 @@ class CharacterScreen extends StatelessWidget {
     final nextAgeGate = profile.age < 16
         ? '16: Yoldaşlık, pazar yolu, at eğitimi'
         : profile.age < 18
-            ? '18: Oba kurma hazırlıkları'
-            : profile.age < 21
-                ? '21: Boy / sefer / kağanlık yolu'
-                : 'Geç oyun: antlaşma, sefer ve kağanlık';
+        ? '18: Oba kurma hazırlıkları'
+        : profile.age < 21
+        ? '21: Boy / sefer / kağanlık yolu'
+        : 'Geç oyun: antlaşma, sefer ve kağanlık';
     return Scaffold(
       body: OrnateScaffold(
         child: Column(

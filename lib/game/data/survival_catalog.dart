@@ -691,41 +691,35 @@ class SurvivalCatalog {
   ];
 
   static const questChains = <QuestChainDef>[
-    QuestChainDef(
-      'first_fire',
-      'İlk Ateş',
-      14,
-      ['Odun topla', 'Ateşi besle', 'Geceyi sıcak geçir'],
-    ),
-    QuestChainDef(
-      'winter_prep',
-      'Kışa Hazırlık',
-      14,
-      ['Kurutulmuş et hazırla', 'Odun stokla', 'Su tulumu doldur'],
-    ),
-    QuestChainDef(
-      'first_bow',
-      'İlk Yay',
-      14,
-      ['Deri bul', 'Odun seç', 'Yay yap'],
-    ),
-    QuestChainDef(
-      'first_horse',
-      'İlk At',
-      16,
-      ['Pazar yolunu aç', 'At seç', 'Atı besle'],
-    ),
-    QuestChainDef(
-      'old_inscription',
-      'Eski Yazıt',
-      16,
-      ['Söylenti dinle', 'Yazıt ara', 'İşareti yorumla'],
-    ),
-    QuestChainDef(
-      'oba_road',
-      'Oba Yolu',
-      18,
-      ['Çadırı Lv3 yap', 'Yoldaşları topla', 'Toprak seç'],
-    ),
+    QuestChainDef('first_fire', 'İlk Ateş', 14, [
+      'Odun topla',
+      'Ateşi besle',
+      'Geceyi sıcak geçir',
+    ]),
+    QuestChainDef('winter_prep', 'Kışa Hazırlık', 14, [
+      'Kurutulmuş et hazırla',
+      'Odun stokla',
+      'Su tulumu doldur',
+    ]),
+    QuestChainDef('first_bow', 'İlk Yay', 14, [
+      'Deri bul',
+      'Odun seç',
+      'Yay yap',
+    ]),
+    QuestChainDef('first_horse', 'İlk At', 16, [
+      'Pazar yolunu aç',
+      'At seç',
+      'Atı besle',
+    ]),
+    QuestChainDef('old_inscription', 'Eski Yazıt', 16, [
+      'Söylenti dinle',
+      'Yazıt ara',
+      'İşareti yorumla',
+    ]),
+    QuestChainDef('oba_road', 'Oba Yolu', 18, [
+      'Çadırı Lv3 yap',
+      'Yoldaşları topla',
+      'Toprak seç',
+    ]),
   ];
 }

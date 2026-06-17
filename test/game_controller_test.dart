@@ -1055,21 +1055,23 @@ void main() {
     },
   );
 
-  test('npc dialogue rotates and same-day repeated talk gives reduced reward',
-      () {
-    final controller = GameController.starter();
-    final first = controller.dialogueFor('bori_bey')!;
-    final choice = first.choices.first;
+  test(
+    'npc dialogue rotates and same-day repeated talk gives reduced reward',
+    () {
+      final controller = GameController.starter();
+      final first = controller.dialogueFor('bori_bey')!;
+      final choice = first.choices.first;
 
-    expect(controller.talkTo('bori_bey', choice), isTrue);
-    final afterFirst = controller.state.relationWith('bori_bey');
-    final second = controller.dialogueFor('bori_bey')!;
+      expect(controller.talkTo('bori_bey', choice), isTrue);
+      final afterFirst = controller.state.relationWith('bori_bey');
+      final second = controller.dialogueFor('bori_bey')!;
 
-    expect(second.id, isNot(first.id));
-    expect(controller.talkTo('bori_bey', choice), isTrue);
-    expect(controller.state.relationWith('bori_bey'), afterFirst);
-    expect(controller.lastTalkFeedback, contains('zaten'));
-  });
+      expect(second.id, isNot(first.id));
+      expect(controller.talkTo('bori_bey', choice), isTrue);
+      expect(controller.state.relationWith('bori_bey'), afterFirst);
+      expect(controller.lastTalkFeedback, contains('zaten'));
+    },
+  );
 
   test('tent upgrade has costs, block reasons, effects and save safety', () {
     final base = StarterGameData.create();
@@ -1124,9 +1126,7 @@ void main() {
   test('horse market and care use the singular horse model', () {
     final base = StarterGameData.create();
     final controller = GameController(
-      base.copyWith(
-        resources: {...base.resources, ResourceType.gold: 120},
-      ),
+      base.copyWith(resources: {...base.resources, ResourceType.gold: 120}),
     );
     final offer = controller.horseMarket().first;
     expect(controller.buyHorse(offer), isTrue);
