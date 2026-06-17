@@ -44,9 +44,8 @@ class _AchievementPanel extends StatelessWidget {
   Widget build(BuildContext context) {
     final controller = GameScope.of(context);
     final state = controller.state;
-    final progress = state
-        .achievementProgress(achievement)
-        .clamp(0, achievement.target);
+    final progress =
+        state.achievementProgress(achievement).clamp(0, achievement.target);
     final claimed = state.achievementClaimed(achievement.id);
     final ready = state.achievementReady(achievement);
 

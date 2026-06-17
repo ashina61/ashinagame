@@ -36,12 +36,12 @@ class TentScreen extends StatelessWidget {
   /// underlying building ids and placed around the tent scene.
   static const _parts =
       <(String id, String label, double x, double y, String icon)>[
-        ('main_tent', 'Ana Çadır', 0.5, 0.34, GameArt.playerTentLv1),
-        ('storage', 'Sandık', 0.24, 0.6, GameArt.campChest),
-        ('workshop', 'Çalışma Tezgâhı', 0.16, 0.34, GameArt.campWorkbench),
-        ('horse_herd', 'At Bağı', 0.82, 0.4, GameArt.campHorseTie),
-        ('healer', 'Korunak', 0.76, 0.66, GameAssets.iconHeartMedallion),
-      ];
+    ('main_tent', 'Ana Çadır', 0.5, 0.34, GameArt.playerTentLv1),
+    ('storage', 'Sandık', 0.24, 0.6, GameArt.campChest),
+    ('workshop', 'Çalışma Tezgâhı', 0.16, 0.34, GameArt.campWorkbench),
+    ('horse_herd', 'At Bağı', 0.82, 0.4, GameArt.campHorseTie),
+    ('healer', 'Korunak', 0.76, 0.66, GameAssets.iconHeartMedallion),
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -122,9 +122,8 @@ class TentScreen extends StatelessWidget {
     if (building == null) return;
     final isMainTent = id == 'main_tent';
     final tentTarget = isMainTent ? controller.tentUpgradeTarget() : null;
-    final tentReasons = isMainTent
-        ? controller.tentUpgradeBlockReasons()
-        : const <String>[];
+    final tentReasons =
+        isMainTent ? controller.tentUpgradeBlockReasons() : const <String>[];
     final affordable = building.upgradeCost.entries.every(
       (e) => controller.state.resource(e.key) >= e.value,
     );
@@ -135,7 +134,7 @@ class TentScreen extends StatelessWidget {
       context,
       title: isMainTent
           ? '$label • ${TentUpgradeLogic.tentName(building.level)} '
-                '(Lv.${building.level})'
+              '(Lv.${building.level})'
           : '$label • Lv.${building.level}/${building.maxLevel}',
       icon: icon,
       description: isMainTent
@@ -148,18 +147,18 @@ class TentScreen extends StatelessWidget {
         SceneAction(
           label: isMainTent
               ? tentTarget == null
-                    ? 'Azami seviye'
-                    : 'Yükselt: ${tentTarget.name}'
+                  ? 'Azami seviye'
+                  : 'Yükselt: ${tentTarget.name}'
               : building.canUpgrade
-              ? 'Yükselt'
-              : 'Azami seviye',
+                  ? 'Yükselt'
+                  : 'Azami seviye',
           subtitle: isMainTent
               ? tentReasons.isEmpty
-                    ? 'Maliyet hazır; yükseltme uygulanır.'
-                    : tentReasons.first
+                  ? 'Maliyet hazır; yükseltme uygulanır.'
+                  : tentReasons.first
               : building.canUpgrade
-              ? 'Maliyet: $upgradeCostText'
-              : null,
+                  ? 'Maliyet: $upgradeCostText'
+                  : null,
           primary: true,
           enabled: isMainTent
               ? tentTarget != null && tentReasons.isEmpty
@@ -216,8 +215,7 @@ class _TentUpgradeDetails extends StatelessWidget {
         const SizedBox(height: 4),
         for (final entry in target.cost.entries)
           _RequirementLine(
-            text:
-                '${entry.key.label}: '
+            text: '${entry.key.label}: '
                 '${state.resource(entry.key)}/${entry.value}',
             ok: state.resource(entry.key) >= entry.value,
           ),
@@ -286,9 +284,9 @@ class _ObaPathPanel extends StatelessWidget {
               Text(
                 state.obaFounded
                     ? '${state.clan.name} kuruldu. Bu çadır artık bir obanın '
-                          'kalbi.'
+                        'kalbi.'
                     : 'Yalnız bir yolcusun. Bu çadır bir gün obanın kalbi '
-                          'olacak — yol şöyle:',
+                        'olacak — yol şöyle:',
                 style: AppTextStyles.body,
               ),
               const SizedBox(height: 6),
@@ -313,10 +311,10 @@ class _ObaPathPanel extends StatelessWidget {
               label: canFound ? 'OBANI KUR' : 'ŞARTLAR EKSİK',
               onPressed: canFound
                   ? () => Navigator.of(context).push(
-                      MaterialPageRoute<void>(
-                        builder: (_) => const FoundObaScreen(),
-                      ),
-                    )
+                        MaterialPageRoute<void>(
+                          builder: (_) => const FoundObaScreen(),
+                        ),
+                      )
                   : null,
             ),
           ),

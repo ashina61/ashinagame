@@ -287,7 +287,7 @@ class _MarchBanner extends StatelessWidget {
           Text(
             left > 0
                 ? 'Ordu ${castle.name} yolunda — ${controller.marchStatus}, '
-                      '$left gün kaldı.'
+                    '$left gün kaldı.'
                 : 'Ordu ${castle.name} önünde — kuşatma başlıyor.',
             style: AppTextStyles.meta.copyWith(color: AppColors.goldBright),
           ),
@@ -505,8 +505,8 @@ class _NationBlock extends StatelessWidget {
                           fill: loyalty >= 50
                               ? AppColors.success
                               : loyalty >= 25
-                              ? AppColors.amber
-                              : AppColors.danger,
+                                  ? AppColors.amber
+                                  : AppColors.danger,
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -541,8 +541,7 @@ class _NationBlock extends StatelessWidget {
                     child: DarkButton(
                       label: 'SADAKAT TAZELE',
                       height: 34,
-                      onPressed:
-                          state.dailyActionPoints > 0 &&
+                      onPressed: state.dailyActionPoints > 0 &&
                               state.resource(ResourceType.gold) >= 60
                           ? () {
                               final ok = controller.reinforceProvince(
@@ -667,15 +666,15 @@ class _CastlePanel extends StatelessWidget {
                 conquered
                     ? 'Senin'
                     : locked
-                    ? 'Kilitli'
-                    : 'Bağımsız',
+                        ? 'Kilitli'
+                        : 'Bağımsız',
                 style: AppTextStyles.value.copyWith(
                   fontSize: 14,
                   color: conquered
                       ? AppColors.success
                       : locked
-                      ? AppColors.stone
-                      : AppColors.goldBright,
+                          ? AppColors.stone
+                          : AppColors.goldBright,
                 ),
               ),
             ],
@@ -714,10 +713,10 @@ class _CastlePanel extends StatelessWidget {
                     height: 34,
                     onPressed: hasAp && state.resource(ResourceType.gold) >= 80
                         ? () => _act(
-                            context,
-                            controller.improveRegionRelation(castle.id),
-                            'İlişki geliştirildi.',
-                          )
+                              context,
+                              controller.improveRegionRelation(castle.id),
+                              'İlişki geliştirildi.',
+                            )
                         : null,
                   ),
                 ),
@@ -728,10 +727,10 @@ class _CastlePanel extends StatelessWidget {
                     height: 34,
                     onPressed: canAnnex
                         ? () => _act(
-                            context,
-                            controller.annexRegion(castle.id),
-                            '${castle.name} barışla alındı.',
-                          )
+                              context,
+                              controller.annexRegion(castle.id),
+                              '${castle.name} barışla alındı.',
+                            )
                         : null,
                   ),
                 ),
@@ -764,16 +763,15 @@ class _CastlePanel extends StatelessWidget {
                         ? '${controller.marchStatus} ${state.marchDaysLeft}g'
                         : 'SEFER ${controller.marchDaysTo(castle)}g',
                     height: 34,
-                    onPressed:
-                        !state.marching &&
+                    onPressed: !state.marching &&
                             hasAp &&
                             state.resource(ResourceType.food) >=
                                 controller.marchFoodCost(castle)
                         ? () => _act(
-                            context,
-                            controller.startMarch(castle.id),
-                            'Ordu ${castle.name} üzerine yürüyüşe geçti.',
-                          )
+                              context,
+                              controller.startMarch(castle.id),
+                              'Ordu ${castle.name} üzerine yürüyüşe geçti.',
+                            )
                         : null,
                   ),
                 ),

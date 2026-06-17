@@ -285,9 +285,9 @@ class GameState {
         AchievementMetric.gold => resource(ResourceType.gold),
         AchievementMetric.conquered => completedExpeditions.length,
         AchievementMetric.crafted => craftedItems.values.fold(
-          0,
-          (sum, n) => sum + n,
-        ),
+            0,
+            (sum, n) => sum + n,
+          ),
         AchievementMetric.generation => generation,
         AchievementMetric.reputation => profile.reputation,
         AchievementMetric.daysSurvived => day.day,
@@ -314,9 +314,9 @@ class GameState {
   }
 
   int questProgress(Quest quest) => switch (quest.goalType) {
-    QuestGoalType.action => quest.progress,
-    QuestGoalType.resource => resource(quest.goalResource!),
-  };
+        QuestGoalType.action => quest.progress,
+        QuestGoalType.resource => resource(quest.goalResource!),
+      };
 
   bool questReady(Quest quest) =>
       !quest.completed && questProgress(quest) >= quest.goalTarget;
@@ -433,24 +433,20 @@ class GameState {
       claimedAchievements: claimedAchievements ?? this.claimedAchievements,
       faithPath: faithPath ?? this.faithPath,
       tamga: tamga ?? this.tamga,
-      khanateStanding: (khanateStanding ?? this.khanateStanding)
-          .clamp(0, 100)
-          .toInt(),
+      khanateStanding:
+          (khanateStanding ?? this.khanateStanding).clamp(0, 100).toInt(),
       isKhan: isKhan ?? this.isKhan,
       vassalObas: vassalObas ?? this.vassalObas,
       equipped: equipped ?? this.equipped,
       regionRelations: regionRelations ?? this.regionRelations,
       conqueredRegions: conqueredRegions ?? this.conqueredRegions,
       onboarded: onboarded ?? this.onboarded,
-      peopleApproval: (peopleApproval ?? this.peopleApproval)
-          .clamp(0, 100)
-          .toInt(),
-      councilApproval: (councilApproval ?? this.councilApproval)
-          .clamp(0, 100)
-          .toInt(),
-      currentKurultay: clearKurultay
-          ? null
-          : currentKurultay ?? this.currentKurultay,
+      peopleApproval:
+          (peopleApproval ?? this.peopleApproval).clamp(0, 100).toInt(),
+      councilApproval:
+          (councilApproval ?? this.councilApproval).clamp(0, 100).toInt(),
+      currentKurultay:
+          clearKurultay ? null : currentKurultay ?? this.currentKurultay,
       lastKurultayDay: lastKurultayDay ?? this.lastKurultayDay,
       army: army ?? this.army,
       wounded: wounded ?? this.wounded,

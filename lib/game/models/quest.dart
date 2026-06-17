@@ -40,19 +40,19 @@ class Quest {
   final bool completed;
 
   Quest copyWith({int? progress, bool? completed}) => Quest(
-    id: id,
-    title: title,
-    category: category,
-    description: description,
-    rewardText: rewardText,
-    goalType: goalType,
-    goalTarget: goalTarget,
-    goalAction: goalAction,
-    goalResource: goalResource,
-    resourceRewards: resourceRewards,
-    statRewards: statRewards,
-    xpReward: xpReward,
-    progress: progress ?? this.progress,
-    completed: completed ?? this.completed,
-  );
+        id: id,
+        title: title,
+        category: category,
+        description: description,
+        rewardText: rewardText,
+        goalType: goalType,
+        goalTarget: goalTarget,
+        goalAction: goalAction,
+        goalResource: goalResource,
+        resourceRewards: resourceRewards,
+        statRewards: statRewards,
+        xpReward: xpReward,
+        progress: progress ?? this.progress,
+        completed: completed ?? this.completed,
+      );
 }

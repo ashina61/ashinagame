@@ -27,8 +27,7 @@ class SkinnedPanel extends StatelessWidget {
       builder: (context, constraints) {
         final bounded =
             constraints.hasBoundedWidth && constraints.hasBoundedHeight;
-        final tooSmall =
-            bounded &&
+        final tooSmall = bounded &&
             (constraints.maxWidth < minSkinnedSize.width ||
                 constraints.maxHeight < minSkinnedSize.height);
         return Container(
@@ -57,15 +56,16 @@ class SkinnedPanel extends StatelessWidget {
   }
 
   static BoxDecoration _fallbackDecoration() => BoxDecoration(
-    gradient: const LinearGradient(
-      begin: Alignment.topCenter,
-      end: Alignment.bottomCenter,
-      colors: [Color(0xE61A140C), Color(0xF20F0B07)],
-    ),
-    borderRadius: BorderRadius.circular(14),
-    border: Border.all(color: AppColors.gold.withValues(alpha: 0.45)),
-    boxShadow: const [
-      BoxShadow(color: Colors.black54, blurRadius: 10, offset: Offset(0, 5)),
-    ],
-  );
+        gradient: const LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [Color(0xE61A140C), Color(0xF20F0B07)],
+        ),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.gold.withValues(alpha: 0.45)),
+        boxShadow: const [
+          BoxShadow(
+              color: Colors.black54, blurRadius: 10, offset: Offset(0, 5)),
+        ],
+      );
 }

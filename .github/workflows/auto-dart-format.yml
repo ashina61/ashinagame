@@ -39,6 +39,13 @@ jobs:
           flutter --version
           dart --version
 
+      # `dart format` picks its style from the package's resolved language
+      # version, so it must run against the same package config as build-apk.yml
+      # (which runs `flutter pub get` first). Without this the formatter falls
+      # back to a different style and the two jobs fight over the same files.
+      - name: Resolve packages
+        run: flutter pub get
+
       - name: Apply Dart format
         run: dart format lib test
 

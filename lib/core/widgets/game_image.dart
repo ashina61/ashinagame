@@ -55,13 +55,13 @@ class GameImage extends StatelessWidget {
   }
 
   Widget _placeholder() => Container(
-    width: width,
-    height: height,
-    color: AppColors.leatherDeep,
-    alignment: Alignment.center,
-    child: Icon(
-      placeholderIcon ?? Icons.image_not_supported_outlined,
-      color: AppColors.goldDim,
-    ),
-  );
+        width: width,
+        height: height,
+        color: AppColors.leatherDeep,
+        alignment: Alignment.center,
+        child: Icon(
+          placeholderIcon ?? Icons.image_not_supported_outlined,
+          color: AppColors.goldDim,
+        ),
+      );
 }

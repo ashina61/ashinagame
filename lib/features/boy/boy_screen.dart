@@ -130,9 +130,8 @@ class _RecruitPanel extends StatelessWidget {
       (e) => state.resource(e.key) >= e.value,
     );
     final hasAp = state.dailyActionPoints > 0;
-    final costText = source.cost.entries
-        .map((e) => '${e.value} ${e.key.label}')
-        .join(', ');
+    final costText =
+        source.cost.entries.map((e) => '${e.value} ${e.key.label}').join(', ');
     final bonus = state.profile.reputation ~/ 20;
     return OrnatePanel(
       child: Column(
@@ -213,8 +212,7 @@ class _TribePanel extends StatelessWidget {
     final controller = GameScope.of(context);
     final state = controller.state;
     final hasAp = state.dailyActionPoints > 0;
-    final art =
-        _boyArt[tribe.id] ??
+    final art = _boyArt[tribe.id] ??
         (GameAssets.uiBadgeBanner1, GameAssets.portraitTogan);
 
     return OrnatePanel(
@@ -351,10 +349,10 @@ class _TribePanel extends StatelessWidget {
   }
 
   Color _statusColor(String status) => switch (status) {
-    'Müttefik' || 'Dost' => AppColors.success,
-    'Gergin' || 'Düşman' => AppColors.danger,
-    _ => AppColors.goldBright,
-  };
+        'Müttefik' || 'Dost' => AppColors.success,
+        'Gergin' || 'Düşman' => AppColors.danger,
+        _ => AppColors.goldBright,
+      };
 }
 
 class _Bar extends StatelessWidget {
