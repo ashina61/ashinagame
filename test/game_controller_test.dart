@@ -46,7 +46,7 @@ GameState _foundableState() {
     profile: base.profile.copyWith(reputation: 55),
     buildings: [
       for (final b in base.buildings)
-        if (b.id == 'main_tent') b.copyWith(level: 2) else b,
+        if (b.id == 'main_tent') b.copyWith(level: 3) else b,
     ],
   );
 }
@@ -258,7 +258,7 @@ void main() {
           ),
       buildings: [
         for (final b in StarterGameData.create().buildings)
-          if (b.id == 'main_tent') b.copyWith(level: 2) else b,
+          if (b.id == 'main_tent') b.copyWith(level: 3) else b,
       ],
       resources: {
         ...StarterGameData.create().resources,
@@ -651,7 +651,7 @@ void main() {
       base.copyWith(
         buildings: [
           for (final b in base.buildings)
-            if (b.id == 'main_tent') b.copyWith(level: 2) else b,
+            if (b.id == 'main_tent') b.copyWith(level: 3) else b,
         ],
         profile: base.profile.copyWith(reputation: 55),
       ),
@@ -1055,6 +1055,130 @@ void main() {
     },
   );
 
+  test('npc dialogue rotates and same-day repeated talk gives reduced reward',
+      () {
+    final controller = GameController.starter();
+    final first = controller.dialogueFor('bori_bey')!;
+    final choice = first.choices.first;
+
+    expect(controller.talkTo('bori_bey', choice), isTrue);
+    final afterFirst = controller.state.relationWith('bori_bey');
+    final second = controller.dialogueFor('bori_bey')!;
+
+    expect(second.id, isNot(first.id));
+    expect(controller.talkTo('bori_bey', choice), isTrue);
+    expect(controller.state.relationWith('bori_bey'), afterFirst);
+    expect(controller.lastTalkFeedback, contains('zaten'));
+  });
+
+  test('tent upgrade has costs, block reasons, effects and save safety', () {
+    final base = StarterGameData.create();
+    final controller = GameController(base);
+
+    expect(controller.canUpgradeTent(), isFalse);
+    expect(controller.tentUpgradeBlockReason(), contains('Odun'));
+
+    final funded = GameController(
+      base.copyWith(
+        resources: {
+          ...base.resources,
+          ResourceType.wood: 50,
+          ResourceType.leather: 20,
+          ResourceType.food: 20,
+          ResourceType.reputation: 10,
+        },
+      ),
+    );
+    expect(funded.canUpgradeTent(), isTrue);
+    expect(funded.upgradeTent(), isTrue);
+    expect(PhaseLogic.tentLevel(funded.state), 2);
+    expect(funded.state.resource(ResourceType.wood), 10);
+    expect(funded.state.resource(ResourceType.leather), 8);
+    expect(funded.state.log.first, contains('Sağlam Çadır'));
+
+    final decoded = GameSerializer.decode(GameSerializer.encode(funded.state));
+    expect(decoded, isNotNull);
+    expect(PhaseLogic.tentLevel(decoded!), 2);
+  });
+
+  test('survival systems age, rotate opportunities and punish action spam', () {
+    final controller = GameController.starter();
+    expect(controller.state.survival.hunger, 80);
+    expect(controller.todaysOpportunities(), hasLength(3));
+    expect(controller.performSurvivalAction('fish'), isTrue);
+    final fishAfterFirst = controller.state.foodInventory['fish'] ?? 0;
+    expect(controller.performSurvivalAction('fish'), isTrue);
+    expect(controller.state.foodInventory['fish'], greaterThan(fishAfterFirst));
+    expect(controller.state.log.first, contains('verimsiz'));
+    expect(controller.performSurvivalAction('seek_salt'), isTrue);
+    expect(controller.performSurvivalAction('seek_salt'), isFalse);
+    expect(controller.state.actionCooldowns['seek_salt'], 2);
+
+    for (var i = 0; i < 39; i++) {
+      controller.endDay();
+    }
+    expect(controller.state.profile.age, 15);
+    expect(controller.state.dailyOpportunities.length, inInclusiveRange(3, 5));
+  });
+
+  test('horse market and care use the singular horse model', () {
+    final base = StarterGameData.create();
+    final controller = GameController(
+      base.copyWith(
+        resources: {...base.resources, ResourceType.gold: 120},
+      ),
+    );
+    final offer = controller.horseMarket().first;
+    expect(controller.buyHorse(offer), isTrue);
+    expect(controller.state.horses.any((h) => h.id == offer.id), isTrue);
+    final horseId = controller.state.horses.first.id;
+    final before = controller.state.horses.first.hunger;
+    expect(controller.careForHorse(horseId, 'feed'), isTrue);
+    expect(controller.state.horses.first.hunger, greaterThan(before));
+    expect(
+      controller.state.resource(ResourceType.food),
+      base.resource(ResourceType.food) - 2,
+    );
+    expect(controller.careForHorse('missing-horse', 'feed'), isFalse);
+  });
+
+  test('food spoilage and old save migration stay safe', () {
+    final base = StarterGameData.create();
+    final controller = GameController(
+      base.copyWith(
+        foodInventory: const {'fish': 2},
+        foodAges: const {'fish': 3},
+      ),
+    );
+    controller.endDay();
+    expect(controller.state.foodInventory['fish'], lessThan(2));
+    expect(controller.state.log.first, contains('bozuldu'));
+
+    final raw = jsonDecode(GameSerializer.encode(base)) as Map<String, dynamic>;
+    for (final key in [
+      'survival',
+      'foodInventory',
+      'foodAges',
+      'horses',
+      'dailyOpportunities',
+      'questChainProgress',
+      'locationStates',
+      'actionCooldowns',
+      'actionUsesToday',
+    ]) {
+      raw.remove(key);
+    }
+    final resources = raw['resources'] as Map<String, dynamic>;
+    resources['horse'] = 2;
+    final decoded = GameSerializer.decode(jsonEncode(raw));
+    expect(decoded, isNotNull);
+    expect(decoded!.survival.hunger, 80);
+    expect(decoded.foodInventory['raw_meat'], 1);
+    expect(decoded.dailyOpportunities, hasLength(3));
+    expect(decoded.horses, hasLength(2));
+    expect(decoded.actionCooldowns, isEmpty);
+  });
+
   test('a dialogue can summon the council', () {
     final controller = GameController.starter();
     expect(controller.state.currentKurultay, isNull);
@@ -1103,6 +1227,14 @@ void main() {
     expect(
       decoded!.relationWith('kaya_atabek'),
       controller.state.relationWith('kaya_atabek'),
+    );
+    expect(
+      decoded.npcRecentDialogues['kaya_atabek'],
+      controller.state.npcRecentDialogues['kaya_atabek'],
+    );
+    expect(
+      decoded.npcLastTalkDay['kaya_atabek'],
+      controller.state.npcLastTalkDay['kaya_atabek'],
     );
   });
 

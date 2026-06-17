@@ -28,9 +28,13 @@ class WolfPortraitFrame extends StatelessWidget {
       child: Image.asset(
         asset,
         fit: BoxFit.cover,
-        errorBuilder: (_, __, ___) => const ColoredBox(
-          color: AppColors.leatherDeep,
-          child: Icon(Icons.person, color: AppColors.gold),
+        errorBuilder: (_, __, ___) => Image.asset(
+          GameArt.playerPortrait1,
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) => const ColoredBox(
+            color: AppColors.leatherDeep,
+            child: Icon(Icons.person, color: AppColors.gold),
+          ),
         ),
       ),
     );
@@ -44,14 +48,19 @@ class WolfPortraitFrame extends StatelessWidget {
           children: [
             Padding(padding: const EdgeInsets.all(10), child: portrait),
             Image.asset(
-              GameArt.portraitFrameWolf,
+              GameArt.portraitFrameWolfRound,
               fit: BoxFit.fill,
-              errorBuilder: (_, __, ___) => DecoratedBox(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: selected ? AppColors.goldBright : AppColors.goldDim,
-                    width: selected ? 2.4 : 1.2,
+              errorBuilder: (_, __, ___) => Image.asset(
+                GameArt.portraitFrameWolf,
+                fit: BoxFit.fill,
+                errorBuilder: (_, __, ___) => DecoratedBox(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color:
+                          selected ? AppColors.goldBright : AppColors.goldDim,
+                      width: selected ? 2.4 : 1.2,
+                    ),
                   ),
                 ),
               ),

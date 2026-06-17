@@ -8,11 +8,13 @@ import '../models/craft.dart';
 import '../models/faith.dart';
 import '../models/game_day.dart';
 import '../models/household.dart';
+import '../models/horse.dart';
 import '../models/marriage_candidate.dart';
 import '../models/player_profile.dart';
 import '../models/quest.dart';
 import '../models/resource.dart';
 import '../models/season.dart';
+import '../models/survival.dart';
 import '../models/tribe_relation.dart';
 import 'game_state.dart';
 
@@ -135,6 +137,9 @@ class GameSerializer {
         'army': state.army,
         'wounded': state.wounded,
         'npcRelations': state.npcRelations,
+        'npcRecentDialogues': state.npcRecentDialogues,
+        'npcLastTalkDay': state.npcLastTalkDay,
+        'npcLastTalkType': state.npcLastTalkType,
         'nationPolicies': state.nationPolicies,
         'pendingNationPolicy': state.pendingNationPolicy,
         'nationLoyalty': state.nationLoyalty,
@@ -145,6 +150,15 @@ class GameSerializer {
         'raidFrom': state.raidFrom,
         'marchTarget': state.marchTarget,
         'marchDaysLeft': state.marchDaysLeft,
+        'survival': state.survival.toJson(),
+        'foodInventory': state.foodInventory,
+        'foodAges': state.foodAges,
+        'actionCooldowns': state.actionCooldowns,
+        'actionUsesToday': state.actionUsesToday,
+        'dailyOpportunities': state.dailyOpportunities,
+        'questChainProgress': state.questChainProgress,
+        'horses': [for (final h in state.horses) h.toJson()],
+        'locationStates': state.locationStates,
       });
 
   static GameState? decode(String raw) {
@@ -283,6 +297,19 @@ class GameSerializer {
             .cast<String, int>(),
         npcRelations: (json['npcRelations'] as Map<String, dynamic>? ?? {})
             .cast<String, int>(),
+        npcRecentDialogues: {
+          for (final e in (json['npcRecentDialogues']
+                      as Map<String, dynamic>? ??
+                  {})
+              .entries)
+            e.key: (e.value as List<dynamic>).cast<String>(),
+        },
+        npcLastTalkDay:
+            (json['npcLastTalkDay'] as Map<String, dynamic>? ?? {})
+                .cast<String, int>(),
+        npcLastTalkType:
+            (json['npcLastTalkType'] as Map<String, dynamic>? ?? {})
+                .cast<String, String>(),
         nationPolicies: (json['nationPolicies'] as Map<String, dynamic>? ?? {})
             .cast<String, String>(),
         pendingNationPolicy: json['pendingNationPolicy'] as String?,
@@ -297,10 +324,95 @@ class GameSerializer {
         raidFrom: json['raidFrom'] as String? ?? '',
         marchTarget: json['marchTarget'] as String? ?? '',
         marchDaysLeft: json['marchDaysLeft'] as int? ?? 0,
+        survival: SurvivalStats.fromJson(
+          json['survival'] as Map<String, dynamic>?,
+        ),
+        foodInventory: _decodeIntMap(
+          json['foodInventory'],
+          fallback: _startingFoodInventory(),
+        ),
+        foodAges: _decodeIntMap(json['foodAges']),
+        actionCooldowns: _decodeIntMap(json['actionCooldowns']),
+        actionUsesToday: _decodeIntMap(json['actionUsesToday']),
+        dailyOpportunities: _decodeStringList(
+          json['dailyOpportunities'],
+          fallback: const ['fish_river', 'cold_night', 'youth_training'],
+        ),
+        questChainProgress: _decodeIntMap(json['questChainProgress']),
+        horses: _decodeHorses(
+          json['horses'] as List<dynamic>?,
+          resources[ResourceType.horse] ?? 0,
+        ),
+        locationStates: _decodeStringMap(json['locationStates']),
       );
     } catch (_) {
       return null;
     }
+  }
+
+  static Map<String, int> _startingFoodInventory() => {
+        'raw_meat': 1,
+        'root_vegetable': 2,
+        'water_skin': 1,
+      };
+
+  static Map<String, int> _decodeIntMap(
+    Object? raw, {
+    Map<String, int> fallback = const {},
+  }) {
+    if (raw is! Map) return Map<String, int>.from(fallback);
+    return {
+      for (final entry in raw.entries)
+        if (entry.key is String && entry.value is num)
+          (entry.key as String): (entry.value as num).toInt(),
+    };
+  }
+
+  static List<String> _decodeStringList(
+    Object? raw, {
+    List<String> fallback = const [],
+  }) {
+    if (raw is! List) return List<String>.from(fallback);
+    return [
+      for (final item in raw)
+        if (item is String) item,
+    ];
+  }
+
+  static Map<String, String> _decodeStringMap(
+    Object? raw, {
+    Map<String, String> fallback = const {},
+  }) {
+    if (raw is! Map) return Map<String, String>.from(fallback);
+    return {
+      for (final entry in raw.entries)
+        if (entry.key is String && entry.value is String)
+          (entry.key as String): entry.value as String,
+    };
+  }
+
+  static List<Horse> _decodeHorses(List<dynamic>? entries, int legacyCount) {
+    if (entries != null && entries.isNotEmpty) {
+      return [
+        for (final e in entries.cast<Map<String, dynamic>>()) Horse.fromJson(e),
+      ];
+    }
+    if (legacyCount <= 0) return const [];
+    return [
+      const Horse(
+        id: 'legacy_bozi',
+        name: 'Boz Yele',
+        breed: 'Bozkır Atı',
+        acquiredDay: 1,
+      ),
+      if (legacyCount > 1)
+        const Horse(
+          id: 'legacy_yuk',
+          name: 'Kara Yük',
+          breed: 'Yük Atı',
+          acquiredDay: 1,
+        ),
+    ];
   }
 
   static List<Quest> _decodeQuests(List<dynamic> entries) {
