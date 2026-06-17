@@ -47,9 +47,8 @@ class FaithState {
       faith: (faith ?? this.faith).clamp(0, 100).toInt(),
       kut: (kut ?? this.kut).clamp(0, 100).toInt(),
       tore: (tore ?? this.tore).clamp(0, 100).toInt(),
-      ancestorHonor: (ancestorHonor ?? this.ancestorHonor)
-          .clamp(0, 100)
-          .toInt(),
+      ancestorHonor:
+          (ancestorHonor ?? this.ancestorHonor).clamp(0, 100).toInt(),
       omen: omen ?? this.omen,
       omenSeverity: omenSeverity ?? this.omenSeverity,
       lastRitualDay: lastRitualDay ?? this.lastRitualDay,
@@ -61,11 +60,11 @@ class FaithState {
   }
 
   FaithState apply(Map<String, int> effects) => copyWith(
-    faith: faith + (effects['faith'] ?? 0),
-    kut: kut + (effects['kut'] ?? 0),
-    tore: tore + (effects['tore'] ?? 0),
-    ancestorHonor: ancestorHonor + (effects['ancestorHonor'] ?? 0),
-  );
+        faith: faith + (effects['faith'] ?? 0),
+        kut: kut + (effects['kut'] ?? 0),
+        tore: tore + (effects['tore'] ?? 0),
+        ancestorHonor: ancestorHonor + (effects['ancestorHonor'] ?? 0),
+      );
 }
 
 enum OmenSeverity { good, neutral, bad }

@@ -22,12 +22,12 @@ class TribeRelation {
   String get status => relation >= 70
       ? 'Müttefik'
       : relation >= 35
-      ? 'Dost'
-      : relation <= -50
-      ? 'Düşman'
-      : relation <= -10
-      ? 'Gergin'
-      : 'Tarafsız';
+          ? 'Dost'
+          : relation <= -50
+              ? 'Düşman'
+              : relation <= -10
+                  ? 'Gergin'
+                  : 'Tarafsız';
   int get warRisk => (50 - relation).clamp(0, 100).toInt();
 
   TribeRelation copyWith({int? relation, bool? tradeOpen, bool? marriageTie}) =>

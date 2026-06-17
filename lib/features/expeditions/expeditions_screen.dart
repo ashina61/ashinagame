@@ -85,8 +85,7 @@ class _ExpeditionsScreenState extends State<ExpeditionsScreen> {
   ExpeditionSite? _effectiveTarget(GameController controller) {
     ExpeditionSite? firstOpen;
     for (final site in ExpeditionSites.all) {
-      final open =
-          controller.siteUnlocked(site) &&
+      final open = controller.siteUnlocked(site) &&
           !controller.state.expeditionDone(site.id);
       if (open) {
         firstOpen ??= site;
@@ -323,7 +322,7 @@ class _ExpeditionsScreenState extends State<ExpeditionsScreen> {
                         content: Text(
                           done
                               ? '${region.name} keşfi: '
-                                    '${Formatters.resourceDelta(region.effects)}'
+                                  '${Formatters.resourceDelta(region.effects)}'
                               : 'Enerji tükendi. Günü bitirerek dinlen.',
                         ),
                         duration: const Duration(seconds: 2),
@@ -436,12 +435,12 @@ class _MapNode extends StatelessWidget {
     final (status, color) = done
         ? ('Fethedildi', AppColors.success)
         : !unlocked
-        ? ('Kilitli', AppColors.lockedGrey)
-        : (
-            '${site.dangerLabel} • Başarı %'
-                '${controller.successChanceFor(site)}',
-            site.baseChance >= 60 ? AppColors.info : AppColors.danger,
-          );
+            ? ('Kilitli', AppColors.lockedGrey)
+            : (
+                '${site.dangerLabel} • Başarı %'
+                    '${controller.successChanceFor(site)}',
+                site.baseChance >= 60 ? AppColors.info : AppColors.danger,
+              );
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
       child: Column(

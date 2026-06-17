@@ -118,8 +118,7 @@ class HomeScreen extends StatelessWidget {
       context,
       title: event?.title ?? 'Ateş Ocağı',
       icon: GameAssets.iconMoraleEmblem,
-      description:
-          event?.description ??
+      description: event?.description ??
           'Ocağın başında dinlenir, yorgunluğunu atarsın.',
       actions: event == null
           ? [
@@ -145,9 +144,8 @@ class HomeScreen extends StatelessWidget {
   }
 
   void _openHorse(BuildContext context, GameController controller) {
-    final horse = controller.state.horses.isEmpty
-        ? null
-        : controller.state.horses.first;
+    final horse =
+        controller.state.horses.isEmpty ? null : controller.state.horses.first;
     final market = controller.horseMarket();
     final gold = controller.state.resource(ResourceType.gold);
     showSceneDetail(
@@ -157,8 +155,8 @@ class HomeScreen extends StatelessWidget {
       description: horse == null
           ? 'Bağ boş. Pazarda at bakabilir, ilk yol arkadaşını seçebilirsin.'
           : '${horse.name} (${horse.breed}) • sağlık ${horse.health}, '
-                'açlık ${horse.hunger}, sadakat ${horse.loyalty}, '
-                'talim ${horse.training}.',
+              'açlık ${horse.hunger}, sadakat ${horse.loyalty}, '
+              'talim ${horse.training}.',
       actions: [
         if (horse != null) ...[
           SceneAction(
@@ -180,8 +178,7 @@ class HomeScreen extends StatelessWidget {
         for (final offer in market)
           SceneAction(
             label: 'Satın al: ${offer.name}',
-            subtitle:
-                '${offer.breed} • ${offer.rarity} • '
+            subtitle: '${offer.breed} • ${offer.rarity} • '
                 '${offer.price} altın',
             enabled: offer.price <= gold,
             onTap: () => controller.buyHorse(offer),
@@ -234,10 +231,10 @@ class _SurvivalStrip extends StatelessWidget {
     final state = GameScope.of(context).state;
     final s = state.survival;
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 0),
       child: Wrap(
         spacing: 6,
-        runSpacing: 4,
+        runSpacing: 2,
         children: [
           _StatChip('Açlık', s.hunger),
           _StatChip('Susuzluk', s.thirst),
@@ -263,8 +260,8 @@ class _StatChip extends StatelessWidget {
     final color = healthScore >= 55
         ? AppColors.success
         : healthScore >= 30
-        ? AppColors.gold
-        : AppColors.danger;
+            ? AppColors.gold
+            : AppColors.danger;
     return Text(
       '$label $value',
       style: AppTextStyles.meta.copyWith(color: color, fontSize: 11),
@@ -382,7 +379,7 @@ class _CampBottom extends StatelessWidget {
           colors: [Colors.transparent, Color(0xCC0B0B0B)],
         ),
       ),
-      padding: const EdgeInsets.fromLTRB(10, 8, 10, 8),
+      padding: const EdgeInsets.fromLTRB(10, 4, 10, 2),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -777,8 +774,8 @@ class _Chip extends StatelessWidget {
               done
                   ? Icons.check_circle
                   : locked
-                  ? Icons.lock
-                  : Icons.flag,
+                      ? Icons.lock
+                      : Icons.flag,
               size: 13,
               color: done ? AppColors.success : AppColors.sand,
             ),

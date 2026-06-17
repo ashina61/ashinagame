@@ -11,8 +11,7 @@ class KurultayDecisions {
     KurultayDecision(
       id: 'tax',
       title: 'Vergi Meselesi',
-      description:
-          'Kış yaklaşıyor. Beyler vergi toplanmasını istiyor; halk '
+      description: 'Kış yaklaşıyor. Beyler vergi toplanmasını istiyor; halk '
           'ise zaten yorgun.',
       choices: [
         KurultayChoice(
@@ -40,8 +39,7 @@ class KurultayDecisions {
     KurultayDecision(
       id: 'justice',
       title: 'Töre Davası',
-      description:
-          'Bir bey, bir çobanın sürüsüne el koydu. Meclis kararını '
+      description: 'Bir bey, bir çobanın sürüsüne el koydu. Meclis kararını '
           'bekliyor.',
       choices: [
         KurultayChoice(
@@ -109,8 +107,7 @@ class KurultayDecisions {
     KurultayDecision(
       id: 'bey_grudge',
       title: 'Küskün Bey',
-      description:
-          'Böri Bey meclisten çekilmekle tehdit ediyor; sözünün '
+      description: 'Böri Bey meclisten çekilmekle tehdit ediyor; sözünün '
           'dinlenmediğini söylüyor.',
       choices: [
         KurultayChoice(
@@ -132,8 +129,7 @@ class KurultayDecisions {
     KurultayDecision(
       id: 'migration',
       title: 'Göç Meselesi',
-      description:
-          'Otlaklar zayıfladı. Halk daha verimli yaylaya göçmek '
+      description: 'Otlaklar zayıfladı. Halk daha verimli yaylaya göçmek '
           'istiyor; beyler yerleşik düzeni korumak istiyor.',
       choices: [
         KurultayChoice(

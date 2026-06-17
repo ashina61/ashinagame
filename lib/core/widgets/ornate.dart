@@ -43,13 +43,13 @@ class OrnateScaffold extends StatelessWidget {
           fit: BoxFit.cover,
           errorBuilder: (context, error, stackTrace) =>
               backgroundFallback == null
-              ? const ColoredBox(color: AppColors.leatherDeep)
-              : Image.asset(
-                  backgroundFallback!,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) =>
-                      const ColoredBox(color: AppColors.leatherDeep),
-                ),
+                  ? const ColoredBox(color: AppColors.leatherDeep)
+                  : Image.asset(
+                      backgroundFallback!,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) =>
+                          const ColoredBox(color: AppColors.leatherDeep),
+                    ),
         ),
         SafeArea(child: child),
       ],

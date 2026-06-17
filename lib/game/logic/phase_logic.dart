@@ -79,32 +79,32 @@ class PhaseLogic {
   // ---- Founding requirements -------------------------------------------
 
   static List<FoundingRequirement> foundingRequirements(GameState s) => [
-    FoundingRequirement(
-      label: 'İtibarın $reputationToFound’a ulaşsın',
-      met: s.profile.reputation >= reputationToFound,
-      progress: 'İtibar ${s.profile.reputation}/$reputationToFound',
-    ),
-    FoundingRequirement(
-      label: '$followersToFound güvenilir yandaş bul',
-      met: s.swornFollowers >= followersToFound,
-      progress: 'Yandaş ${s.swornFollowers}/$followersToFound',
-    ),
-    FoundingRequirement(
-      label: 'Ana çadırını $tentLevelToFound. seviyeye çıkar',
-      met: tentLevel(s) >= tentLevelToFound,
-      progress: 'Çadır Lv.${tentLevel(s)}/$tentLevelToFound',
-    ),
-    FoundingRequirement(
-      label: 'Evlilik ya da güçlü bir güven bağı kur',
-      met: hasStrongBond(s),
-      progress: s.household.isMarried ? 'Kuruldu' : 'Henüz yok',
-    ),
-    FoundingRequirement(
-      label: 'Uygun bir toprak keşfet',
-      met: s.landScouted,
-      progress: s.landScouted ? 'Bulundu' : 'Aranıyor',
-    ),
-  ];
+        FoundingRequirement(
+          label: 'İtibarın $reputationToFound’a ulaşsın',
+          met: s.profile.reputation >= reputationToFound,
+          progress: 'İtibar ${s.profile.reputation}/$reputationToFound',
+        ),
+        FoundingRequirement(
+          label: '$followersToFound güvenilir yandaş bul',
+          met: s.swornFollowers >= followersToFound,
+          progress: 'Yandaş ${s.swornFollowers}/$followersToFound',
+        ),
+        FoundingRequirement(
+          label: 'Ana çadırını $tentLevelToFound. seviyeye çıkar',
+          met: tentLevel(s) >= tentLevelToFound,
+          progress: 'Çadır Lv.${tentLevel(s)}/$tentLevelToFound',
+        ),
+        FoundingRequirement(
+          label: 'Evlilik ya da güçlü bir güven bağı kur',
+          met: hasStrongBond(s),
+          progress: s.household.isMarried ? 'Kuruldu' : 'Henüz yok',
+        ),
+        FoundingRequirement(
+          label: 'Uygun bir toprak keşfet',
+          met: s.landScouted,
+          progress: s.landScouted ? 'Bulundu' : 'Aranıyor',
+        ),
+      ];
 
   static bool canFoundOba(GameState s) =>
       foundingRequirements(s).every((r) => r.met);

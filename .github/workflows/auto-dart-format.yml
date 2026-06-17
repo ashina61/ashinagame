@@ -29,6 +29,10 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: stable
+          # Pin to the same version as build-apk.yml so the formatter style
+          # matches; unpinned "stable" drifts to newer dart_style releases and
+          # produces output the pinned build job's format check then rejects.
+          flutter-version: 3.44.2
 
       - name: Show versions
         run: |

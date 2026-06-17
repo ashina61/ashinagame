@@ -175,8 +175,8 @@ class _InventoryScreenState extends State<InventoryScreen> {
   }
 
   String _kindLabel(CraftKind? kind) => switch (kind) {
-    CraftKind.equipment => 'Ekipman — sefer başarısını artırır.',
-    CraftKind.other => 'Üretilmiş eşya.',
-    _ => 'Ham kaynak — üretim ve takasta kullanılır.',
-  };
+        CraftKind.equipment => 'Ekipman — sefer başarısını artırır.',
+        CraftKind.other => 'Üretilmiş eşya.',
+        _ => 'Ham kaynak — üretim ve takasta kullanılır.',
+      };
 }

@@ -12,8 +12,7 @@ class NpcDialogues {
     Dialogue(
       id: 'bori_tore',
       npcId: 'bori_bey',
-      line:
-          'Genç bey, töre eskidikçe sağlamlaşır. Yeni usuller meclisi '
+      line: 'Genç bey, töre eskidikçe sağlamlaşır. Yeni usuller meclisi '
           'huzursuz ediyor. Sözümü dinler misin?',
       choices: [
         DialogueChoice(
@@ -42,8 +41,7 @@ class NpcDialogues {
     Dialogue(
       id: 'bori_gift',
       npcId: 'bori_bey',
-      line:
-          'Meclisin desteğini umuyorsan, eski beyleri unutma. Bir armağan '
+      line: 'Meclisin desteğini umuyorsan, eski beyleri unutma. Bir armağan '
           'gönlü yumuşatır.',
       choices: [
         DialogueChoice(
@@ -65,8 +63,7 @@ class NpcDialogues {
     Dialogue(
       id: 'kaya_drill',
       npcId: 'kaya_atabek',
-      line:
-          'Atlılar talimsiz kalırsa kılıç paslanır, bey. Bir talim '
+      line: 'Atlılar talimsiz kalırsa kılıç paslanır, bey. Bir talim '
           'düzenleyelim mi?',
       choices: [
         DialogueChoice(
@@ -86,8 +83,7 @@ class NpcDialogues {
     Dialogue(
       id: 'kaya_raid',
       npcId: 'kaya_atabek',
-      line:
-          'Komşu bir kervan korumasız geçiyor. Akın edersek hazine dolar '
+      line: 'Komşu bir kervan korumasız geçiyor. Akın edersek hazine dolar '
           'ama kan da dökülür.',
       choices: [
         DialogueChoice(
@@ -110,8 +106,7 @@ class NpcDialogues {
     Dialogue(
       id: 'kaya_council',
       npcId: 'kaya_atabek',
-      line:
-          'Beyler sefer için söyleniyor, bey. Meclisi toplayıp divan '
+      line: 'Beyler sefer için söyleniyor, bey. Meclisi toplayıp divan '
           'kuralım mı?',
       choices: [
         DialogueChoice(
@@ -132,8 +127,7 @@ class NpcDialogues {
     Dialogue(
       id: 'alis_winter',
       npcId: 'alis_hatun',
-      line:
-          'Bey, kışlık erzak az. Çocuklar üşüyor. Ocaklara biraz pay '
+      line: 'Bey, kışlık erzak az. Çocuklar üşüyor. Ocaklara biraz pay '
           'ayırır mısın?',
       choices: [
         DialogueChoice(
@@ -156,8 +150,7 @@ class NpcDialogues {
     Dialogue(
       id: 'alis_wedding',
       npcId: 'alis_hatun',
-      line:
-          'İki genç birbirine söz verdi. Bir düğün obayı şenlendirir, ne '
+      line: 'İki genç birbirine söz verdi. Bir düğün obayı şenlendirir, ne '
           'dersin?',
       choices: [
         DialogueChoice(
@@ -180,8 +173,7 @@ class NpcDialogues {
     Dialogue(
       id: 'tugan_taunt',
       npcId: 'tugan_bey',
-      line:
-          'Senin obanın otlağı bana dar geliyor, bey. Sınırı geri çekersen '
+      line: 'Senin obanın otlağı bana dar geliyor, bey. Sınırı geri çekersen '
           'kavga çıkmaz.',
       choices: [
         DialogueChoice(
@@ -211,8 +203,7 @@ class NpcDialogues {
     Dialogue(
       id: 'bezirgan_news',
       npcId: 'bezirgan',
-      line:
-          'İpek Yolu’ndan geldim, bey. Bilgi de mal kadar kıymetli. Bir '
+      line: 'İpek Yolu’ndan geldim, bey. Bilgi de mal kadar kıymetli. Bir '
           'kese altına yolların hâlini anlatayım mı?',
       choices: [
         DialogueChoice(
@@ -233,8 +224,7 @@ class NpcDialogues {
     Dialogue(
       id: 'togan_loyalty',
       npcId: 'togan_kagan',
-      line:
-          'Beyim, kağanlığa bağlılığın sürüyor mu? Sadık obalar ödülsüz '
+      line: 'Beyim, kağanlığa bağlılığın sürüyor mu? Sadık obalar ödülsüz '
           'kalmaz.',
       choices: [
         DialogueChoice(
@@ -256,9 +246,9 @@ class NpcDialogues {
 
   /// All dialogues belonging to [npcId].
   static List<Dialogue> forNpc(String npcId) => [
-    for (final d in all)
-      if (d.npcId == npcId) d,
-  ];
+        for (final d in all)
+          if (d.npcId == npcId) d,
+      ];
 
   static List<Dialogue> contextualFor(String npcId, GameState state) {
     final relation = state.relationWith(npcId);
@@ -267,13 +257,13 @@ class NpcDialogues {
     final phaseHint = age < 16
         ? 'Genç yaşta önce ocağı ve çadırı sağlam tut.'
         : age < 18
-        ? 'Oba yolu açılırken güvenilir yoldaş sözü daha değerlidir.'
-        : 'Artık sözün obanın ve komşu boyların kulağına gider.';
+            ? 'Oba yolu açılırken güvenilir yoldaş sözü daha değerlidir.'
+            : 'Artık sözün obanın ve komşu boyların kulağına gider.';
     final trustHint = relation >= 70
         ? 'Sana güvenirim; sözü uzatmadan gerçeği söylerim.'
         : relation <= 35
-        ? 'Aramızdaki güven ince buz gibi; adımını tart.'
-        : 'Sözümüz ölçülü olsun, güven böyle büyür.';
+            ? 'Aramızdaki güven ince buz gibi; adımını tart.'
+            : 'Sözümüz ölçülü olsun, güven böyle büyür.';
     final seasonalHint = '$season mevsimi sözün tadını değiştirir.';
     return [
       ...forNpc(npcId),
@@ -288,59 +278,58 @@ class NpcDialogues {
   }
 
   static List<_RoleLine> _roleLines(String npcId) => switch (npcId) {
-    'bori_bey' => _elderLines,
-    'kaya_atabek' => _warriorLines,
-    'alis_hatun' => _healerLines,
-    'tugan_bey' => _rivalLines,
-    'bezirgan' => _merchantLines,
-    'togan_kagan' => _rulerLines,
-    _ => _elderLines,
-  };
+        'bori_bey' => _elderLines,
+        'kaya_atabek' => _warriorLines,
+        'alis_hatun' => _healerLines,
+        'tugan_bey' => _rivalLines,
+        'bezirgan' => _merchantLines,
+        'togan_kagan' => _rulerLines,
+        _ => _elderLines,
+      };
 
   static List<DialogueChoice> _choices(String kind) => switch (kind) {
-    'rumor' => const [
-      DialogueChoice(
-        label: 'Söylentiyi dinle',
-        reply: 'Duyduğun söz yol ve fırsat sezgini güçlendirdi.',
-        relationEffect: 1,
-        resourceEffects: {ResourceType.reputation: 1},
-      ),
-      DialogueChoice(
-        label: 'Kısa kes',
-        reply: 'Sözü kısa tuttun; vakit sende kaldı.',
-      ),
-    ],
-    'quest' => const [
-      DialogueChoice(
-        label: 'Görev sor',
-        reply: 'Yapılacak işi öğrendin; hedefin biraz daha netleşti.',
-        relationEffect: 1,
-        peopleEffect: 1,
-      ),
-      DialogueChoice(
-        label: 'Yardım teklif et',
-        reply: 'Yardım sözün karşılık buldu; obada güven arttı.',
-        relationEffect: 2,
-        resourceEffects: {ResourceType.morale: 1},
-      ),
-    ],
-    _ => const [
-      DialogueChoice(
-        label: 'Öğüt iste',
-        reply:
-            'Öğüdü aklında tuttun; söz aranızdaki bağı az da olsa '
-            'güçlendirdi.',
-        relationEffect: 1,
-        councilEffect: 1,
-      ),
-      DialogueChoice(
-        label: 'Dert dinle',
-        reply: 'Karşındakinin derdini dinledin; halk bunu duyar.',
-        relationEffect: 1,
-        peopleEffect: 1,
-      ),
-    ],
-  };
+        'rumor' => const [
+            DialogueChoice(
+              label: 'Söylentiyi dinle',
+              reply: 'Duyduğun söz yol ve fırsat sezgini güçlendirdi.',
+              relationEffect: 1,
+              resourceEffects: {ResourceType.reputation: 1},
+            ),
+            DialogueChoice(
+              label: 'Kısa kes',
+              reply: 'Sözü kısa tuttun; vakit sende kaldı.',
+            ),
+          ],
+        'quest' => const [
+            DialogueChoice(
+              label: 'Görev sor',
+              reply: 'Yapılacak işi öğrendin; hedefin biraz daha netleşti.',
+              relationEffect: 1,
+              peopleEffect: 1,
+            ),
+            DialogueChoice(
+              label: 'Yardım teklif et',
+              reply: 'Yardım sözün karşılık buldu; obada güven arttı.',
+              relationEffect: 2,
+              resourceEffects: {ResourceType.morale: 1},
+            ),
+          ],
+        _ => const [
+            DialogueChoice(
+              label: 'Öğüt iste',
+              reply: 'Öğüdü aklında tuttun; söz aranızdaki bağı az da olsa '
+                  'güçlendirdi.',
+              relationEffect: 1,
+              councilEffect: 1,
+            ),
+            DialogueChoice(
+              label: 'Dert dinle',
+              reply: 'Karşındakinin derdini dinledin; halk bunu duyar.',
+              relationEffect: 1,
+              peopleEffect: 1,
+            ),
+          ],
+      };
 
   static const _elderLines = <_RoleLine>[
     _RoleLine(

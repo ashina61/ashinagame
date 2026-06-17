@@ -11,8 +11,9 @@ class LifeLogic {
   /// In-game year number (1-based) for a given day.
   static int yearOf(int day) => (day - 1) ~/ daysPerYear + 1;
 
-  /// True on the toy day that closes each forty-day year.
-  static bool isYearBoundary(int day) => day > 1 && day % daysPerYear == 0;
+  /// True when [day] is the first day of a new year (and not day one).
+  static bool isYearBoundary(int day) =>
+      day > 1 && (day - 1) % daysPerYear == 0;
 
   /// Honorific that grows with the leader's age, from a green youth chasing
   /// chores up to a grey-bearded khan.

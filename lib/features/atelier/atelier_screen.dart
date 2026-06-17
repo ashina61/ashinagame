@@ -15,14 +15,14 @@ import '../../game/state/game_scope.dart';
 
 /// Atlas icons for each workshop recipe.
 String craftIcon(String recipeId) => switch (recipeId) {
-  'wood_shield' => GameAssets.iconItemShieldWood,
-  'composite_bow' => GameAssets.iconItemBow,
-  'leather_armor' => GameAssets.iconItemArmor,
-  'iron_sword' => GameAssets.iconItemSword,
-  'saddle' => GameAssets.iconItemSaddle,
-  'fur_cloak' => GameAssets.iconItemFur,
-  _ => GameAssets.iconItemShield,
-};
+      'wood_shield' => GameAssets.iconItemShieldWood,
+      'composite_bow' => GameAssets.iconItemBow,
+      'leather_armor' => GameAssets.iconItemArmor,
+      'iron_sword' => GameAssets.iconItemSword,
+      'saddle' => GameAssets.iconItemSaddle,
+      'fur_cloak' => GameAssets.iconItemFur,
+      _ => GameAssets.iconItemShield,
+    };
 
 class AtelierScreen extends StatefulWidget {
   const AtelierScreen({super.key});
@@ -62,11 +62,9 @@ class _AtelierScreenState extends State<AtelierScreen> {
                     children: [
                       const SectionPlaque('ÜRETİM KUYRUĞU'),
                       for (final job in state.craftQueue) _QueueRow(job: job),
-                      for (
-                        var i = state.craftQueue.length;
-                        i < CraftRecipes.maxQueue;
-                        i++
-                      )
+                      for (var i = state.craftQueue.length;
+                          i < CraftRecipes.maxQueue;
+                          i++)
                         OrnatePanel(
                           child: Center(
                             child: Padding(
@@ -225,7 +223,8 @@ class _RecipeDetail extends StatelessWidget {
                     ResourceType.wood => GameAssets.iconItemWood,
                     ResourceType.leather => GameAssets.iconItemLeather,
                     ResourceType.stone ||
-                    ResourceType.iron => GameAssets.iconItemStone,
+                    ResourceType.iron =>
+                      GameAssets.iconItemStone,
                     _ => GameAssets.iconCoinGold,
                   },
                   width: 18,
