@@ -1,0 +1,52 @@
+name: Auto Dart Format
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout current branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      - name: Show versions
+        run: |
+          flutter --version
+          dart --version
+
+      - name: Apply Dart format
+        run: dart format lib test
+
+      - name: Show formatting diff
+        run: |
+          git status --short
+          git diff -- lib/features/tent/tent_scene.dart lib/game/state/game_controller.dart lib/game/state/game_serializer.dart || true
+
+      - name: Commit and push formatted files
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          if [ -n "$(git status --porcelain)" ]; then
+            git add lib test
+            git commit -m "Apply Dart format"
+            git push origin HEAD:${{ github.ref_name }}
+          else
+            echo "No formatting changes."
+          fi
+
+      - name: Verify format
+        run: dart format --set-exit-if-changed lib test
