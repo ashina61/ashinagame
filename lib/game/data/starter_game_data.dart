@@ -32,6 +32,7 @@ class GameActions {
   static const expedition = 'expedition';
   static const event = 'event';
   static const trade = 'trade';
+  static const tentUpgrade = 'tent_upgrade';
 }
 
 class StarterGameData {

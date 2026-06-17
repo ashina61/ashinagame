@@ -70,6 +70,9 @@ class GameState {
     this.army = const {},
     this.wounded = const {},
     this.npcRelations = const {},
+    this.npcRecentDialogues = const {},
+    this.npcLastTalkDay = const {},
+    this.npcLastTalkType = const {},
     this.nationPolicies = const {},
     this.pendingNationPolicy,
     this.nationLoyalty = const {},
@@ -171,6 +174,15 @@ class GameState {
 
   /// How each named figure feels about the leader (0–100), 50 by default.
   final Map<String, int> npcRelations;
+
+  /// Recent dialogue ids per NPC, used to avoid back-to-back repeated lines.
+  final Map<String, List<String>> npcRecentDialogues;
+
+  /// Last day each NPC was spoken to; same-day repeats give reduced rewards.
+  final Map<String, int> npcLastTalkDay;
+
+  /// Last selected talk type/label per NPC, used for spam feedback.
+  final Map<String, String> npcLastTalkType;
 
   /// Governance choice taken for each fully-conquered nation (id → policy id).
   final Map<String, String> nationPolicies;
@@ -338,6 +350,9 @@ class GameState {
     Map<String, int>? army,
     Map<String, int>? wounded,
     Map<String, int>? npcRelations,
+    Map<String, List<String>>? npcRecentDialogues,
+    Map<String, int>? npcLastTalkDay,
+    Map<String, String>? npcLastTalkType,
     Map<String, String>? nationPolicies,
     String? pendingNationPolicy,
     bool clearPendingNation = false,
@@ -406,6 +421,9 @@ class GameState {
       army: army ?? this.army,
       wounded: wounded ?? this.wounded,
       npcRelations: npcRelations ?? this.npcRelations,
+      npcRecentDialogues: npcRecentDialogues ?? this.npcRecentDialogues,
+      npcLastTalkDay: npcLastTalkDay ?? this.npcLastTalkDay,
+      npcLastTalkType: npcLastTalkType ?? this.npcLastTalkType,
       nationPolicies: nationPolicies ?? this.nationPolicies,
       pendingNationPolicy: clearPendingNation
           ? null

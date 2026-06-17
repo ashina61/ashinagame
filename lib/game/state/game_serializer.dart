@@ -135,6 +135,9 @@ class GameSerializer {
         'army': state.army,
         'wounded': state.wounded,
         'npcRelations': state.npcRelations,
+        'npcRecentDialogues': state.npcRecentDialogues,
+        'npcLastTalkDay': state.npcLastTalkDay,
+        'npcLastTalkType': state.npcLastTalkType,
         'nationPolicies': state.nationPolicies,
         'pendingNationPolicy': state.pendingNationPolicy,
         'nationLoyalty': state.nationLoyalty,
@@ -283,6 +286,19 @@ class GameSerializer {
             .cast<String, int>(),
         npcRelations: (json['npcRelations'] as Map<String, dynamic>? ?? {})
             .cast<String, int>(),
+        npcRecentDialogues: {
+          for (final e in (json['npcRecentDialogues']
+                      as Map<String, dynamic>? ??
+                  {})
+              .entries)
+            e.key: (e.value as List<dynamic>).cast<String>(),
+        },
+        npcLastTalkDay:
+            (json['npcLastTalkDay'] as Map<String, dynamic>? ?? {})
+                .cast<String, int>(),
+        npcLastTalkType:
+            (json['npcLastTalkType'] as Map<String, dynamic>? ?? {})
+                .cast<String, String>(),
         nationPolicies: (json['nationPolicies'] as Map<String, dynamic>? ?? {})
             .cast<String, String>(),
         pendingNationPolicy: json['pendingNationPolicy'] as String?,

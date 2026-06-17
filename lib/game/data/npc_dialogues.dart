@@ -1,5 +1,6 @@
 import '../models/npc.dart';
 import '../models/resource.dart';
+import '../state/game_state.dart';
 
 /// Conversations keyed by NPC. The leader picks a reply; each reply shifts the
 /// bond with the speaker and may sway the people, the council or the treasury.
@@ -248,4 +249,141 @@ class NpcDialogues {
         for (final d in all)
           if (d.npcId == npcId) d,
       ];
+
+  static List<Dialogue> contextualFor(String npcId, GameState state) {
+    final relation = state.relationWith(npcId);
+    final age = state.profile.age;
+    final season = state.day.season.label;
+    final phaseHint = age < 16
+        ? 'Genç yaşta önce ocağı ve çadırı sağlam tut.'
+        : age < 18
+            ? 'Oba yolu açılırken güvenilir yoldaş sözü daha değerlidir.'
+            : 'Artık sözün obanın ve komşu boyların kulağına gider.';
+    final trustHint = relation >= 70
+        ? 'Sana güvenirim; sözü uzatmadan gerçeği söylerim.'
+        : relation <= 35
+            ? 'Aramızdaki güven ince buz gibi; adımını tart.'
+            : 'Sözümüz ölçülü olsun, güven böyle büyür.';
+    final seasonalHint = '$season mevsimi sözün tadını değiştirir.';
+    return [
+      ...forNpc(npcId),
+      for (final line in _roleLines(npcId))
+        Dialogue(
+          id: '${npcId}_${line.id}',
+          npcId: npcId,
+          line: '${line.text} $seasonalHint $phaseHint $trustHint',
+          choices: _choices(line.kind),
+        ),
+    ];
+  }
+
+  static List<_RoleLine> _roleLines(String npcId) => switch (npcId) {
+        'bori_bey' => _elderLines,
+        'kaya_atabek' => _warriorLines,
+        'alis_hatun' => _healerLines,
+        'tugan_bey' => _rivalLines,
+        'bezirgan' => _merchantLines,
+        'togan_kagan' => _rulerLines,
+        _ => _elderLines,
+      };
+
+  static List<DialogueChoice> _choices(String kind) => switch (kind) {
+        'rumor' => const [
+            DialogueChoice(
+              label: 'Söylentiyi dinle',
+              reply: 'Duyduğun söz yol ve fırsat sezgini güçlendirdi.',
+              relationEffect: 1,
+              resourceEffects: {ResourceType.reputation: 1},
+            ),
+            DialogueChoice(
+              label: 'Kısa kes',
+              reply: 'Sözü kısa tuttun; vakit sende kaldı.',
+            ),
+          ],
+        'quest' => const [
+            DialogueChoice(
+              label: 'Görev sor',
+              reply: 'Yapılacak işi öğrendin; hedefin biraz daha netleşti.',
+              relationEffect: 1,
+              peopleEffect: 1,
+            ),
+            DialogueChoice(
+              label: 'Yardım teklif et',
+              reply: 'Yardım sözün karşılık buldu; obada güven arttı.',
+              relationEffect: 2,
+              resourceEffects: {ResourceType.morale: 1},
+            ),
+          ],
+        _ => const [
+            DialogueChoice(
+              label: 'Öğüt iste',
+              reply: 'Öğüdü aklında tuttun; söz aranızdaki bağı az da olsa güçlendirdi.',
+              relationEffect: 1,
+              councilEffect: 1,
+            ),
+            DialogueChoice(
+              label: 'Dert dinle',
+              reply: 'Karşındakinin derdini dinledin; halk bunu duyar.',
+              relationEffect: 1,
+              peopleEffect: 1,
+            ),
+          ],
+      };
+
+  static const _elderLines = <_RoleLine>[
+    _RoleLine('elder_advice_1', 'advice', 'Bozkır sabırsızı sevmez. Önce ateşini, sonra yolunu koru.'),
+    _RoleLine('elder_advice_2', 'advice', 'Kış gelmeden yiyeceğini saklamayan, baharı göremez.'),
+    _RoleLine('elder_advice_3', 'advice', 'Bir oba çadırla değil, güvenle kurulur.'),
+    _RoleLine('elder_advice_4', 'advice', 'Yoldaşın açsa kılıcın keskin olsa ne olur?'),
+    _RoleLine('elder_advice_5', 'advice', 'Eski yazıtlar taşta değil, insanın kararında yaşar.'),
+    _RoleLine('elder_quest_1', 'quest', 'Ana çadırın güçlenmeden büyük söz verilmez; odun ve deri biriktir.'),
+  ];
+
+  static const _warriorLines = <_RoleLine>[
+    _RoleLine('warrior_rumor_1', 'rumor', 'Kuzey avlağında taze geyik izi gördüm.'),
+    _RoleLine('warrior_rumor_2', 'rumor', 'Bugün rüzgâr ters. Av da akın da kolay olmayacak.'),
+    _RoleLine('warrior_rumor_3', 'rumor', 'Irmak kıyısında ördek çok ama sessiz gitmek gerek.'),
+    _RoleLine('warrior_rumor_4', 'rumor', 'Kapan kurarsan yarına et çıkabilir.'),
+    _RoleLine('warrior_rumor_5', 'rumor', 'Aynı avlağa çok yüklendik, biraz dinlenmesi gerek.'),
+    _RoleLine('warrior_quest_1', 'quest', 'Gençler talim bekler; bir gün ayırırsan oba kendini güçlü hisseder.'),
+  ];
+
+  static const _healerLines = <_RoleLine>[
+    _RoleLine('healer_advice_1', 'advice', 'Ateşin başında susan çocuk, sabah hasta uyanabilir.'),
+    _RoleLine('healer_advice_2', 'advice', 'Deri kuru, çadır soğuksa moral de can da düşer.'),
+    _RoleLine('healer_advice_3', 'advice', 'Ot kökü kadar tatlı söz de yara kapatır.'),
+    _RoleLine('healer_quest_1', 'quest', 'Erzak ve deri getir; ocakları daha sıcak tutayım.'),
+    _RoleLine('healer_rumor_1', 'rumor', 'Güney yamaçta şifalı ot gördüler, ama yolu çamurlu.'),
+  ];
+
+  static const _rivalLines = <_RoleLine>[
+    _RoleLine('rival_advice_1', 'advice', 'Zayıf çadırın gölgesi de kısa olur, bey.'),
+    _RoleLine('rival_rumor_1', 'rumor', 'Komşu boylar senin kaç yoldaş topladığını sayıyor.'),
+    _RoleLine('rival_rumor_2', 'rumor', 'Pazarda senin itibarını tartan diller var.'),
+    _RoleLine('rival_quest_1', 'quest', 'Gücünü kanıtlamak istiyorsan söz değil hazırlık göster.'),
+    _RoleLine('rival_advice_2', 'advice', 'Sınırda kararsızlık, kurttan önce korkuyu çağırır.'),
+  ];
+
+  static const _merchantLines = <_RoleLine>[
+    _RoleLine('merchant_rumor_1', 'rumor', 'Doğu yolunda deri pahalı, demir az.'),
+    _RoleLine('merchant_rumor_2', 'rumor', 'Kervanlar sağlam çadırı olan obaya daha rahat uğrar.'),
+    _RoleLine('merchant_rumor_3', 'rumor', 'Altını şimdi saklayan, kışın pazarlığı güçlü yapar.'),
+    _RoleLine('merchant_quest_1', 'quest', 'Deri getirirsen sana daha sağlam bir yay ayarlayabilirim.'),
+    _RoleLine('merchant_advice_1', 'advice', 'Demiri kılıca mı, baltaya mı harcayacağına iyi karar ver.'),
+  ];
+
+  static const _rulerLines = <_RoleLine>[
+    _RoleLine('ruler_advice_1', 'advice', 'Oba kurmak isteyen önce kendi kapısında düzen kurar.'),
+    _RoleLine('ruler_advice_2', 'advice', 'Yoldaşsız otağ boş yankı verir.'),
+    _RoleLine('ruler_rumor_1', 'rumor', 'Kağanlık, genç beylerin çadırına değil disiplinine bakar.'),
+    _RoleLine('ruler_quest_1', 'quest', 'İtibarını yükselt; sonra büyük söz konuşulur.'),
+    _RoleLine('ruler_advice_3', 'advice', 'Güven kazanmadan sancak yükselmez.'),
+  ];
+}
+
+class _RoleLine {
+  const _RoleLine(this.id, this.kind, this.text);
+  final String id;
+  final String kind;
+  final String text;
 }

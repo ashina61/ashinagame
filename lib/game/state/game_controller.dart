@@ -21,6 +21,7 @@ import '../logic/phase_logic.dart';
 import '../logic/progression_logic.dart';
 import '../logic/resource_logic.dart';
 import '../logic/season_logic.dart';
+import '../logic/tent_upgrade_logic.dart';
 import '../models/achievement.dart';
 import '../models/battle_report.dart';
 import '../models/clan.dart';
@@ -950,6 +951,7 @@ class GameController extends ChangeNotifier {
   }
 
   bool upgradeBuilding(String id) {
+    if (id == 'main_tent') return upgradeTent();
     final building = _state.building(id);
     if (building == null || !building.canUpgrade) return false;
     final craftDiscount =
@@ -979,6 +981,49 @@ class GameController extends ChangeNotifier {
         ),
         profile: ProgressionLogic.addXp(_state.profile, 20),
         log: _prependLog('${building.name} seviye ${building.level + 1} oldu.'),
+      ),
+    );
+    return true;
+  }
+
+  TentUpgradeTarget? tentUpgradeTarget() => TentUpgradeLogic.nextTarget(_state);
+
+  List<String> tentUpgradeBlockReasons() =>
+      TentUpgradeLogic.blockReasons(_state);
+
+  String? tentUpgradeBlockReason() {
+    final reasons = tentUpgradeBlockReasons();
+    return reasons.isEmpty ? null : reasons.first;
+  }
+
+  bool canUpgradeTent() => TentUpgradeLogic.canUpgrade(_state);
+
+  bool upgradeTent() {
+    final building = _state.building('main_tent');
+    final target = TentUpgradeLogic.nextTarget(_state);
+    if (building == null || target == null || !canUpgradeTent()) return false;
+    final buildings = [
+      for (final item in _state.buildings)
+        item.id == 'main_tent' ? item.copyWith(level: target.level) : item,
+    ];
+    final moraleBonus = target.level == 2 ? 2 : target.level == 3 ? 5 : 8;
+    final resources = ResourceLogic.apply(_state.resources, {
+      for (final entry in target.cost.entries) entry.key: -entry.value,
+      ResourceType.morale: moraleBonus,
+    });
+    _commit(
+      _state.copyWith(
+        buildings: buildings,
+        resources: resources,
+        maxDailyActionPoints: _dailyActionLimit(
+          resources,
+          buildings: buildings,
+        ),
+        profile: ProgressionLogic.addXp(_state.profile, 25),
+        quests: _trackAction(GameActions.tentUpgrade),
+        log: _prependLog(
+          'Bugün çadır direklerini güçlendirdin: ${target.name} kuruldu.',
+        ),
       ),
     );
     return true;
@@ -1550,6 +1595,7 @@ class GameController extends ChangeNotifier {
   /// The most recent battle's outcome, for the UI to recount. Transient — not
   /// part of the saved state.
   BattleReport? lastBattle;
+  String? lastTalkFeedback;
 
   /// Military weight thrown behind a regional war. Attack drives the punch,
   /// defence steadies the line, and the leader and realm add their weight. A
@@ -2281,33 +2327,58 @@ class GameController extends ChangeNotifier {
   /// The exchange [npcId] offers right now; dialogues rotate by the day so a
   /// figure does not repeat the same line each visit. Returns null if unknown.
   Dialogue? dialogueFor(String npcId) {
-    final pool = NpcDialogues.forNpc(npcId);
+    final pool = NpcDialogues.contextualFor(npcId, _state);
     if (pool.isEmpty) return null;
-    return pool[_state.day.day % pool.length];
+    final recent = _state.npcRecentDialogues[npcId] ?? const <String>[];
+    final candidates = [
+      for (final d in pool)
+        if (!recent.contains(d.id)) d,
+    ];
+    final usable = candidates.isEmpty ? pool : candidates;
+    final relationShift = (_state.relationWith(npcId) / 20).floor();
+    final index = (_state.day.day + _state.profile.age + relationShift) %
+        usable.length;
+    return usable[index];
   }
 
   /// Speaks with an NPC: costs one action point, shifts the bond with the
   /// speaker, and may sway the people, the council or the treasury.
   bool talkTo(String npcId, DialogueChoice choice) {
     if (_state.dailyActionPoints < 1) return false;
+    lastTalkFeedback = null;
     final npc = NpcCharacters.byId(npcId);
+    final offered = dialogueFor(npcId);
+    final sameDay = _state.npcLastTalkDay[npcId] == _state.day.day;
+    final sameType = _state.npcLastTalkType[npcId] == choice.label;
+    final spammed = sameDay && sameType;
     final relations = Map<String, int>.from(_state.npcRelations);
+    final relationEffect = spammed
+        ? 0
+        : (sameDay ? choice.relationEffect ~/ 2 : choice.relationEffect);
     relations[npcId] =
-        (_state.relationWith(npcId) + choice.relationEffect).clamp(0, 100);
+        (_state.relationWith(npcId) + relationEffect).clamp(0, 100);
 
     var resources = ResourceLogic.apply(
       _state.resources,
-      choice.resourceEffects,
+      spammed ? const {} : choice.resourceEffects,
     );
-    var people = _state.peopleApproval + choice.peopleEffect;
-    var council = _state.councilApproval + choice.councilEffect;
+    var people = _state.peopleApproval + (spammed ? 0 : choice.peopleEffect);
+    var council = _state.councilApproval + (spammed ? 0 : choice.councilEffect);
     final notes = <String>[
-      '${npc?.name ?? 'Biri'} ile konuşuldu: ${choice.label}',
+      spammed
+          ? '${npc?.name ?? 'Biri'} aynı sözü uzatmadı.'
+          : '${npc?.name ?? 'Biri'} ile konuşuldu: ${choice.label}',
     ];
+    if (spammed) {
+      lastTalkFeedback = 'Bugün bunu zaten konuştuk.';
+    } else if (sameDay) {
+      lastTalkFeedback = 'Kısa konuştunuz; aynı gün ikinci sözün etkisi azaldı.';
+    }
 
     // A word can summon the council, if one is not already in session.
     var kurultayId = _state.currentKurultay;
-    if (choice.triggersKurultay != null &&
+    if (!spammed &&
+        choice.triggersKurultay != null &&
         kurultayId == null &&
         KurultayDecisions.byId(choice.triggersKurultay!) != null) {
       kurultayId = choice.triggersKurultay;
@@ -2318,7 +2389,7 @@ class GameController extends ChangeNotifier {
     var army = _state.army;
     var wounded = _state.wounded;
     lastBattle = null;
-    if (choice.raidPower > 0) {
+    if (!spammed && choice.raidPower > 0) {
       final s = warStrength;
       final chance = (s * 100 / (s + choice.raidPower)).round().clamp(10, 90);
       final won = _random.nextInt(100) < chance;
@@ -2356,6 +2427,9 @@ class GameController extends ChangeNotifier {
       _state.copyWith(
         dailyActionPoints: _state.dailyActionPoints - 1,
         npcRelations: relations,
+        npcRecentDialogues: _rememberDialogue(npcId, offered?.id),
+        npcLastTalkDay: {..._state.npcLastTalkDay, npcId: _state.day.day},
+        npcLastTalkType: {..._state.npcLastTalkType, npcId: choice.label},
         peopleApproval: people,
         councilApproval: council,
         resources: resources,
@@ -2486,6 +2560,15 @@ class GameController extends ChangeNotifier {
       omen: 'Alamet yok',
       omenSeverity: OmenSeverity.neutral,
     );
+  }
+
+  Map<String, List<String>> _rememberDialogue(String npcId, String? id) {
+    if (id == null) return _state.npcRecentDialogues;
+    final current = _state.npcRecentDialogues[npcId] ?? const <String>[];
+    return {
+      ..._state.npcRecentDialogues,
+      npcId: [id, ...current.where((item) => item != id)].take(4).toList(),
+    };
   }
 
   List<String> _prependLog(String message) =>

@@ -11,8 +11,10 @@ import '../../core/widgets/info_sheet.dart';
 import '../../core/widgets/ornate.dart';
 import '../../game/data/game_info.dart';
 import '../../game/logic/phase_logic.dart';
+import '../../game/logic/tent_upgrade_logic.dart';
 import '../../game/state/game_controller.dart';
 import '../../game/state/game_scope.dart';
+import '../../game/state/game_state.dart';
 import '../achievements/achievements_screen.dart';
 import '../found_oba/found_oba_screen.dart';
 import '../quests/quests_screen.dart';
@@ -118,43 +120,142 @@ class TentScreen extends StatelessWidget {
   ) {
     final building = controller.state.building(id);
     if (building == null) return;
+    final isMainTent = id == 'main_tent';
+    final tentTarget = isMainTent ? controller.tentUpgradeTarget() : null;
+    final tentReasons = isMainTent ? controller.tentUpgradeBlockReasons() : const <String>[];
     final affordable = building.upgradeCost.entries.every(
       (e) => controller.state.resource(e.key) >= e.value,
     );
     showSceneDetail(
       context,
-      title: '$label • Lv.${building.level}/${building.maxLevel}',
+      title: isMainTent
+          ? '$label • ${TentUpgradeLogic.tentName(building.level)} '
+              '(Lv.${building.level})'
+          : '$label • Lv.${building.level}/${building.maxLevel}',
       icon: icon,
-      description: building.effectDescription,
+      description: isMainTent
+          ? 'Çadır yükseltmesi artık hedef, bedel ve sonuçla ilerler.'
+          : building.effectDescription,
+      extra: isMainTent && tentTarget != null
+          ? _TentUpgradeDetails(target: tentTarget, blockReasons: tentReasons)
+          : null,
       actions: [
         SceneAction(
-          label: building.canUpgrade ? 'Yükselt' : 'Azami seviye',
-          subtitle: building.canUpgrade
-              ? 'Maliyet: ${Formatters.resourceDelta({
-                      for (final e in building.upgradeCost.entries)
-                        e.key: -e.value
-                    })}'
-              : null,
+          label: isMainTent
+              ? tentTarget == null
+                  ? 'Azami seviye'
+                  : 'Yükselt: ${tentTarget.name}'
+              : building.canUpgrade
+                  ? 'Yükselt'
+                  : 'Azami seviye',
+          subtitle: isMainTent
+              ? tentReasons.isEmpty
+                  ? 'Maliyet hazır; yükseltme uygulanır.'
+                  : tentReasons.first
+              : building.canUpgrade
+                  ? 'Maliyet: ${Formatters.resourceDelta({
+                          for (final e in building.upgradeCost.entries)
+                            e.key: -e.value
+                        })}'
+                  : null,
           primary: true,
-          enabled: building.canUpgrade && affordable,
+          enabled: isMainTent
+              ? tentTarget != null && tentReasons.isEmpty
+              : building.canUpgrade && affordable,
           onTap: () {
-            final ok = controller.upgradeBuilding(id);
+            final ok =
+                isMainTent ? controller.upgradeTent() : controller.upgradeBuilding(id);
             if (ok) {
               AudioService.instance.playSfx('craft');
               showFloatingGain(
                 context,
-                '$label ↑',
+                isMainTent
+                    ? 'Çadırın ${tentTarget?.name ?? ''} seviyesine yükseldi.'
+                    : '$label ↑',
                 color: AppColors.goldBright,
               );
             } else {
               AudioService.instance.playSfx('denied');
               ScaffoldMessenger.of(
                 context,
-              ).showSnackBar(const SnackBar(content: Text('Kaynak yetersiz.')));
+              ).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    isMainTent
+                        ? 'Yükseltme yapılamadı: '
+                            '${controller.tentUpgradeBlockReason() ?? 'şartlar eksik.'}'
+                        : 'Kaynak yetersiz.',
+                  ),
+                ),
+              );
             }
           },
         ),
       ],
+    );
+  }
+}
+
+class _TentUpgradeDetails extends StatelessWidget {
+  const _TentUpgradeDetails({required this.target, required this.blockReasons});
+
+  final TentUpgradeTarget target;
+  final List<String> blockReasons;
+
+  @override
+  Widget build(BuildContext context) {
+    final state = GameScope.of(context).state;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Sonraki seviye: ${target.name}', style: AppTextStyles.bodyStrong),
+        const SizedBox(height: 8),
+        Text('Maliyet', style: AppTextStyles.section),
+        const SizedBox(height: 4),
+        for (final entry in target.cost.entries)
+          _RequirementLine(
+            text: '${entry.key.label}: ${state.resource(entry.key)}/${entry.value}',
+            ok: state.resource(entry.key) >= entry.value,
+          ),
+        const SizedBox(height: 8),
+        Text('Şartlar', style: AppTextStyles.section),
+        const SizedBox(height: 4),
+        for (final req in target.requirements)
+          _RequirementLine(text: req, ok: _requirementMet(state, req)),
+        const SizedBox(height: 8),
+        Text('Kazanılacak bonuslar', style: AppTextStyles.section),
+        const SizedBox(height: 4),
+        for (final bonus in target.bonuses)
+          _RequirementLine(text: bonus, ok: true),
+      ],
+    );
+  }
+
+  bool _requirementMet(GameState state, String req) {
+    if (req.contains('1 yoldaş')) return state.swornFollowers >= 1;
+    if (req.contains('5 yoldaş')) return state.swornFollowers >= 5;
+    if (req.contains('obanı kur')) return state.obaFounded;
+    return blockReasons.isEmpty ||
+        !blockReasons.any((reason) => reason.contains(req.split(' ').first));
+  }
+}
+
+class _RequirementLine extends StatelessWidget {
+  const _RequirementLine({required this.text, required this.ok});
+
+  final String text;
+  final bool ok;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 3),
+      child: Text(
+        '${ok ? '✓' : '✗'} $text',
+        style: AppTextStyles.meta.copyWith(
+          color: ok ? AppColors.success : AppColors.danger,
+        ),
+      ),
     );
   }
 }

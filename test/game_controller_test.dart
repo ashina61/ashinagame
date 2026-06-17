@@ -46,7 +46,7 @@ GameState _foundableState() {
     profile: base.profile.copyWith(reputation: 55),
     buildings: [
       for (final b in base.buildings)
-        if (b.id == 'main_tent') b.copyWith(level: 2) else b,
+        if (b.id == 'main_tent') b.copyWith(level: 3) else b,
     ],
   );
 }
@@ -258,7 +258,7 @@ void main() {
           ),
       buildings: [
         for (final b in StarterGameData.create().buildings)
-          if (b.id == 'main_tent') b.copyWith(level: 2) else b,
+          if (b.id == 'main_tent') b.copyWith(level: 3) else b,
       ],
       resources: {
         ...StarterGameData.create().resources,
@@ -651,7 +651,7 @@ void main() {
       base.copyWith(
         buildings: [
           for (final b in base.buildings)
-            if (b.id == 'main_tent') b.copyWith(level: 2) else b,
+            if (b.id == 'main_tent') b.copyWith(level: 3) else b,
         ],
         profile: base.profile.copyWith(reputation: 55),
       ),
@@ -1055,6 +1055,52 @@ void main() {
     },
   );
 
+  test('npc dialogue rotates and same-day repeated talk gives reduced reward',
+      () {
+    final controller = GameController.starter();
+    final first = controller.dialogueFor('bori_bey')!;
+    final choice = first.choices.first;
+
+    expect(controller.talkTo('bori_bey', choice), isTrue);
+    final afterFirst = controller.state.relationWith('bori_bey');
+    final second = controller.dialogueFor('bori_bey')!;
+
+    expect(second.id, isNot(first.id));
+    expect(controller.talkTo('bori_bey', choice), isTrue);
+    expect(controller.state.relationWith('bori_bey'), afterFirst);
+    expect(controller.lastTalkFeedback, contains('zaten'));
+  });
+
+  test('tent upgrade has costs, block reasons, effects and save safety', () {
+    final base = StarterGameData.create();
+    final controller = GameController(base);
+
+    expect(controller.canUpgradeTent(), isFalse);
+    expect(controller.tentUpgradeBlockReason(), contains('Odun'));
+
+    final funded = GameController(
+      base.copyWith(
+        resources: {
+          ...base.resources,
+          ResourceType.wood: 50,
+          ResourceType.leather: 20,
+          ResourceType.food: 20,
+          ResourceType.reputation: 10,
+        },
+      ),
+    );
+    expect(funded.canUpgradeTent(), isTrue);
+    expect(funded.upgradeTent(), isTrue);
+    expect(PhaseLogic.tentLevel(funded.state), 2);
+    expect(funded.state.resource(ResourceType.wood), 10);
+    expect(funded.state.resource(ResourceType.leather), 8);
+    expect(funded.state.log.first, contains('Sağlam Çadır'));
+
+    final decoded = GameSerializer.decode(GameSerializer.encode(funded.state));
+    expect(decoded, isNotNull);
+    expect(PhaseLogic.tentLevel(decoded!), 2);
+  });
+
   test('a dialogue can summon the council', () {
     final controller = GameController.starter();
     expect(controller.state.currentKurultay, isNull);
@@ -1103,6 +1149,14 @@ void main() {
     expect(
       decoded!.relationWith('kaya_atabek'),
       controller.state.relationWith('kaya_atabek'),
+    );
+    expect(
+      decoded.npcRecentDialogues['kaya_atabek'],
+      controller.state.npcRecentDialogues['kaya_atabek'],
+    );
+    expect(
+      decoded.npcLastTalkDay['kaya_atabek'],
+      controller.state.npcLastTalkDay['kaya_atabek'],
     );
   });
 
