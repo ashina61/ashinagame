@@ -22,144 +22,142 @@ class GameSerializer {
   const GameSerializer._();
 
   static String encode(GameState state) => jsonEncode({
-        'profile': {
-          'name': state.profile.name,
-          'title': state.profile.title,
-          'age': state.profile.age,
-          'level': state.profile.level,
-          'xp': state.profile.xp,
-          'xpToNextLevel': state.profile.xpToNextLevel,
-          'skillPoints': state.profile.skillPoints,
-          'health': state.profile.health,
-          'energy': state.profile.energy,
-          'fatigue': state.profile.fatigue,
-          'reputation': state.profile.reputation,
-          'courage': state.profile.courage,
-          'wisdom': state.profile.wisdom,
-          'leadership': state.profile.leadership,
-          'endurance': state.profile.endurance,
-          'trade': state.profile.trade,
-          'craft': state.profile.craft,
-          'archery': state.profile.archery,
-          'warfare': state.profile.warfare,
-          'familyStatus': state.profile.familyStatus,
-          'marriageStatus': state.profile.marriageStatus,
-          'portrait': state.profile.portrait,
+    'profile': {
+      'name': state.profile.name,
+      'title': state.profile.title,
+      'age': state.profile.age,
+      'level': state.profile.level,
+      'xp': state.profile.xp,
+      'xpToNextLevel': state.profile.xpToNextLevel,
+      'skillPoints': state.profile.skillPoints,
+      'health': state.profile.health,
+      'energy': state.profile.energy,
+      'fatigue': state.profile.fatigue,
+      'reputation': state.profile.reputation,
+      'courage': state.profile.courage,
+      'wisdom': state.profile.wisdom,
+      'leadership': state.profile.leadership,
+      'endurance': state.profile.endurance,
+      'trade': state.profile.trade,
+      'craft': state.profile.craft,
+      'archery': state.profile.archery,
+      'warfare': state.profile.warfare,
+      'familyStatus': state.profile.familyStatus,
+      'marriageStatus': state.profile.marriageStatus,
+      'portrait': state.profile.portrait,
+    },
+    'clan': {'name': state.clan.name, 'motto': state.clan.motto},
+    'day': {'day': state.day.day, 'season': state.day.season.name},
+    'resources': {for (final e in state.resources.entries) e.key.name: e.value},
+    'quests': [
+      for (final q in state.quests)
+        {'id': q.id, 'progress': q.progress, 'completed': q.completed},
+    ],
+    'eventId': state.currentEvent?.id,
+    'eventIndex': state.eventIndex,
+    'log': state.log,
+    'dailyActionPoints': state.dailyActionPoints,
+    'maxDailyActionPoints': state.maxDailyActionPoints,
+    'energy': state.energy,
+    'collapseDays': state.collapseDays,
+    'gameOver': state.gameOver,
+    'gameOverReason': state.gameOverReason,
+    'craftQueue': [
+      for (final j in state.craftQueue)
+        {'recipeId': j.recipeId, 'daysLeft': j.daysLeft},
+    ],
+    'craftedItems': state.craftedItems,
+    'completedExpeditions': state.completedExpeditions,
+    'marketStock': state.marketStock,
+    'buildings': [
+      for (final b in state.buildings) {'id': b.id, 'level': b.level},
+    ],
+    'tribes': [
+      for (final t in state.tribes)
+        {
+          'id': t.id,
+          'relation': t.relation,
+          'tradeOpen': t.tradeOpen,
+          'marriageTie': t.marriageTie,
         },
-        'clan': {'name': state.clan.name, 'motto': state.clan.motto},
-        'day': {'day': state.day.day, 'season': state.day.season.name},
-        'resources': {
-          for (final e in state.resources.entries) e.key.name: e.value
+    ],
+    'household': {
+      'spouseName': state.household.spouseName,
+      'spouseBonus': state.household.spouseBonus,
+      'householdMorale': state.household.householdMorale,
+      'childrenCount': state.household.childrenCount,
+      'familyPrestige': state.household.familyPrestige,
+    },
+    'marriageCandidates': [
+      for (final c in state.marriageCandidates)
+        {
+          'id': c.id,
+          'relation': c.relation,
+          'isAvailable': c.isAvailable,
+          'isMarriedToPlayer': c.isMarriedToPlayer,
         },
-        'quests': [
-          for (final q in state.quests)
-            {'id': q.id, 'progress': q.progress, 'completed': q.completed},
-        ],
-        'eventId': state.currentEvent?.id,
-        'eventIndex': state.eventIndex,
-        'log': state.log,
-        'dailyActionPoints': state.dailyActionPoints,
-        'maxDailyActionPoints': state.maxDailyActionPoints,
-        'energy': state.energy,
-        'collapseDays': state.collapseDays,
-        'gameOver': state.gameOver,
-        'gameOverReason': state.gameOverReason,
-        'craftQueue': [
-          for (final j in state.craftQueue)
-            {'recipeId': j.recipeId, 'daysLeft': j.daysLeft},
-        ],
-        'craftedItems': state.craftedItems,
-        'completedExpeditions': state.completedExpeditions,
-        'marketStock': state.marketStock,
-        'buildings': [
-          for (final b in state.buildings) {'id': b.id, 'level': b.level},
-        ],
-        'tribes': [
-          for (final t in state.tribes)
-            {
-              'id': t.id,
-              'relation': t.relation,
-              'tradeOpen': t.tradeOpen,
-              'marriageTie': t.marriageTie,
-            },
-        ],
-        'household': {
-          'spouseName': state.household.spouseName,
-          'spouseBonus': state.household.spouseBonus,
-          'householdMorale': state.household.householdMorale,
-          'childrenCount': state.household.childrenCount,
-          'familyPrestige': state.household.familyPrestige,
-        },
-        'marriageCandidates': [
-          for (final c in state.marriageCandidates)
-            {
-              'id': c.id,
-              'relation': c.relation,
-              'isAvailable': c.isAvailable,
-              'isMarriedToPlayer': c.isMarriedToPlayer,
-            },
-        ],
-        'faithState': {
-          'faith': state.faithState.faith,
-          'kut': state.faithState.kut,
-          'tore': state.faithState.tore,
-          'ancestorHonor': state.faithState.ancestorHonor,
-          'omen': state.faithState.omen,
-          'omenSeverity': state.faithState.omenSeverity.name,
-          'lastRitualDay': state.faithState.lastRitualDay,
-          'ritualCooldownDays': state.faithState.ritualCooldownDays,
-          'activeBlessings': state.faithState.activeBlessings,
-          'activeWarnings': state.faithState.activeWarnings,
-          'visitedSacredPlaces': state.faithState.visitedSacredPlaces,
-        },
-        'spiritualAdvisor': {
-          'lastConsultDay': state.spiritualAdvisor.lastConsultDay,
-          'level': state.spiritualAdvisor.level,
-        },
-        'ritualCooldowns': state.ritualCooldowns,
-        'generation': state.generation,
-        'pendingSuccession': state.pendingSuccession,
-        'leaderLifespan': state.leaderLifespan,
-        'claimedAchievements': state.claimedAchievements,
-        'faithPath': state.faithPath,
-        'tamga': state.tamga,
-        'khanateStanding': state.khanateStanding,
-        'isKhan': state.isKhan,
-        'vassalObas': state.vassalObas,
-        'equipped': state.equipped,
-        'regionRelations': state.regionRelations,
-        'conqueredRegions': state.conqueredRegions,
-        'onboarded': state.onboarded,
-        'peopleApproval': state.peopleApproval,
-        'councilApproval': state.councilApproval,
-        'currentKurultay': state.currentKurultay,
-        'lastKurultayDay': state.lastKurultayDay,
-        'army': state.army,
-        'wounded': state.wounded,
-        'npcRelations': state.npcRelations,
-        'npcRecentDialogues': state.npcRecentDialogues,
-        'npcLastTalkDay': state.npcLastTalkDay,
-        'npcLastTalkType': state.npcLastTalkType,
-        'nationPolicies': state.nationPolicies,
-        'pendingNationPolicy': state.pendingNationPolicy,
-        'nationLoyalty': state.nationLoyalty,
-        'obaFounded': state.obaFounded,
-        'landScouted': state.landScouted,
-        'companionRoles': state.companionRoles,
-        'raidCountdown': state.raidCountdown,
-        'raidFrom': state.raidFrom,
-        'marchTarget': state.marchTarget,
-        'marchDaysLeft': state.marchDaysLeft,
-        'survival': state.survival.toJson(),
-        'foodInventory': state.foodInventory,
-        'foodAges': state.foodAges,
-        'actionCooldowns': state.actionCooldowns,
-        'actionUsesToday': state.actionUsesToday,
-        'dailyOpportunities': state.dailyOpportunities,
-        'questChainProgress': state.questChainProgress,
-        'horses': [for (final h in state.horses) h.toJson()],
-        'locationStates': state.locationStates,
-      });
+    ],
+    'faithState': {
+      'faith': state.faithState.faith,
+      'kut': state.faithState.kut,
+      'tore': state.faithState.tore,
+      'ancestorHonor': state.faithState.ancestorHonor,
+      'omen': state.faithState.omen,
+      'omenSeverity': state.faithState.omenSeverity.name,
+      'lastRitualDay': state.faithState.lastRitualDay,
+      'ritualCooldownDays': state.faithState.ritualCooldownDays,
+      'activeBlessings': state.faithState.activeBlessings,
+      'activeWarnings': state.faithState.activeWarnings,
+      'visitedSacredPlaces': state.faithState.visitedSacredPlaces,
+    },
+    'spiritualAdvisor': {
+      'lastConsultDay': state.spiritualAdvisor.lastConsultDay,
+      'level': state.spiritualAdvisor.level,
+    },
+    'ritualCooldowns': state.ritualCooldowns,
+    'generation': state.generation,
+    'pendingSuccession': state.pendingSuccession,
+    'leaderLifespan': state.leaderLifespan,
+    'claimedAchievements': state.claimedAchievements,
+    'faithPath': state.faithPath,
+    'tamga': state.tamga,
+    'khanateStanding': state.khanateStanding,
+    'isKhan': state.isKhan,
+    'vassalObas': state.vassalObas,
+    'equipped': state.equipped,
+    'regionRelations': state.regionRelations,
+    'conqueredRegions': state.conqueredRegions,
+    'onboarded': state.onboarded,
+    'peopleApproval': state.peopleApproval,
+    'councilApproval': state.councilApproval,
+    'currentKurultay': state.currentKurultay,
+    'lastKurultayDay': state.lastKurultayDay,
+    'army': state.army,
+    'wounded': state.wounded,
+    'npcRelations': state.npcRelations,
+    'npcRecentDialogues': state.npcRecentDialogues,
+    'npcLastTalkDay': state.npcLastTalkDay,
+    'npcLastTalkType': state.npcLastTalkType,
+    'nationPolicies': state.nationPolicies,
+    'pendingNationPolicy': state.pendingNationPolicy,
+    'nationLoyalty': state.nationLoyalty,
+    'obaFounded': state.obaFounded,
+    'landScouted': state.landScouted,
+    'companionRoles': state.companionRoles,
+    'raidCountdown': state.raidCountdown,
+    'raidFrom': state.raidFrom,
+    'marchTarget': state.marchTarget,
+    'marchDaysLeft': state.marchDaysLeft,
+    'survival': state.survival.toJson(),
+    'foodInventory': state.foodInventory,
+    'foodAges': state.foodAges,
+    'actionCooldowns': state.actionCooldowns,
+    'actionUsesToday': state.actionUsesToday,
+    'dailyOpportunities': state.dailyOpportunities,
+    'questChainProgress': state.questChainProgress,
+    'horses': [for (final h in state.horses) h.toJson()],
+    'locationStates': state.locationStates,
+  });
 
   static GameState? decode(String raw) {
     try {
@@ -224,18 +222,21 @@ class GameSerializer {
             : StarterGameData.events.firstWhere((e) => e.id == eventId),
         eventIndex: json['eventIndex'] as int,
         log: (json['log'] as List<dynamic>).cast<String>(),
-        dailyActionPoints: json['dailyActionPoints'] as int? ??
+        dailyActionPoints:
+            json['dailyActionPoints'] as int? ??
             json['energy'] as int? ??
             GameState.baseDailyActionPoints,
-        maxDailyActionPoints: json['maxDailyActionPoints'] as int? ??
+        maxDailyActionPoints:
+            json['maxDailyActionPoints'] as int? ??
             GameState.baseDailyActionPoints,
         energy: json['energy'] as int? ?? GameState.baseDailyActionPoints,
         collapseDays: json['collapseDays'] as int,
         gameOver: json['gameOver'] as bool,
         gameOverReason: json['gameOverReason'] as String?,
         craftQueue: [
-          for (final job in (json['craftQueue'] as List<dynamic>? ?? [])
-              .cast<Map<String, dynamic>>())
+          for (final job
+              in (json['craftQueue'] as List<dynamic>? ?? [])
+                  .cast<Map<String, dynamic>>())
             CraftJob(
               recipeId: job['recipeId'] as String,
               daysLeft: job['daysLeft'] as int,
@@ -246,9 +247,9 @@ class GameSerializer {
         completedExpeditions:
             (json['completedExpeditions'] as List<dynamic>? ?? [])
                 .cast<String>(),
-        marketStock: switch (
-            (json['marketStock'] as Map<String, dynamic>? ?? {})
-                .cast<String, int>()) {
+        marketStock: switch ((json['marketStock'] as Map<String, dynamic>? ??
+                {})
+            .cast<String, int>()) {
           final stock when stock.isEmpty => MarketGoods.startingStock(),
           final stock => stock,
         },
@@ -286,8 +287,8 @@ class GameSerializer {
         regionRelations:
             (json['regionRelations'] as Map<String, dynamic>? ?? {})
                 .cast<String, int>(),
-        conqueredRegions:
-            (json['conqueredRegions'] as List<dynamic>? ?? []).cast<String>(),
+        conqueredRegions: (json['conqueredRegions'] as List<dynamic>? ?? [])
+            .cast<String>(),
         // Existing saves predate onboarding, so treat them as done.
         onboarded: json['onboarded'] as bool? ?? true,
         peopleApproval: json['peopleApproval'] as int? ?? 60,
@@ -349,10 +350,10 @@ class GameSerializer {
   }
 
   static Map<String, int> _startingFoodInventory() => {
-        'raw_meat': 1,
-        'root_vegetable': 2,
-        'water_skin': 1,
-      };
+    'raw_meat': 1,
+    'root_vegetable': 2,
+    'water_skin': 1,
+  };
 
   static Map<String, int> _decodeIntMap(
     Object? raw, {
@@ -493,10 +494,10 @@ class GameSerializer {
       ),
       lastRitualDay: data['lastRitualDay'] as int? ?? -99,
       ritualCooldownDays: data['ritualCooldownDays'] as int? ?? 3,
-      activeBlessings:
-          (data['activeBlessings'] as List<dynamic>? ?? []).cast<String>(),
-      activeWarnings:
-          (data['activeWarnings'] as List<dynamic>? ?? []).cast<String>(),
+      activeBlessings: (data['activeBlessings'] as List<dynamic>? ?? [])
+          .cast<String>(),
+      activeWarnings: (data['activeWarnings'] as List<dynamic>? ?? [])
+          .cast<String>(),
       visitedSacredPlaces:
           (data['visitedSacredPlaces'] as Map<String, dynamic>? ?? {})
               .cast<String, int>(),

@@ -19,13 +19,9 @@ void main() {
       );
 
       // Earn reputation through the resource channel (as events/quests do).
-      c.performCampAction(
-          GameActions.wood,
-          'Yardım',
-          const {
-            ResourceType.reputation: 30,
-          },
-          xp: 0);
+      c.performCampAction(GameActions.wood, 'Yardım', const {
+        ResourceType.reputation: 30,
+      }, xp: 0);
 
       expect(c.state.resource(ResourceType.reputation), 35);
       expect(c.state.profile.reputation, 35); // mirrored
@@ -52,13 +48,9 @@ void main() {
       expect(PhaseLogic.canFoundOba(c.state), isFalse);
 
       // Earn renown purely as a resource — the old bug ignored this.
-      c.performCampAction(
-          GameActions.wood,
-          'Ad yap',
-          const {
-            ResourceType.reputation: 50,
-          },
-          xp: 0);
+      c.performCampAction(GameActions.wood, 'Ad yap', const {
+        ResourceType.reputation: 50,
+      }, xp: 0);
 
       expect(c.state.reputation, greaterThanOrEqualTo(50));
       expect(
@@ -70,13 +62,9 @@ void main() {
 
     test('reputation stays clamped to 0..100', () {
       final c = GameController.starter();
-      c.performCampAction(
-          GameActions.wood,
-          'Büyük şöhret',
-          const {
-            ResourceType.reputation: 500,
-          },
-          xp: 0);
+      c.performCampAction(GameActions.wood, 'Büyük şöhret', const {
+        ResourceType.reputation: 500,
+      }, xp: 0);
       expect(c.state.reputation, 100);
       expect(c.state.profile.reputation, 100);
     });

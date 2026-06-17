@@ -105,10 +105,10 @@ class KhanateScreen extends StatelessWidget {
                           Text(
                             canRebel
                                 ? 'Gücün yeter. İsyan riskli ama tahtı '
-                                    'alabilirsin.'
+                                      'alabilirsin.'
                                 : 'İsyan için güç ≥ '
-                                    '${GameController.rebellionPowerThreshold} '
-                                    've bağlılık ≥ 50 gerekir.',
+                                      '${GameController.rebellionPowerThreshold} '
+                                      've bağlılık ≥ 50 gerekir.',
                             style: AppTextStyles.meta,
                           ),
                           const SizedBox(height: 8),

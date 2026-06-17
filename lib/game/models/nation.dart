@@ -49,9 +49,9 @@ class Nation {
   final List<Castle> castles;
 
   List<Castle> get outerCastles => [
-        for (final c in castles)
-          if (!c.isCenter) c,
-      ];
+    for (final c in castles)
+      if (!c.isCenter) c,
+  ];
 
   Castle get center => castles.firstWhere((c) => c.isCenter);
 }
@@ -79,30 +79,30 @@ extension NationPolicyInfo on NationPolicy {
   String get id => name;
 
   String get label => switch (this) {
-        NationPolicy.vali => 'Vali Ata',
-        NationPolicy.yagma => 'Yağmala',
-        NationPolicy.yik => 'Yık',
-        NationPolicy.vassal => 'Bağlı Devlet',
-        NationPolicy.directRule => 'Doğrudan Yönet',
-      };
+    NationPolicy.vali => 'Vali Ata',
+    NationPolicy.yagma => 'Yağmala',
+    NationPolicy.yik => 'Yık',
+    NationPolicy.vassal => 'Bağlı Devlet',
+    NationPolicy.directRule => 'Doğrudan Yönet',
+  };
 
   String get blurb => switch (this) {
-        NationPolicy.vali =>
-          'Bir vali atayıp ili eyalet yap. Her gün düzenli vergi akar; '
-              'halk düzeni över.',
-        NationPolicy.yagma =>
-          'İli yağmala. Tek seferde büyük ganimet ve şöhret; beyler sevinir, '
-              'halk gaddarlıktan ürker.',
-        NationPolicy.yik =>
-          'İli yık, korku sal. Büyük şöhret ama halk bu zulümden tedirgin; '
-              'kalıcı gelir yok.',
-        NationPolicy.vassal =>
-          'İli kendi beyine bağlı devlet bırak. Hafif ama kalıcı haraç; '
-              'merhametin halkı hoşnut eder.',
-        NationPolicy.directRule =>
-          'İli kendi otağından doğrudan yönet. En yüksek vergi senin; ama '
-              'yerel bir bey olmadan halk huzursuz, isyan riski yüksek.',
-      };
+    NationPolicy.vali =>
+      'Bir vali atayıp ili eyalet yap. Her gün düzenli vergi akar; '
+          'halk düzeni över.',
+    NationPolicy.yagma =>
+      'İli yağmala. Tek seferde büyük ganimet ve şöhret; beyler sevinir, '
+          'halk gaddarlıktan ürker.',
+    NationPolicy.yik =>
+      'İli yık, korku sal. Büyük şöhret ama halk bu zulümden tedirgin; '
+          'kalıcı gelir yok.',
+    NationPolicy.vassal =>
+      'İli kendi beyine bağlı devlet bırak. Hafif ama kalıcı haraç; '
+          'merhametin halkı hoşnut eder.',
+    NationPolicy.directRule =>
+      'İli kendi otağından doğrudan yönet. En yüksek vergi senin; ama '
+          'yerel bir bey olmadan halk huzursuz, isyan riski yüksek.',
+  };
 
   static NationPolicy? byId(String id) {
     for (final p in NationPolicy.values) {

@@ -118,8 +118,9 @@ class _SceneHotspotWidgetState extends State<SceneHotspotWidget>
                           hot.icon!,
                           fit: BoxFit.contain,
                           color: locked ? Colors.black54 : null,
-                          colorBlendMode:
-                              locked ? BlendMode.srcATop : BlendMode.dst,
+                          colorBlendMode: locked
+                              ? BlendMode.srcATop
+                              : BlendMode.dst,
                           errorBuilder: (_, __, ___) => Icon(
                             hot.iconData ?? Icons.place,
                             color: AppColors.gold,
@@ -127,8 +128,9 @@ class _SceneHotspotWidgetState extends State<SceneHotspotWidget>
                         )
                       : Icon(
                           hot.iconData ?? Icons.place,
-                          color:
-                              locked ? AppColors.stone : AppColors.goldBright,
+                          color: locked
+                              ? AppColors.stone
+                              : AppColors.goldBright,
                           size: 26,
                         ),
                 ),

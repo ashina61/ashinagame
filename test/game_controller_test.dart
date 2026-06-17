@@ -253,9 +253,9 @@ void main() {
       // strong bond on their own — so marriage is what completes it.
       npcRelations: const {'kaya_atabek': 80, 'alis_hatun': 85, 'bori_bey': 80},
       profile: StarterGameData.create().profile.copyWith(
-            reputation: 55,
-            age: 18,
-          ),
+        reputation: 55,
+        age: 18,
+      ),
       buildings: [
         for (final b in StarterGameData.create().buildings)
           if (b.id == 'main_tent') b.copyWith(level: 3) else b,
@@ -330,8 +330,9 @@ void main() {
       controller.state.household.householdMorale,
     );
 
-    final legacyMap = jsonDecode(GameSerializer.encode(controller.state))
-        as Map<String, dynamic>;
+    final legacyMap =
+        jsonDecode(GameSerializer.encode(controller.state))
+            as Map<String, dynamic>;
     legacyMap
       ..remove('buildings')
       ..remove('tribes')
@@ -775,8 +776,7 @@ void main() {
     expect(controller.state.councilApproval, 60 + 10);
   });
 
-  test('kurultay verdicts shift bey bonds and trigger extreme consequences',
-      () {
+  test('kurultay verdicts shift bey bonds and trigger extreme consequences', () {
     final base = StarterGameData.create();
     // A council on the brink: a hostile verdict tips both estates over.
     final controller = GameController(
@@ -1381,8 +1381,8 @@ void main() {
 
   test('the opening-month guide spans day 1 to 30 then stops', () {
     GameState onDay(int d) => StarterGameData.create().copyWith(
-          day: GameDay(day: d, season: Season.spring),
-        );
+      day: GameDay(day: d, season: Season.spring),
+    );
     expect(PhaseLogic.dailyTutorial(onDay(1)), isNotNull);
     expect(PhaseLogic.dailyTutorial(onDay(26)), isNotNull);
     expect(PhaseLogic.dailyTutorial(onDay(31)), isNull);
@@ -1457,8 +1457,9 @@ void main() {
   });
 
   test('a legacy/minimal save loads with safe defaults, no crash', () {
-    final map = jsonDecode(GameSerializer.encode(StarterGameData.create()))
-        as Map<String, dynamic>;
+    final map =
+        jsonDecode(GameSerializer.encode(StarterGameData.create()))
+            as Map<String, dynamic>;
     // Drop every field added across the recent passes.
     map
       ..remove('companionRoles')

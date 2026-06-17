@@ -17,7 +17,8 @@ import '../conquest/battle_report_dialog.dart';
 class NpcScreen extends StatelessWidget {
   const NpcScreen({
     this.title = 'Oba Halkı',
-    this.intro = 'Beylerin, ocağın ve komşuların gönlünü konuşarak kazan. Her '
+    this.intro =
+        'Beylerin, ocağın ve komşuların gönlünü konuşarak kazan. Her '
         'sohbet bir aksiyon harcar; sözlerin halkı ve meclisi de etkiler.',
     this.topPanel,
     this.showBack = true,
@@ -135,8 +136,9 @@ class _NpcCard extends StatelessWidget {
                 child: GoldButton(
                   label: 'KONUŞ',
                   height: 34,
-                  onPressed:
-                      hasAp ? () => _openDialogue(context, controller) : null,
+                  onPressed: hasAp
+                      ? () => _openDialogue(context, controller)
+                      : null,
                 ),
               ),
             ],
@@ -237,13 +239,13 @@ class _DialogueSheet extends StatelessWidget {
 }
 
 BoxDecoration _portraitFrame() => BoxDecoration(
-      borderRadius: BorderRadius.circular(10),
-      border: Border.all(color: AppColors.gold.withValues(alpha: 0.6)),
-      image: const DecorationImage(
-        image: AssetImage(GameAssets.uiFramePortraitRound),
-        fit: BoxFit.cover,
-      ),
-    );
+  borderRadius: BorderRadius.circular(10),
+  border: Border.all(color: AppColors.gold.withValues(alpha: 0.6)),
+  image: const DecorationImage(
+    image: AssetImage(GameAssets.uiFramePortraitRound),
+    fit: BoxFit.cover,
+  ),
+);
 
 String _relationLabel(int v) {
   if (v >= 75) return 'Sadık dost';

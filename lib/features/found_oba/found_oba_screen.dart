@@ -63,19 +63,19 @@ class _FoundObaScreenState extends State<FoundObaScreen> {
               child: switch (_step) {
                 0 => _NameStep(controller: _name),
                 1 => _TamgaStep(
-                    selected: _tamga,
-                    onSelect: (id) => setState(() => _tamga = id),
-                  ),
+                  selected: _tamga,
+                  onSelect: (id) => setState(() => _tamga = id),
+                ),
                 2 => _LandStep(
-                    lands: _lands,
-                    selected: _land,
-                    onSelect: (i) => setState(() => _land = i),
-                  ),
+                  lands: _lands,
+                  selected: _land,
+                  onSelect: (i) => setState(() => _land = i),
+                ),
                 _ => _RolesStep(
-                    followers: followers,
-                    roles: _roles,
-                    onAssign: (id, role) => setState(() => _roles[id] = role),
-                  ),
+                  followers: followers,
+                  roles: _roles,
+                  onAssign: (id, role) => setState(() => _roles[id] = role),
+                ),
               },
             ),
             Padding(

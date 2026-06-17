@@ -60,10 +60,11 @@ class SkinnedButton extends StatelessWidget {
           alignment: Alignment.center,
           child: Text(
             label.toUpperCase(),
-            style: (variant == SkinnedButtonVariant.primary
-                    ? AppTextStyles.buttonGold
-                    : AppTextStyles.buttonDark)
-                .copyWith(color: enabled ? null : AppColors.stone),
+            style:
+                (variant == SkinnedButtonVariant.primary
+                        ? AppTextStyles.buttonGold
+                        : AppTextStyles.buttonDark)
+                    .copyWith(color: enabled ? null : AppColors.stone),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),

@@ -26,14 +26,14 @@ class CampBuilding {
   bool get canUpgrade => isUnlocked && level < maxLevel;
 
   CampBuilding copyWith({int? level}) => CampBuilding(
-        id: id,
-        name: name,
-        description: description,
-        level: level ?? this.level,
-        maxLevel: maxLevel,
-        category: category,
-        upgradeCost: upgradeCost,
-        effectDescription: effectDescription,
-        isUnlocked: isUnlocked,
-      );
+    id: id,
+    name: name,
+    description: description,
+    level: level ?? this.level,
+    maxLevel: maxLevel,
+    category: category,
+    upgradeCost: upgradeCost,
+    effectDescription: effectDescription,
+    isUnlocked: isUnlocked,
+  );
 }

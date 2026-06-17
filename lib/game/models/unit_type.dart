@@ -83,7 +83,7 @@ class UnitTypes {
 
   /// Resource cost to raise [qty] of a unit.
   static Map<ResourceType, int> recruitCost(UnitType unit, int qty) => {
-        ResourceType.gold: unit.goldCost * qty,
-        if (unit.requiresHorse) ResourceType.horse: qty,
-      };
+    ResourceType.gold: unit.goldCost * qty,
+    if (unit.requiresHorse) ResourceType.horse: qty,
+  };
 }
