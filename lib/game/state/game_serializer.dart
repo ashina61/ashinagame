@@ -182,6 +182,8 @@ class GameSerializer {
       resources[ResourceType.reputation] = reputation;
       final recentDialogues =
           json['npcRecentDialogues'] as Map<String, dynamic>? ?? {};
+      final spiritualAdvisorJson =
+          json['spiritualAdvisor'] as Map<String, dynamic>?;
       return GameState(
         profile: PlayerProfile(
           name: profile['name'] as String,
@@ -262,10 +264,8 @@ class GameSerializer {
           json['faithState'] as Map<String, dynamic>?,
         ),
         spiritualAdvisor: StarterGameData.spiritualAdvisor.copyWith(
-          level: (json['spiritualAdvisor'] as Map<String, dynamic>?)?['level']
-              as int?,
-          lastConsultDay: (json['spiritualAdvisor']
-              as Map<String, dynamic>?)?['lastConsultDay'] as int?,
+          level: spiritualAdvisorJson?['level'] as int?,
+          lastConsultDay: spiritualAdvisorJson?['lastConsultDay'] as int?,
         ),
         rituals: StarterGameData.rituals,
         sacredPlaces: StarterGameData.sacredPlaces,

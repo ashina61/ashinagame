@@ -943,19 +943,17 @@ class GameController extends ChangeNotifier {
           ResourceType.morale: isBadOmen ? 3 : 1,
         }),
         faithState: _state.faithState.apply(effects).copyWith(
-              omen: isBadOmen
-                  ? 'Kam alameti yatıştırdı.'
-                  : _state.faithState.omen,
-              omenSeverity: isBadOmen
-                  ? OmenSeverity.neutral
-                  : _state.faithState.omenSeverity,
-              activeWarnings:
-                  isBadOmen ? const [] : _state.faithState.activeWarnings,
-              activeBlessings: [
-                '${advisor.name} yorumu',
-                ..._state.faithState.activeBlessings,
-              ].take(4).toList(),
-            ),
+          omen: isBadOmen ? 'Kam alameti yatıştırdı.' : _state.faithState.omen,
+          omenSeverity: isBadOmen
+              ? OmenSeverity.neutral
+              : _state.faithState.omenSeverity,
+          activeWarnings:
+              isBadOmen ? const [] : _state.faithState.activeWarnings,
+          activeBlessings: [
+            '${advisor.name} yorumu',
+            ..._state.faithState.activeBlessings,
+          ].take(4).toList(),
+        ),
         profile: ProgressionLogic.addXp(_state.profile, 12),
         quests: _trackAction(GameActions.advisor),
         log: _prependLog('${advisor.name} alameti yorumladı.'),
