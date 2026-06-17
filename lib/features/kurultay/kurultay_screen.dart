@@ -82,8 +82,8 @@ class _ApprovalBar extends StatelessWidget {
     final color = value >= 60
         ? AppColors.success
         : value >= 30
-            ? AppColors.gold
-            : AppColors.danger;
+        ? AppColors.gold
+        : AppColors.danger;
     return Row(
       children: [
         SizedBox(width: 76, child: Text(label, style: AppTextStyles.body)),

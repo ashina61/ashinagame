@@ -93,6 +93,6 @@ class HanOffers {
 
   /// Cost helper so callers need not import the resource enum.
   static Map<ResourceType, int> companionCost(HanCompanion c) => {
-        ResourceType.gold: c.goldCost,
-      };
+    ResourceType.gold: c.goldCost,
+  };
 }

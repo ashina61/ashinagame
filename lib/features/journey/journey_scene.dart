@@ -43,80 +43,53 @@ class JourneyScreen extends StatelessWidget {
   /// own flavour, reward and sometimes a wound. One is rolled on each scout.
   static const _outcomes = <String, List<_Outcome>>{
     'river': [
-      _Outcome(
-          'Temiz su buldun; içtin, kaplarını doldurdun.',
-          {
-            ResourceType.food: 8,
-            ResourceType.wood: 4,
-          },
-          4),
+      _Outcome('Temiz su buldun; içtin, kaplarını doldurdun.', {
+        ResourceType.food: 8,
+        ResourceType.wood: 4,
+      }, 4),
       _Outcome('Kıyıda balık tuttun.', {ResourceType.food: 14}, 0),
     ],
     'forest': [
       _Outcome('Bol odun kestin.', {ResourceType.wood: 14}, 0),
-      _Outcome(
-          'Kurt izi gördün; temkinli avlandın.',
-          {
-            ResourceType.leather: 4,
-            ResourceType.food: 6,
-          },
-          -2),
+      _Outcome('Kurt izi gördün; temkinli avlandın.', {
+        ResourceType.leather: 4,
+        ResourceType.food: 6,
+      }, -2),
     ],
     'hunt': [
-      _Outcome(
-          'İyi bir av vurdun.',
-          {
-            ResourceType.food: 16,
-            ResourceType.leather: 3,
-          },
-          0),
-      _Outcome(
-          'Avlanırken yaralandın ama eli boş dönmedin.',
-          {
-            ResourceType.leather: 4,
-            ResourceType.food: 8,
-          },
-          -8),
+      _Outcome('İyi bir av vurdun.', {
+        ResourceType.food: 16,
+        ResourceType.leather: 3,
+      }, 0),
+      _Outcome('Avlanırken yaralandın ama eli boş dönmedin.', {
+        ResourceType.leather: 4,
+        ResourceType.food: 8,
+      }, -8),
     ],
     'market': [
-      _Outcome(
-          'Tüccara yol gösterdin; bahşiş aldın.',
-          {
-            ResourceType.gold: 12,
-            ResourceType.reputation: 1,
-          },
-          0),
+      _Outcome('Tüccara yol gösterdin; bahşiş aldın.', {
+        ResourceType.gold: 12,
+        ResourceType.reputation: 1,
+      }, 0),
       _Outcome('Küçük bir takas yaptın.', {ResourceType.gold: 8}, 0),
     ],
     'inscription': [
-      _Outcome(
-          'Ataların izini okudun; içine huzur doldu.',
-          {
-            ResourceType.reputation: 2,
-            ResourceType.morale: 2,
-          },
-          0),
-      _Outcome(
-          'Eski bir töre öğrendin.',
-          {
-            ResourceType.reputation: 1,
-            ResourceType.morale: 1,
-          },
-          0),
+      _Outcome('Ataların izini okudun; içine huzur doldu.', {
+        ResourceType.reputation: 2,
+        ResourceType.morale: 2,
+      }, 0),
+      _Outcome('Eski bir töre öğrendin.', {
+        ResourceType.reputation: 1,
+        ResourceType.morale: 1,
+      }, 0),
     ],
     'pass': [
-      _Outcome(
-          'Geçidi aştın; adın biraz daha duyuldu.',
-          {
-            ResourceType.reputation: 3,
-          },
-          -3),
-      _Outcome(
-          'Sis seni yordu ama vazgeçmedin.',
-          {
-            ResourceType.reputation: 2,
-          },
-          -5),
+      _Outcome('Geçidi aştın; adın biraz daha duyuldu.', {
+        ResourceType.reputation: 3,
+      }, -3),
+      _Outcome('Sis seni yordu ama vazgeçmedin.', {
+        ResourceType.reputation: 2,
+      }, -5),
     ],
   };
 
@@ -181,7 +154,8 @@ class JourneyScreen extends StatelessWidget {
     showSceneDetail(
       context,
       title: site.name,
-      description: 'Risk: ${site.risk}. Ne çıkacağı belli olmaz — keşfet, '
+      description:
+          'Risk: ${site.risk}. Ne çıkacağı belli olmaz — keşfet, '
           'toprağı tanı. Bazen ödül, bazen yara.',
       actions: [
         SceneAction(
@@ -191,8 +165,9 @@ class JourneyScreen extends StatelessWidget {
           subtitle: hasAp ? null : 'Aksiyon hakkın kalmadı.',
           onTap: () {
             final pool = _outcomes[site.id] ?? const [];
-            final outcome =
-                pool.isEmpty ? null : pool[_rng.nextInt(pool.length)];
+            final outcome = pool.isEmpty
+                ? null
+                : pool[_rng.nextInt(pool.length)];
             final effects = outcome?.effects ?? const {ResourceType.wood: 6};
             final ok = controller.exploreRegion(
               site.name,
@@ -262,7 +237,7 @@ class _DistantLandsPanel extends StatelessWidget {
               open
                   ? 'Adın ve gücün yettikçe sınır ötesine sefere çıkabilirsin.'
                   : 'Daha uzak diyarlara açılmak için önce kendi obanı kurmalı '
-                      've güçlenmelisin.',
+                        've güçlenmelisin.',
               style: AppTextStyles.meta,
             ),
             if (open) ...[

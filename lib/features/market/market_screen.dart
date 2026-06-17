@@ -24,19 +24,19 @@ import '../scene/floating_text.dart';
 
 /// Atlas icons for market goods.
 String goodIcon(String goodId) => switch (goodId) {
-      'wheat' => GameAssets.iconItemWheat,
-      'wood' => GameAssets.iconItemWood,
-      'iron_ore' => GameAssets.iconIronOre,
-      'leather' => GameAssets.iconItemLeather,
-      'wool' => GameAssets.iconItemWool,
-      'salt' => GameAssets.iconItemSalt,
-      'horse' => GameAssets.iconItemHorse,
-      'bow' => GameAssets.iconItemBow,
-      'm_sword' => GameAssets.iconItemSword,
-      'm_shield' => GameAssets.iconItemShieldWood,
-      'm_armor' => GameAssets.iconItemArmor,
-      _ => GameAssets.iconItemWheat,
-    };
+  'wheat' => GameAssets.iconItemWheat,
+  'wood' => GameAssets.iconItemWood,
+  'iron_ore' => GameAssets.iconIronOre,
+  'leather' => GameAssets.iconItemLeather,
+  'wool' => GameAssets.iconItemWool,
+  'salt' => GameAssets.iconItemSalt,
+  'horse' => GameAssets.iconItemHorse,
+  'bow' => GameAssets.iconItemBow,
+  'm_sword' => GameAssets.iconItemSword,
+  'm_shield' => GameAssets.iconItemShieldWood,
+  'm_armor' => GameAssets.iconItemArmor,
+  _ => GameAssets.iconItemWheat,
+};
 
 class MarketScreen extends StatefulWidget {
   const MarketScreen({super.key});
@@ -59,7 +59,8 @@ class _CompanionOffer extends StatelessWidget {
     final joined = state.relationWith(companion.npcId) >= 75;
     final name = NpcCharacters.byId(companion.npcId)?.name ?? companion.name;
     final role = CompanionRoles.byId(companion.roleId);
-    final canAfford = state.resource(ResourceType.gold) >= companion.goldCost &&
+    final canAfford =
+        state.resource(ResourceType.gold) >= companion.goldCost &&
         state.dailyActionPoints > 0;
     return OrnatePanel(
       child: Row(
@@ -132,7 +133,8 @@ class _MercenaryOffer extends StatelessWidget {
     final controller = GameScope.of(context);
     final state = controller.state;
     final unit = UnitTypes.byId(mercenary.unitId);
-    final canAfford = state.resource(ResourceType.gold) >= mercenary.goldCost &&
+    final canAfford =
+        state.resource(ResourceType.gold) >= mercenary.goldCost &&
         (!mercenary.needsHorse || state.resource(ResourceType.horse) >= 1) &&
         state.dailyActionPoints > 0;
     return OrnatePanel(
@@ -622,8 +624,8 @@ class _BuyRow extends StatelessWidget {
                     color: price > good.basePrice
                         ? AppColors.danger
                         : price < good.basePrice
-                            ? AppColors.success
-                            : null,
+                        ? AppColors.success
+                        : null,
                   ),
                 ),
               ],

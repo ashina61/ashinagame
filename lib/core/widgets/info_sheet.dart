@@ -146,8 +146,10 @@ Future<void> showResourceInfoSheet(
     value: '$amount',
     children: info == null
         ? [
-            const Text('Bu kaynak hakkında bilgi yok.',
-                style: AppTextStyles.body)
+            const Text(
+              'Bu kaynak hakkında bilgi yok.',
+              style: AppTextStyles.body,
+            ),
           ]
         : [
             _InfoBlock(label: 'NEDİR', text: info.summary),
@@ -171,8 +173,10 @@ Future<void> showSkillInfoSheet(BuildContext context, String stat, int value) {
     value: '$value',
     children: info == null
         ? [
-            const Text('Bu beceri hakkında bilgi yok.',
-                style: AppTextStyles.body)
+            const Text(
+              'Bu beceri hakkında bilgi yok.',
+              style: AppTextStyles.body,
+            ),
           ]
         : [
             _InfoBlock(label: 'NEYİ ETKİLER', text: info.affects),
