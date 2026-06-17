@@ -178,12 +178,10 @@ class TentScreen extends StatelessWidget {
                 color: AppColors.goldBright,
               );
             } else {
-              final reason =
-                  controller.tentUpgradeBlockReason() ?? 'şartlar eksik.';
+              final reason = controller.tentUpgradeBlockReason() ??
+                  'şartlar eksik.';
               AudioService.instance.playSfx('denied');
-              ScaffoldMessenger.of(
-                context,
-              ).showSnackBar(
+              ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(
                     isMainTent
@@ -218,8 +216,7 @@ class _TentUpgradeDetails extends StatelessWidget {
         const SizedBox(height: 4),
         for (final entry in target.cost.entries)
           _RequirementLine(
-            text:
-                '${entry.key.label}: '
+            text: '${entry.key.label}: '
                 '${state.resource(entry.key)}/${entry.value}',
             ok: state.resource(entry.key) >= entry.value,
           ),

@@ -12,8 +12,7 @@ class LifeLogic {
   static int yearOf(int day) => (day - 1) ~/ daysPerYear + 1;
 
   /// True on the toy day that closes each forty-day year.
-  static bool isYearBoundary(int day) =>
-      day > 1 && day % daysPerYear == 0;
+  static bool isYearBoundary(int day) => day > 1 && day % daysPerYear == 0;
 
   /// Honorific that grows with the leader's age, from a green youth chasing
   /// chores up to a grey-bearded khan.

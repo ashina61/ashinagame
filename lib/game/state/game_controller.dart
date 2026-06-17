@@ -1146,22 +1146,22 @@ class GameController extends ChangeNotifier {
         if (horse.id == horseId)
           switch (care) {
             'feed' => horse.copyWith(
-                hunger: horse.hunger + 22,
-                mood: horse.mood + 4,
-              ),
+              hunger: horse.hunger + 22,
+              mood: horse.mood + 4,
+            ),
             'clean' => horse.copyWith(
-                cleanliness: horse.cleanliness + 25,
-                loyalty: horse.loyalty + 2,
-              ),
+              cleanliness: horse.cleanliness + 25,
+              loyalty: horse.loyalty + 2,
+            ),
             'rest' => horse.copyWith(
-                fatigue: horse.fatigue - 25,
-                health: horse.health + 3,
-              ),
+              fatigue: horse.fatigue - 25,
+              health: horse.health + 3,
+            ),
             'train' => horse.copyWith(
-                training: horse.training + 8,
-                fatigue: horse.fatigue + 12,
-                loyalty: horse.loyalty + 1,
-              ),
+              training: horse.training + 8,
+              fatigue: horse.fatigue + 12,
+              loyalty: horse.loyalty + 1,
+            ),
             _ => horse,
           }
         else

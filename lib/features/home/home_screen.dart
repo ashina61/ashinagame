@@ -148,6 +148,7 @@ class HomeScreen extends StatelessWidget {
         ? null
         : controller.state.horses.first;
     final market = controller.horseMarket();
+    final gold = controller.state.resource(ResourceType.gold);
     showSceneDetail(
       context,
       title: 'At Bağı',
@@ -179,8 +180,7 @@ class HomeScreen extends StatelessWidget {
           SceneAction(
             label: 'Satın al: ${offer.name}',
             subtitle: '${offer.breed} • ${offer.rarity} • ${offer.price} altın',
-            enabled:
-                controller.state.resource(ResourceType.gold) >= offer.price,
+            enabled: offer.price <= gold,
             onTap: () => controller.buyHorse(offer),
           ),
       ],
