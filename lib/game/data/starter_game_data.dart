@@ -955,5 +955,533 @@ class StarterGameData {
         ),
       ],
     ),
+    GameEvent(
+      id: 'summer_drought',
+      title: 'Yaz Kuraklığı',
+      description:
+          'Otlaklar sarardı, kuyular alçaldı. Sürü susuzluktan huzursuz.',
+      choices: [
+        EventChoice(
+          id: 'move_pasture',
+          label: 'Otlağı taşı',
+          description: 'Atları yorarsın ama sürüyü kurtarırsın.',
+          resourceEffects: {ResourceType.horse: -1, ResourceType.food: 6},
+          fatigueEffect: 6,
+          statEffects: {'endurance': 1},
+        ),
+        EventChoice(
+          id: 'dig_well',
+          label: 'Yeni kuyu kazdır',
+          description: 'Emek ister, ama oba suya kavuşur.',
+          resourceEffects: {ResourceType.wood: -6, ResourceType.morale: 4},
+          actionPointCost: 1,
+          xpReward: 12,
+        ),
+      ],
+    ),
+    GameEvent(
+      id: 'wolf_pack',
+      title: 'Ağıla Yaklaşan Kurt Sürüsü',
+      description: 'Gece çakal ve kurt ulumaları ağılın çevresinde dolaşıyor.',
+      choices: [
+        EventChoice(
+          id: 'hunt_wolves',
+          label: 'Kurtları avla',
+          description: 'Cesur okçular sürüyü dağıtır, post kazanılır.',
+          resourceEffects: {
+            ResourceType.leather: 4,
+            ResourceType.reputation: 1
+          },
+          statEffects: {'archery': 1, 'courage': 1},
+          fatigueEffect: 5,
+        ),
+        EventChoice(
+          id: 'bonfire_ring',
+          label: 'Ateş çemberi kur',
+          description: 'Odun yakarsın, sürü güvende uyur.',
+          resourceEffects: {ResourceType.wood: -6, ResourceType.morale: 2},
+        ),
+        EventChoice(
+          id: 'sacrifice_one',
+          label: 'Bir hayvanı yem bırak',
+          description: 'Bir at kaybolur ama gece kan dökülmez.',
+          resourceEffects: {ResourceType.horse: -1, ResourceType.morale: -1},
+        ),
+      ],
+    ),
+    GameEvent(
+      id: 'lost_child',
+      title: 'Kaybolan Çoban Çocuğu',
+      description: 'Akşam sayımında küçük bir çoban eksik çıktı; bozkır geniş.',
+      choices: [
+        EventChoice(
+          id: 'search_party',
+          label: 'Arama kolu çıkar',
+          description: 'Geceyi feda edersin; çocuğu bulmak itibar getirir.',
+          resourceEffects: {ResourceType.reputation: 3, ResourceType.morale: 4},
+          fatigueEffect: 8,
+          statEffects: {'leadership': 1},
+          xpReward: 14,
+        ),
+        EventChoice(
+          id: 'wait_dawn',
+          label: 'Şafağı bekle',
+          description: 'Riski azaltırsın ama oba endişeyle sabahlar.',
+          resourceEffects: {ResourceType.morale: -3},
+        ),
+      ],
+    ),
+    GameEvent(
+      id: 'wandering_smith',
+      title: 'Gezgin Demirci',
+      description: 'Sırtında körüğüyle bir demirci birkaç gün kalmak ister.',
+      choices: [
+        EventChoice(
+          id: 'host_smith',
+          label: 'Misafir et',
+          description: 'Erzak verirsin, demir işçiliğin gelişir.',
+          resourceEffects: {ResourceType.food: -8, ResourceType.iron: 5},
+          statEffects: {'craft': 1},
+          xpReward: 12,
+        ),
+        EventChoice(
+          id: 'buy_tools',
+          label: 'Aletlerini satın al',
+          description: 'Altın gider, atölye güçlenir.',
+          resourceEffects: {ResourceType.gold: -30, ResourceType.iron: 3},
+          statEffects: {'craft': 1},
+        ),
+        EventChoice(
+          id: 'send_off',
+          label: 'Yoluna gönder',
+          description: 'Kaynak harcamazsın, fırsat kaçar.',
+          resourceEffects: {ResourceType.morale: -1},
+        ),
+      ],
+    ),
+    GameEvent(
+      id: 'river_flood',
+      title: 'Irmak Taştı',
+      description:
+          'Eriyen karlar ırmağı kabarttı; çadırların eteği su altında.',
+      choices: [
+        EventChoice(
+          id: 'build_levee',
+          label: 'Set çek',
+          description: 'Odun ve emek ister, oba kurtulur.',
+          resourceEffects: {ResourceType.wood: -10, ResourceType.morale: 3},
+          actionPointCost: 1,
+          fatigueEffect: 6,
+        ),
+        EventChoice(
+          id: 'move_camp',
+          label: 'Çadırları yukarı taşı',
+          description: 'Yorulursun ama kayıp olmaz.',
+          resourceEffects: {ResourceType.morale: -1},
+          fatigueEffect: 10,
+          energyEffect: -6,
+        ),
+      ],
+    ),
+    GameEvent(
+      id: 'spring_foals',
+      title: 'İlkbahar Tayları',
+      description: 'Kısraklar sağ salim doğurdu; ağıl yavru sesleriyle doldu.',
+      choices: [
+        EventChoice(
+          id: 'raise_all',
+          label: 'Hepsini büyüt',
+          description: 'Erzak ayırırsın, sürün çoğalır.',
+          resourceEffects: {ResourceType.food: -10, ResourceType.horse: 2},
+          xpReward: 8,
+        ),
+        EventChoice(
+          id: 'gift_foal',
+          label: 'Bir tayı komşu boya armağan et',
+          description: 'İtibar kazanırsın, bağlar güçlenir.',
+          resourceEffects: {ResourceType.horse: 1, ResourceType.reputation: 3},
+        ),
+      ],
+    ),
+    GameEvent(
+      id: 'blood_feud',
+      title: 'Kan Davası',
+      description: 'İki ailenin gençleri kavgaya tutuştu; biri yaralandı.',
+      choices: [
+        EventChoice(
+          id: 'tore_judgment',
+          label: 'Töre ile yargıla',
+          description: 'Adil ceza barışı sağlar, töre güçlenir.',
+          resourceEffects: {ResourceType.morale: 2},
+          faithEffects: {'tore': 6, 'kut': 2},
+          statEffects: {'wisdom': 1},
+          actionPointCost: 1,
+          xpReward: 14,
+        ),
+        EventChoice(
+          id: 'blood_money',
+          label: 'Kan bedeli ödet',
+          description: 'Altınla yatıştırırsın; kin tam dinmez.',
+          resourceEffects: {ResourceType.gold: -40, ResourceType.morale: 1},
+          faithEffects: {'tore': 1},
+        ),
+        EventChoice(
+          id: 'ignore_feud',
+          label: 'Görmezden gel',
+          description: 'Kaynak harcamazsın ama töre zedelenir.',
+          resourceEffects: {ResourceType.morale: -4},
+          faithEffects: {'tore': -6},
+        ),
+      ],
+    ),
+    GameEvent(
+      id: 'sun_eclipse',
+      title: 'Güneş Karardı',
+      description:
+          'Gündüz vakti gök karardı; oba dehşet içinde Gök Tengri’ye baktı.',
+      choices: [
+        EventChoice(
+          id: 'shaman_rite',
+          label: 'Kam ayini düzenlet',
+          description: 'Kut yükselir, korku umuda döner.',
+          resourceEffects: {ResourceType.wood: -5, ResourceType.morale: 4},
+          faithEffects: {'kut': 6, 'faith': 4},
+          actionPointCost: 1,
+        ),
+        EventChoice(
+          id: 'stay_calm',
+          label: 'Sükûneti koru',
+          description: 'Liderliğinle paniği bastırırsın.',
+          resourceEffects: {ResourceType.morale: 1},
+          statEffects: {'leadership': 1, 'courage': 1},
+        ),
+      ],
+    ),
+    GameEvent(
+      id: 'captured_scout',
+      title: 'Esir Düşen İzci',
+      description: 'Bir izcinin komşu boyca tutulduğu haberi geldi.',
+      choices: [
+        EventChoice(
+          id: 'ransom',
+          label: 'Fidye öde',
+          description: 'Altın gider, adamın geri döner.',
+          resourceEffects: {ResourceType.gold: -45, ResourceType.morale: 2},
+        ),
+        EventChoice(
+          id: 'rescue_raid',
+          label: 'Baskınla kurtar',
+          description: 'Riskli ama cesaret duyulur.',
+          resourceEffects: {ResourceType.food: -6, ResourceType.reputation: 4},
+          statEffects: {'courage': 1, 'warfare': 1},
+          fatigueEffect: 8,
+          healthEffect: -4,
+        ),
+      ],
+    ),
+    GameEvent(
+      id: 'bountiful_hunt',
+      title: 'Bereketli Av',
+      description: 'İzciler geyik sürüsünün geçtiği bir vadi buldu.',
+      choices: [
+        EventChoice(
+          id: 'great_hunt',
+          label: 'Büyük av düzenle',
+          description: 'Yorulursun ama kiler dolar.',
+          resourceEffects: {ResourceType.food: 20, ResourceType.leather: 4},
+          statEffects: {'archery': 1},
+          fatigueEffect: 7,
+          xpReward: 12,
+        ),
+        EventChoice(
+          id: 'modest_hunt',
+          label: 'Yeterince avla',
+          description: 'Az ama güvenli; sürüye dokunmazsın.',
+          resourceEffects: {ResourceType.food: 8},
+        ),
+      ],
+    ),
+    GameEvent(
+      id: 'salt_caravan',
+      title: 'Tuz Kervanı',
+      description: 'Güneyden gelen bir kervan tuz ve baharat satıyor.',
+      choices: [
+        EventChoice(
+          id: 'buy_salt',
+          label: 'Tuz al',
+          description: 'Altın verirsin, erzak uzun süre bozulmaz.',
+          resourceEffects: {ResourceType.gold: -25, ResourceType.food: 12},
+          statEffects: {'trade': 1},
+        ),
+        EventChoice(
+          id: 'barter_leather',
+          label: 'Deriyle takas et',
+          description: 'Deri verir, tuz ve itibar kazanırsın.',
+          resourceEffects: {
+            ResourceType.leather: -5,
+            ResourceType.food: 10,
+            ResourceType.reputation: 1,
+          },
+          statEffects: {'trade': 1},
+        ),
+      ],
+    ),
+    GameEvent(
+      id: 'orphan_warrior',
+      title: 'Yetim Genç',
+      description: 'Yıkılmış bir obadan kaçan genç, çadırının önüne geldi.',
+      choices: [
+        EventChoice(
+          id: 'take_in',
+          label: 'Obaya kat',
+          description: 'Bir boğaz daha; ama oba büyür.',
+          resourceEffects: {ResourceType.population: 1, ResourceType.food: -6},
+          statEffects: {'leadership': 1},
+          xpReward: 10,
+        ),
+        EventChoice(
+          id: 'feed_send',
+          label: 'Doyur ve yolla',
+          description: 'Bir kap aş verir, vicdanını rahatlatırsın.',
+          resourceEffects: {ResourceType.food: -3, ResourceType.reputation: 1},
+        ),
+      ],
+    ),
+    GameEvent(
+      id: 'shaman_vision',
+      title: 'Kamın Rüyası',
+      description:
+          'Kam, atalardan bir işaret gördüğünü; bir kurban gerektiğini söyler.',
+      choices: [
+        EventChoice(
+          id: 'honor_vision',
+          label: 'Kurban töreni yap',
+          description: 'At ve erzak sunulur, atalar onurlanır.',
+          resourceEffects: {ResourceType.horse: -1, ResourceType.food: -8},
+          faithEffects: {'ancestorHonor': 6, 'kut': 3},
+          xpReward: 12,
+        ),
+        EventChoice(
+          id: 'doubt_vision',
+          label: 'Rüyaya kuşkuyla yaklaş',
+          description: 'Kaynak korunur ama kam gücenir.',
+          resourceEffects: {ResourceType.morale: -2},
+          faithEffects: {'faith': -3, 'kut': -2},
+          statEffects: {'wisdom': 1},
+        ),
+      ],
+    ),
+    GameEvent(
+      id: 'broken_wagon',
+      title: 'Yolda Kırık Araba',
+      description:
+          'Bir tüccar ailesinin arabası yolda kırılmış, yardım bekliyor.',
+      choices: [
+        EventChoice(
+          id: 'repair_wagon',
+          label: 'Arabayı onar',
+          description: 'Odun ve emek; tüccar borcunu altınla öder.',
+          resourceEffects: {ResourceType.wood: -5, ResourceType.gold: 30},
+          statEffects: {'craft': 1},
+          fatigueEffect: 4,
+        ),
+        EventChoice(
+          id: 'guide_them',
+          label: 'Yol göster',
+          description: 'İtibar kazanırsın, gelecekte kapın açılır.',
+          resourceEffects: {ResourceType.reputation: 2},
+        ),
+      ],
+    ),
+    GameEvent(
+      id: 'rival_boast',
+      title: 'Rakip Beyin Övünmesi',
+      description:
+          'Komşu bir bey, şölende senin obanı küçümsedi diye haber geldi.',
+      choices: [
+        EventChoice(
+          id: 'challenge_race',
+          label: 'At yarışına çağır',
+          description: 'Kazanırsan adın yükselir; atlar yorulur.',
+          resourceEffects: {ResourceType.reputation: 4},
+          statEffects: {'courage': 1},
+          fatigueEffect: 4,
+        ),
+        EventChoice(
+          id: 'ignore_boast',
+          label: 'Aldırma',
+          description: 'Olgunluk gösterirsin; bilgelik artar.',
+          statEffects: {'wisdom': 1},
+          faithEffects: {'tore': 1},
+        ),
+      ],
+    ),
+    GameEvent(
+      id: 'winter_wolves_attack',
+      title: 'Kış Kurtları Saldırdı',
+      description: 'Açlıktan gözü dönmüş bir kurt sürüsü gece ağıla daldı.',
+      choices: [
+        EventChoice(
+          id: 'defend_herd',
+          label: 'Sürüyü savun',
+          description: 'Yaralanırsın ama kayıp az olur.',
+          resourceEffects: {ResourceType.morale: 2},
+          statEffects: {'courage': 1, 'archery': 1},
+          healthEffect: -6,
+          fatigueEffect: 6,
+        ),
+        EventChoice(
+          id: 'retreat_inside',
+          label: 'İçeri çekil',
+          description: 'Canını korursun, birkaç hayvan telef olur.',
+          resourceEffects: {ResourceType.horse: -1, ResourceType.food: -4},
+        ),
+      ],
+    ),
+    GameEvent(
+      id: 'kymyz_feast',
+      title: 'Kımız Şöleni',
+      description: 'Bahar geldi, kısraklar bol süt verdi; oba şölen ister.',
+      choices: [
+        EventChoice(
+          id: 'hold_feast',
+          label: 'Şölen ver',
+          description: 'Erzak gider, oba coşar, bağlar pekişir.',
+          resourceEffects: {ResourceType.food: -12, ResourceType.morale: 7},
+          faithEffects: {'tore': 2},
+          fatigueEffect: -6,
+          xpReward: 8,
+        ),
+        EventChoice(
+          id: 'modest_gathering',
+          label: 'Küçük toplantı',
+          description: 'Az erzakla yetinirsin, moral biraz artar.',
+          resourceEffects: {ResourceType.food: -4, ResourceType.morale: 2},
+        ),
+      ],
+    ),
+    GameEvent(
+      id: 'stolen_horses',
+      title: 'At Hırsızlığı',
+      description: 'Şafakta birkaç atın izinin kuzeye gittiği görüldü.',
+      choices: [
+        EventChoice(
+          id: 'pursue_thieves',
+          label: 'İzi sür',
+          description: 'Hırsızları kovalarsın; atları geri alma şansı.',
+          resourceEffects: {ResourceType.horse: 1, ResourceType.reputation: 2},
+          statEffects: {'courage': 1, 'warfare': 1},
+          fatigueEffect: 9,
+          healthEffect: -3,
+        ),
+        EventChoice(
+          id: 'fortify_pen',
+          label: 'Ağılı sağlamlaştır',
+          description: 'Kaybı kabul eder, bir daha tekrarını önlersin.',
+          resourceEffects: {ResourceType.wood: -6, ResourceType.morale: -1},
+          statEffects: {'craft': 1},
+        ),
+      ],
+    ),
+    GameEvent(
+      id: 'elder_passing',
+      title: 'Yaşlı Bilgenin Ölümü',
+      description: 'Obanın en yaşlı bilgesi sonsuz uykuya daldı; herkes yasta.',
+      choices: [
+        EventChoice(
+          id: 'grand_funeral',
+          label: 'Büyük yoğ töreni yap',
+          description: 'At ve erzak sunulur; atalar katına onurla uğurlanır.',
+          resourceEffects: {ResourceType.horse: -1, ResourceType.food: -8},
+          faithEffects: {'ancestorHonor': 8, 'tore': 3},
+          xpReward: 12,
+        ),
+        EventChoice(
+          id: 'simple_rite',
+          label: 'Sade tören',
+          description: 'Az kaynakla uğurlarsın; gönüller bir miktar kırılır.',
+          resourceEffects: {ResourceType.morale: -2},
+          faithEffects: {'ancestorHonor': 2},
+        ),
+      ],
+    ),
+    GameEvent(
+      id: 'foreign_bride',
+      title: 'Yabancı Gelin Adayı',
+      description:
+          'Uzak bir boy, dostluk için kızlarından birini gelin vermek ister.',
+      choices: [
+        EventChoice(
+          id: 'accept_alliance',
+          label: 'İttifakı kabul et',
+          description: 'Başlık ödenir; nüfus ve itibar artar.',
+          resourceEffects: {
+            ResourceType.gold: -35,
+            ResourceType.population: 1,
+            ResourceType.reputation: 3,
+          },
+          statEffects: {'leadership': 1},
+        ),
+        EventChoice(
+          id: 'polite_decline',
+          label: 'Nazikçe reddet',
+          description: 'Bağımsızlığını korursun; biraz soğukluk doğar.',
+          resourceEffects: {ResourceType.reputation: -1},
+          statEffects: {'wisdom': 1},
+        ),
+      ],
+    ),
+    GameEvent(
+      id: 'grass_fire',
+      title: 'Bozkır Yangını',
+      description:
+          'Uzak tepelerde başlayan ot yangını rüzgârla obaya yaklaşıyor.',
+      choices: [
+        EventChoice(
+          id: 'firebreak',
+          label: 'Ateş şeridi aç',
+          description: 'Otları biçer, alevin önünü kesersin.',
+          resourceEffects: {ResourceType.morale: 2},
+          actionPointCost: 1,
+          fatigueEffect: 8,
+          statEffects: {'endurance': 1},
+        ),
+        EventChoice(
+          id: 'flee_fire',
+          label: 'Sürüyü kaçır',
+          description: 'Otlak yanar ama can kaybı olmaz.',
+          resourceEffects: {ResourceType.food: -8, ResourceType.morale: -1},
+          fatigueEffect: 5,
+        ),
+      ],
+    ),
+    GameEvent(
+      id: 'tribute_demand',
+      title: 'Haraç Talebi',
+      description: 'Güçlü bir bey, geçidi kullanman için haraç istiyor.',
+      choices: [
+        EventChoice(
+          id: 'pay_tribute',
+          label: 'Haracı öde',
+          description: 'Altın verir, çatışmayı önlersin.',
+          resourceEffects: {ResourceType.gold: -40, ResourceType.morale: -1},
+        ),
+        EventChoice(
+          id: 'refuse_tribute',
+          label: 'Reddet ve diren',
+          description: 'Onurunu korursun; gerilim ve risk artar.',
+          resourceEffects: {ResourceType.reputation: 3, ResourceType.morale: 2},
+          statEffects: {'courage': 1, 'warfare': 1},
+          fatigueEffect: 4,
+        ),
+        EventChoice(
+          id: 'negotiate',
+          label: 'Pazarlık et',
+          description: 'Ticaret kabiliyetinle haracı düşürürsün.',
+          resourceEffects: {ResourceType.gold: -15},
+          statEffects: {'trade': 1, 'wisdom': 1},
+        ),
+      ],
+    ),
   ];
 }

@@ -167,4 +167,50 @@ void main() {
       }
     });
   });
+
+  group('the event pool is deep and well-formed', () {
+    const validStats = {
+      'courage',
+      'wisdom',
+      'leadership',
+      'endurance',
+      'trade',
+      'craft',
+      'archery',
+      'warfare',
+    };
+    const validFaith = {'faith', 'kut', 'tore', 'ancestorHonor'};
+
+    test('there are at least 30 distinct events so days rarely repeat', () {
+      expect(StarterGameData.events.length, greaterThanOrEqualTo(30));
+      final ids = StarterGameData.events.map((e) => e.id).toSet();
+      expect(ids.length, StarterGameData.events.length,
+          reason: 'event ids must be unique');
+    });
+
+    test('every event offers a real choice with valid effect keys', () {
+      for (final event in StarterGameData.events) {
+        expect(event.choices.length, greaterThanOrEqualTo(2),
+            reason: '${event.id} must offer a dilemma, not a single button');
+        final choiceIds = event.choices.map((c) => c.id).toSet();
+        expect(choiceIds.length, event.choices.length,
+            reason: '${event.id} has duplicate choice ids');
+        for (final choice in event.choices) {
+          expect(choice.label.trim(), isNotEmpty, reason: choice.id);
+          for (final stat in choice.statEffects.keys) {
+            expect(validStats, contains(stat),
+                reason: '${event.id}/${choice.id} unknown stat $stat');
+          }
+          for (final faith in choice.faithEffects.keys) {
+            expect(validFaith, contains(faith),
+                reason: '${event.id}/${choice.id} unknown faith $faith');
+          }
+          for (final entry in choice.resourceEffects.entries) {
+            expect(entry.value, isNot(0),
+                reason: '${event.id}/${choice.id} has a no-op resource effect');
+          }
+        }
+      }
+    });
+  });
 }
