@@ -435,6 +435,22 @@ class GameController extends ChangeNotifier {
       'Gün ${nextDay.day} başladı. ${nextDay.season.label} '
       'etkileri uygulandı.',
     );
+
+    // A standing host draws rations and wages every day. Applied before the
+    // hunger and empty-granary checks below, so an army the oba cannot feed
+    // bites into morale and people just like any other shortfall — keeping a
+    // huge late-game army a real economic burden, not free power.
+    final upkeep = armyUpkeep;
+    if (upkeep.isNotEmpty) {
+      resources = ResourceLogic.apply(resources, upkeep);
+      final gold = -(upkeep[ResourceType.gold] ?? 0);
+      final food = -(upkeep[ResourceType.food] ?? 0);
+      final mouths = _state.totalSoldiers + _state.totalWounded;
+      log = [
+        'Ordunun bakımı: $gold altın, $food erzak harcandı ($mouths asker).',
+        ...log,
+      ].take(6).toList();
+    }
     var survival = _state.survival.copyWith(
       hunger: _state.survival.hunger - 8,
       thirst: _state.survival.thirst - 10,
@@ -1715,6 +1731,19 @@ class GameController extends ChangeNotifier {
       total += (UnitTypes.byId(entry.key)?.attack ?? 0) * entry.value;
     }
     return total;
+  }
+
+  /// A standing host is not free: it eats grain and expects wages. Upkeep
+  /// scales with the muster roll — fit and wounded alike draw rations — so a
+  /// bloated army becomes a liability the treasury and granary must answer for
+  /// every day. Returns negative deltas, or an empty map when no troops are
+  /// kept.
+  Map<ResourceType, int> get armyUpkeep {
+    final soldiers = _state.totalSoldiers + _state.totalWounded;
+    if (soldiers <= 0) return const {};
+    final gold = (soldiers / 2).ceil();
+    final food = (soldiers / 3).ceil();
+    return {ResourceType.gold: -gold, ResourceType.food: -food};
   }
 
   /// How many wounded the healer's çadırı mends each day.

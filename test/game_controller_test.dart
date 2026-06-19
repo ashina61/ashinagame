@@ -706,6 +706,36 @@ void main() {
     expect(controller.state.unitCount('foot_sword'), 10);
   });
 
+  test('a standing army draws daily gold and food upkeep', () {
+    final base = StarterGameData.create();
+    // No army: no upkeep is charged.
+    final lean = GameController(base.copyWith(army: const {}));
+    expect(lean.armyUpkeep, isEmpty);
+
+    // 30 soldiers: 15 gold and 10 food (ceil of /2 and /3) drain each day.
+    final host = GameController(
+      base.copyWith(
+        army: const {'foot_sword': 30},
+        resources: {
+          ...base.resources,
+          ResourceType.gold: 200,
+          ResourceType.food: 200,
+          ResourceType.population: 30,
+        },
+      ),
+    );
+    expect(host.armyUpkeep[ResourceType.gold], -15);
+    expect(host.armyUpkeep[ResourceType.food], -10);
+
+    final goldBefore = host.state.resource(ResourceType.gold);
+    final foodBefore = host.state.resource(ResourceType.food);
+    host.endDay();
+    // Gold has no other daily drain, so it drops by exactly the wage bill.
+    expect(host.state.resource(ResourceType.gold), goldBefore - 15);
+    // Food also pays the season's cost, so it falls by at least the rations.
+    expect(host.state.resource(ResourceType.food), lessThan(foodBefore - 10));
+  });
+
   test('the market sells finished gear into the inventory', () {
     final base = StarterGameData.create();
     final controller = GameController(

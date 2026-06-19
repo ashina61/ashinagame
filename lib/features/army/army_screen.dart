@@ -4,6 +4,7 @@ import '../../app/theme/app_colors.dart';
 import '../../app/theme/app_text_styles.dart';
 import '../../core/audio/audio_service.dart';
 import '../../core/widgets/ornate.dart';
+import '../../game/models/resource.dart';
 import '../../game/models/unit_type.dart';
 import '../../game/state/game_scope.dart';
 
@@ -69,6 +70,28 @@ class _ArmyScreenState extends State<ArmyScreen> {
                 ],
               ),
             ),
+            if (controller.armyUpkeep.isNotEmpty)
+              OrnatePanel(
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.local_dining,
+                      size: 16,
+                      color: AppColors.ember,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Günlük bakım: '
+                        '${-(controller.armyUpkeep[ResourceType.gold] ?? 0)} altın, '
+                        '${-(controller.armyUpkeep[ResourceType.food] ?? 0)} erzak. '
+                        'Büyük ordu hazineyi ve kileri yer — gücünü ihtiyacına göre tut.',
+                        style: AppTextStyles.meta,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             Expanded(
               child: ListView(
                 padding: const EdgeInsets.only(top: 4, bottom: 16),
