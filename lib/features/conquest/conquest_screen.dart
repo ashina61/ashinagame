@@ -11,6 +11,7 @@ import '../../game/models/nation.dart';
 import '../../game/models/resource.dart';
 import '../../game/state/game_controller.dart';
 import '../../game/state/game_scope.dart';
+import '../scene/floating_text.dart';
 import 'battle_report_dialog.dart';
 
 class ConquestScreen extends StatefulWidget {
@@ -246,15 +247,12 @@ class _RaidChoice extends StatelessWidget {
             ? () {
                 final ok = controller.respondToRaid(action);
                 AudioService.instance.playSfx(ok ? 'tap' : 'denied');
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      ok
-                          ? 'Karar verildi: $label.'
-                          : 'Bu karar için aksiyon/kaynak yetersiz.',
-                    ),
-                    duration: const Duration(seconds: 2),
-                  ),
+                showFloatingNote(
+                  context,
+                  ok
+                      ? 'Karar verildi: $label.'
+                      : 'Bu karar için aksiyon/kaynak yetersiz.',
+                  good: ok,
                 );
               }
             : null,
@@ -412,13 +410,10 @@ class _PolicyButton extends StatelessWidget {
       onTap: () {
         final ok = controller.decideNationPolicy(nation.id, policy);
         if (ok) AudioService.instance.playSfx('victory');
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              ok ? '${nation.name}: ${policy.label}.' : 'Karar verilemedi.',
-            ),
-            duration: const Duration(seconds: 2),
-          ),
+        showFloatingNote(
+          context,
+          ok ? '${nation.name}: ${policy.label}.' : 'Karar verilemedi.',
+          good: ok,
         );
       },
       child: Container(
@@ -550,15 +545,12 @@ class _NationBlock extends StatelessWidget {
                               AudioService.instance.playSfx(
                                 ok ? 'coin' : 'denied',
                               );
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    ok
-                                        ? '${nation.name} sadakati arttı (60 altın).'
-                                        : 'Aksiyon ya da altın yetersiz.',
-                                  ),
-                                  duration: const Duration(seconds: 2),
-                                ),
+                              showFloatingNote(
+                                context,
+                                ok
+                                    ? '${nation.name} sadakati arttı (60 altın).'
+                                    : 'Aksiyon ya da altın yetersiz.',
+                                good: ok,
                               );
                             }
                           : null,
@@ -596,17 +588,12 @@ class _NationBlock extends StatelessWidget {
                                       AudioService.instance.playSfx(
                                         ok ? 'tap' : 'denied',
                                       );
-                                      ScaffoldMessenger.of(
+                                      showFloatingNote(
                                         context,
-                                      ).showSnackBar(
-                                        SnackBar(
-                                          content: Text(
-                                            ok
-                                                ? '$label uygulandı.'
-                                                : 'Aksiyon/kaynak yetersiz.',
-                                          ),
-                                          duration: const Duration(seconds: 2),
-                                        ),
+                                        ok
+                                            ? '$label uygulandı.'
+                                            : 'Aksiyon/kaynak yetersiz.',
+                                        good: ok,
                                       );
                                     }
                                   : null,
@@ -785,13 +772,10 @@ class _CastlePanel extends StatelessWidget {
 
   void _act(BuildContext context, bool ok, String okMsg) {
     if (!ok) AudioService.instance.playSfx('denied');
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          ok ? okMsg : 'Koşullar uygun değil (aksiyon/altın/ilişki).',
-        ),
-        duration: const Duration(seconds: 2),
-      ),
+    showFloatingNote(
+      context,
+      ok ? okMsg : 'Koşullar uygun değil (aksiyon/altın/ilişki).',
+      good: ok,
     );
   }
 }

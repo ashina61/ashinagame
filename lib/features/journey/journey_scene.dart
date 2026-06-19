@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../../app/theme/app_colors.dart';
 import '../../app/theme/app_text_styles.dart';
 import '../../core/assets/game_art.dart';
+import '../../core/audio/audio_service.dart';
 import '../../core/utils/formatters.dart';
 import '../../core/widgets/info_sheet.dart';
 import '../../core/widgets/ornate.dart';
@@ -201,16 +202,13 @@ class JourneyScreen extends StatelessWidget {
               note: '${site.name}: ${outcome?.note ?? 'Keşif tamamlandı.'}',
             );
             if (ok) {
+              AudioService.instance.playSfx('reward');
               showFloatingGain(context, Formatters.resourceDelta(effects));
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(outcome?.note ?? 'Keşif tamamlandı.'),
-                  duration: const Duration(seconds: 3),
-                ),
-              );
             } else {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Keşif için aksiyon gerekiyor.')),
+              showFloatingNote(
+                context,
+                'Keşif için aksiyon gerekiyor.',
+                good: false,
               );
             }
           },

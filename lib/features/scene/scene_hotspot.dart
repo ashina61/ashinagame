@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../../app/theme/app_colors.dart';
 import '../../app/theme/app_text_styles.dart';
+import '../../core/audio/audio_service.dart';
+import '../../core/settings/app_settings.dart';
 
 /// A tappable place inside a game scene — a tent, a fire, a road, a building.
 /// Positioned by fractional coordinates (0..1) so it scales with the scene
@@ -76,7 +78,13 @@ class _SceneHotspotWidgetState extends State<SceneHotspotWidget>
     final locked = hot.locked;
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
-      onTap: hot.onTap,
+      onTap: hot.onTap == null
+          ? null
+          : () {
+              AudioService.instance.playSfx(locked ? 'denied' : 'tap');
+              AppSettings.instance.tap();
+              hot.onTap!();
+            },
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [

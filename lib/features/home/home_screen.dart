@@ -518,9 +518,7 @@ class _CampBottom extends StatelessWidget {
   }
 
   static void _toast(BuildContext context, String text) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(text), duration: const Duration(seconds: 2)),
-    );
+    showFloatingNote(context, text, good: false);
   }
 }
 

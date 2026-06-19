@@ -101,15 +101,12 @@ class _CompanionOffer extends StatelessWidget {
                         goldCost: companion.goldCost,
                       );
                       AudioService.instance.playSfx(ok ? 'reward' : 'denied');
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            ok
-                                ? '$name obana katıldı.'
-                                : 'Altın ya da aksiyon yetersiz.',
-                          ),
-                          duration: const Duration(seconds: 2),
-                        ),
+                      showFloatingNote(
+                        context,
+                        ok
+                            ? '$name obana katıldı.'
+                            : 'Altın ya da aksiyon yetersiz.',
+                        good: ok,
                       );
                     },
             ),
@@ -167,15 +164,12 @@ class _MercenaryOffer extends StatelessWidget {
                   : () {
                       final ok = controller.recruitUnit(mercenary.unitId, 1);
                       AudioService.instance.playSfx(ok ? 'coin' : 'denied');
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            ok
-                                ? '${mercenary.name} orduya katıldı.'
-                                : 'Altın/at ya da aksiyon yetersiz.',
-                          ),
-                          duration: const Duration(seconds: 2),
-                        ),
+                      showFloatingNote(
+                        context,
+                        ok
+                            ? '${mercenary.name} orduya katıldı.'
+                            : 'Altın/at ya da aksiyon yetersiz.',
+                        good: ok,
                       );
                     },
             ),
@@ -576,9 +570,7 @@ class _MarketScreenState extends State<MarketScreen> {
   }
 
   static void _notify(BuildContext context, String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), duration: const Duration(seconds: 2)),
-    );
+    showFloatingNote(context, message);
   }
 }
 
