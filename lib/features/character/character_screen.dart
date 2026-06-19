@@ -98,16 +98,6 @@ class CharacterScreen extends StatelessWidget {
                                 ),
                               ),
                               Text(
-                                'Sağlık ${profile.health}/100 • Enerji ${profile.energy}/100 • Yorgunluk ${profile.fatigue}/100',
-                                style: AppTextStyles.meta,
-                              ),
-                              Text(
-                                'Açlık ${state.survival.hunger}/100 • '
-                                'Susuzluk ${state.survival.thirst}/100 • '
-                                'Sıcaklık ${state.survival.warmth}/100',
-                                style: AppTextStyles.meta,
-                              ),
-                              Text(
                                 'İtibar ${state.resource(ResourceType.reputation)} • ${profile.marriageStatus}',
                                 style: AppTextStyles.meta,
                               ),
@@ -117,6 +107,8 @@ class CharacterScreen extends StatelessWidget {
                       ],
                     ),
                   ),
+                  const SectionPlaque('DURUM'),
+                  const _VitalsPanel(),
                   const SectionPlaque('BECERİ GELİŞİMİ'),
                   OrnatePanel(
                     child: Column(
@@ -389,6 +381,141 @@ String _legacySkillIcon(String stat) => switch (stat) {
       'warfare' => GameAssets.iconArmyEmblem,
       _ => GameAssets.iconStarMedallion,
     };
+
+/// The leader's vital signs as a compact dashboard of mini-bars instead of two
+/// dense lines of "Sağlık 80/100 • Enerji …" text. "Bad" vitals (fatigue,
+/// hunger, thirst) read healthier as they fall, so their colour is inverted.
+class _VitalsPanel extends StatelessWidget {
+  const _VitalsPanel();
+
+  @override
+  Widget build(BuildContext context) {
+    final state = GameScope.of(context).state;
+    final p = state.profile;
+    final s = state.survival;
+    return OrnatePanel(
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: _VitalBar(
+                  label: 'Sağlık',
+                  icon: Icons.favorite,
+                  value: p.health,
+                ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: _VitalBar(
+                  label: 'Enerji',
+                  icon: Icons.bolt,
+                  value: p.energy,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(
+                child: _VitalBar(
+                  label: 'Yorgunluk',
+                  icon: Icons.bedtime,
+                  value: p.fatigue,
+                  bad: true,
+                ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: _VitalBar(
+                  label: 'Açlık',
+                  icon: Icons.restaurant,
+                  value: s.hunger,
+                  bad: true,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(
+                child: _VitalBar(
+                  label: 'Susuzluk',
+                  icon: Icons.water_drop,
+                  value: s.thirst,
+                  bad: true,
+                ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: _VitalBar(
+                  label: 'Sıcaklık',
+                  icon: Icons.local_fire_department,
+                  value: s.warmth,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _VitalBar extends StatelessWidget {
+  const _VitalBar({
+    required this.label,
+    required this.icon,
+    required this.value,
+    this.bad = false,
+  });
+
+  final String label;
+  final IconData icon;
+  final int value;
+
+  /// When true a high value is unhealthy (fatigue/hunger/thirst), so the bar
+  /// turns to danger as it fills rather than as it empties.
+  final bool bad;
+
+  @override
+  Widget build(BuildContext context) {
+    final health = bad ? 100 - value : value;
+    final fill = health < 30
+        ? AppColors.danger
+        : health < 60
+            ? AppColors.gold
+            : AppColors.success;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(icon, size: 14, color: AppColors.goldBright),
+            const SizedBox(width: 5),
+            Expanded(
+              child: Text(
+                label,
+                style: AppTextStyles.meta.copyWith(fontSize: 11),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            Text('$value', style: AppTextStyles.value.copyWith(fontSize: 12)),
+          ],
+        ),
+        const SizedBox(height: 3),
+        StatBar(
+          fraction: (value / 100).clamp(0.0, 1.0),
+          height: 8,
+          fill: fill,
+        ),
+      ],
+    );
+  }
+}
 
 class _SkillBar extends StatelessWidget {
   const _SkillBar(this.label, this.stat, this.value);

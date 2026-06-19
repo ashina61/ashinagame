@@ -62,14 +62,10 @@ class BoyScreen extends StatelessWidget {
                               'İtibar',
                               '${state.resource(ResourceType.reputation)}',
                             ),
-                            _InfoRow(
-                              'Halk',
-                              '${state.peopleApproval}/100 hoşnutluk',
-                            ),
-                            _InfoRow(
-                              'Kurultay',
-                              '${state.councilApproval}/100 hoşnutluk',
-                            ),
+                            const SizedBox(height: 4),
+                            _ApprovalBar('Halk', state.peopleApproval),
+                            _ApprovalBar('Kurultay', state.councilApproval),
+                            const SizedBox(height: 2),
                             _InfoRow('Boy sayısı', '${state.tribes.length}'),
                           ],
                         ),
@@ -475,6 +471,46 @@ class _Action extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// A 0–100 approval (people / council) shown as a labelled mini-bar that
+/// reddens as it drops, instead of a "62/100 hoşnutluk" text line.
+class _ApprovalBar extends StatelessWidget {
+  const _ApprovalBar(this.label, this.value);
+
+  final String label;
+  final int value;
+
+  @override
+  Widget build(BuildContext context) {
+    final fill = value < 30
+        ? AppColors.danger
+        : value < 60
+            ? AppColors.gold
+            : AppColors.success;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 5),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 70,
+            child: Text('$label:', style: AppTextStyles.meta),
+          ),
+          Expanded(
+              child: StatBar(fraction: value / 100, height: 8, fill: fill)),
+          const SizedBox(width: 6),
+          SizedBox(
+            width: 30,
+            child: Text(
+              '$value',
+              textAlign: TextAlign.right,
+              style: AppTextStyles.value.copyWith(fontSize: 12),
+            ),
+          ),
+        ],
       ),
     );
   }
