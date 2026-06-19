@@ -23,6 +23,8 @@ class BoyScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final state = GameScope.of(context).state;
     return OrnateScaffold(
+      backgroundAsset: GameAssets.bgSceneCampNight,
+      scrim: true,
       child: Column(
         children: [
           OrnateHeader(

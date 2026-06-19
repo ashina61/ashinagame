@@ -23,6 +23,7 @@ class OrnateScaffold extends StatelessWidget {
     required this.child,
     this.backgroundAsset = GameAssets.bgScreenNight,
     this.backgroundFallback,
+    this.scrim = false,
     super.key,
   });
 
@@ -32,6 +33,11 @@ class OrnateScaffold extends StatelessWidget {
   /// Art to use until [backgroundAsset] (often a produced [GameArt] path) is in
   /// the bundle, so a screen can opt into scene art without regressing.
   final String? backgroundFallback;
+
+  /// Lays a dark top-and-bottom gradient over the background so a bright scene
+  /// painting can sit behind list content and still read. Off by default, so
+  /// screens on the plain dark texture are unchanged.
+  final bool scrim;
 
   @override
   Widget build(BuildContext context) {
@@ -51,6 +57,21 @@ class OrnateScaffold extends StatelessWidget {
                           const ColoredBox(color: AppColors.leatherDeep),
                     ),
         ),
+        if (scrim)
+          const DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Color(0xCC0E0A06),
+                  Color(0x880E0A06),
+                  Color(0xDD0E0A06),
+                ],
+                stops: [0.0, 0.4, 1.0],
+              ),
+            ),
+          ),
         SafeArea(child: child),
       ],
     );

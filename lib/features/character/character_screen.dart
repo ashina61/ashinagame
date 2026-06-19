@@ -40,6 +40,8 @@ class CharacterScreen extends StatelessWidget {
                 : 'Geç oyun: antlaşma, sefer ve kağanlık';
     return Scaffold(
       body: OrnateScaffold(
+        backgroundAsset: GameAssets.bgSceneCampNight,
+        scrim: true,
         child: Column(
           children: [
             OrnateHeader(

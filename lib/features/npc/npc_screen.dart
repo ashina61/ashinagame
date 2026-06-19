@@ -40,6 +40,8 @@ class NpcScreen extends StatelessWidget {
 
     return Scaffold(
       body: OrnateScaffold(
+        backgroundAsset: GameAssets.bgSceneCampNight,
+        scrim: true,
         child: Column(
           children: [
             OrnateHeader(title: title, showBack: showBack),

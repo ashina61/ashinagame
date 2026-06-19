@@ -73,6 +73,8 @@ class _InventoryScreenState extends State<InventoryScreen> {
 
     return Scaffold(
       body: OrnateScaffold(
+        backgroundAsset: GameAssets.bgSceneCampNight,
+        scrim: true,
         child: Column(
           children: [
             const OrnateHeader(title: 'Envanter', showBack: true),

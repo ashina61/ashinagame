@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../app/theme/app_colors.dart';
 import '../../app/theme/app_text_styles.dart';
+import '../../core/assets/game_assets.dart';
 import '../../core/audio/audio_service.dart';
 import '../../core/widgets/ornate.dart';
 import '../../game/models/resource.dart';
@@ -35,6 +36,8 @@ class _ArmyScreenState extends State<ArmyScreen> {
 
     return Scaffold(
       body: OrnateScaffold(
+        backgroundAsset: GameAssets.sceneBattlefieldDusk,
+        scrim: true,
         child: Column(
           children: [
             const OrnateHeader(title: 'Ordu', showBack: true),

@@ -104,6 +104,8 @@ class _ExpeditionsScreenState extends State<ExpeditionsScreen> {
     final energy = controller.state.dailyActionPoints;
     if (!UnlockLogic.expeditions(controller.state)) {
       return const OrnateScaffold(
+        backgroundAsset: GameAssets.sceneBattlefieldDusk,
+        scrim: true,
         child: Column(
           children: [
             OrnateHeader(title: 'Seferler'),
@@ -125,6 +127,8 @@ class _ExpeditionsScreenState extends State<ExpeditionsScreen> {
       );
     }
     return OrnateScaffold(
+      backgroundAsset: GameAssets.sceneBattlefieldDusk,
+      scrim: true,
       child: Column(
         children: [
           OrnateHeader(
