@@ -736,6 +736,32 @@ void main() {
     expect(host.state.resource(ResourceType.food), lessThan(foodBefore - 10));
   });
 
+  test('a fully conquered map still musters a revolt, never goes silent', () {
+    final base = StarterGameData.create();
+    final controller = GameController(
+      base.copyWith(
+        day: const GameDay(day: 11, season: Season.summer),
+        obaFounded: true,
+        // Every nation subdued and held loyally — no outside enemy remains.
+        nationPolicies: {
+          for (final n in Nations.all) n.id: NationPolicy.vali.id
+        },
+        nationLoyalty: {for (final n in Nations.all) n.id: 100},
+        resources: {
+          ...base.resources,
+          ResourceType.food: 400,
+          ResourceType.population: 200,
+        },
+      ),
+      random: _FixedRandom(0),
+    );
+
+    controller.endDay(); // advances to day 12, a raid-muster day
+    // A revolt still brews from a held province instead of nothing.
+    expect(controller.state.raidFrom, isNotEmpty);
+    expect(controller.state.raidCountdown, greaterThan(0));
+  });
+
   test('the market sells finished gear into the inventory', () {
     final base = StarterGameData.create();
     final controller = GameController(

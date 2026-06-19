@@ -745,6 +745,28 @@ class GameController extends ChangeNotifier {
             '${src.name} sınıra akın için toplanıyor (3 gün).',
             ...log,
           ].take(6).toList();
+        } else {
+          // Every nation is subdued — but an empire is never quiet. The
+          // strongest held province musters a revolt, so a fully conquered
+          // map keeps testing the host instead of going silent.
+          Nation? rebel;
+          var strongest = -1;
+          for (final n in Nations.all) {
+            if (!_state.nationConquered(n.id)) continue;
+            if (n.center.power > strongest) {
+              strongest = n.center.power;
+              rebel = n;
+            }
+          }
+          if (rebel != null) {
+            raidCountdown = 3;
+            raidFrom = rebel.id;
+            log = [
+              '${rebel.name} vilayetinde isyan kıvılcımı; baskın hazırlanıyor '
+                  '(3 gün).',
+              ...log,
+            ].take(6).toList();
+          }
         }
       }
     }
