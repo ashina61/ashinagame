@@ -4,6 +4,7 @@ import '../../app/theme/app_colors.dart';
 import '../../app/theme/app_text_styles.dart';
 import '../../core/assets/game_art.dart';
 import '../../core/assets/game_assets.dart';
+import '../../core/audio/audio_service.dart';
 import '../../core/utils/formatters.dart';
 import '../../core/widgets/info_sheet.dart';
 import '../../core/widgets/ornate.dart';
@@ -589,11 +590,20 @@ class _SurvivalActionRail extends StatelessWidget {
             onPressed: cooling > 0
                 ? null
                 : () {
+                    final before = controller.state;
                     final ok = controller.performSurvivalAction(action.id);
-                    _CampBottom._toast(
-                      context,
-                      ok ? '${action.name} yapıldı.' : 'Bu iş bugün olmaz.',
-                    );
+                    if (ok) {
+                      AudioService.instance.playSfx('craft');
+                      showStateDelta(
+                        context,
+                        before,
+                        controller.state,
+                        fallback: '${action.name} ✓',
+                      );
+                    } else {
+                      AudioService.instance.playSfx('denied');
+                      _CampBottom._toast(context, 'Bu iş bugün olmaz.');
+                    }
                   },
           );
         },

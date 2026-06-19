@@ -3,8 +3,11 @@ import 'package:flutter/material.dart';
 import '../../app/theme/app_colors.dart';
 import '../../app/theme/app_text_styles.dart';
 import '../../core/assets/game_art.dart';
+import '../../core/utils/formatters.dart';
 import '../../core/widgets/skinned_button.dart';
 import '../../core/widgets/skinned_panel.dart';
+import '../../game/models/resource.dart';
+import '../../game/state/game_state.dart';
 
 /// A short end-of-day report: the day's headline, atmosphere and the latest
 /// chronicle lines (healed wounded, news, omens, raids, relations…). Shown as
@@ -79,6 +82,46 @@ void showFloatingGain(BuildContext context, String text, {Color? color}) {
     ),
   );
   overlay.insert(entry);
+}
+
+/// Floats the net resource (and food-bag) change between two game states, e.g.
+/// "+3 Erzak, +1 Altın". Lets quick actions that only return a bool still show
+/// the gain they produced, without the controller exposing a delta. Falls back
+/// to [fallback] when nothing measurable changed (e.g. a stat-only action).
+void showStateDelta(
+  BuildContext context,
+  GameState before,
+  GameState after, {
+  String? fallback,
+}) {
+  final parts = <String>[];
+  var net = 0;
+  for (final type in ResourceType.values) {
+    final delta = (after.resources[type] ?? 0) - (before.resources[type] ?? 0);
+    if (delta != 0) {
+      parts.add('${type.label} ${Formatters.signed(delta)}');
+      net += delta;
+    }
+  }
+  final foodBag = _foodBagCount(after) - _foodBagCount(before);
+  if (foodBag != 0) {
+    parts.add('Azık ${Formatters.signed(foodBag)}');
+    net += foodBag;
+  }
+  final text = parts.isEmpty ? (fallback ?? '') : parts.join(', ');
+  showFloatingGain(
+    context,
+    text,
+    color: net < 0 ? AppColors.ember : AppColors.success,
+  );
+}
+
+int _foodBagCount(GameState state) {
+  var total = 0;
+  for (final amount in state.foodInventory.values) {
+    total += amount;
+  }
+  return total;
 }
 
 /// A brief dark fade with a "Gün N" plate, played when the day turns, so the
