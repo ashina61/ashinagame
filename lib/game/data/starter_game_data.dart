@@ -266,6 +266,7 @@ class StarterGameData {
       },
       effectDescription:
           'Her seviye max nüfus ve 2. seviyeden sonra aksiyon hakkı desteği verir.',
+      buildDays: 3,
     ),
     CampBuilding(
       id: 'storage',
@@ -276,6 +277,8 @@ class StarterGameData {
       category: 'Ekonomi',
       upgradeCost: {ResourceType.wood: 35, ResourceType.stone: 20},
       effectDescription: 'Kaynak kapasitesi ve kış hazırlığı güvenliği artar.',
+      storagePerLevel: 250,
+      buildDays: 2,
     ),
     CampBuilding(
       id: 'pen',
@@ -286,6 +289,8 @@ class StarterGameData {
       category: 'Üretim',
       upgradeCost: {ResourceType.wood: 25, ResourceType.leather: 8},
       effectDescription: 'Gün sonunda küçük erzak ve kış dayanımı bonusu.',
+      production: {ResourceType.food: 5},
+      buildDays: 1,
     ),
     CampBuilding(
       id: 'horse_herd',
@@ -296,6 +301,8 @@ class StarterGameData {
       category: 'Sefer',
       upgradeCost: {ResourceType.food: 25, ResourceType.gold: 80},
       effectDescription: 'Sefer başarısı ve ticaret geliri artar.',
+      production: {ResourceType.horse: 1, ResourceType.food: 2},
+      buildDays: 2,
     ),
     CampBuilding(
       id: 'workshop',
@@ -311,6 +318,8 @@ class StarterGameData {
       },
       effectDescription:
           'Zanaat ödülleri artar, üretim maliyeti hissedilir azalır.',
+      production: {ResourceType.leather: 2, ResourceType.iron: 1},
+      buildDays: 2,
     ),
     CampBuilding(
       id: 'healer',
@@ -352,6 +361,8 @@ class StarterGameData {
       category: 'Ekonomi',
       upgradeCost: {ResourceType.wood: 20, ResourceType.gold: 120},
       effectDescription: 'Ticaret ve altın ödülleri artar.',
+      production: {ResourceType.gold: 8},
+      buildDays: 2,
     ),
     CampBuilding(
       id: 'council',

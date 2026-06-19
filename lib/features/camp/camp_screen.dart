@@ -128,37 +128,57 @@ class _CampScreenState extends State<CampScreen> {
     final affordable = b.upgradeCost.entries.every(
       (e) => controller.state.resource(e.key) >= e.value,
     );
+    final queued = controller.buildingQueued(id);
+    final daysLeft = controller.buildDaysLeft(id);
+    final yield = b.dailyYield;
+    final production = yield.isEmpty
+        ? ''
+        : '\n\nÜretim/gün: ${Formatters.resourceDelta(yield)}';
+
+    final SceneAction action;
+    if (queued) {
+      action = SceneAction(
+        label: 'İnşa ediliyor • $daysLeft gün',
+        subtitle: 'Usta ekip çalışıyor; günü bitirdikçe ilerler.',
+        primary: true,
+        enabled: false,
+        onTap: () {},
+      );
+    } else if (!b.canUpgrade) {
+      action = SceneAction(
+        label: 'Azami seviye',
+        primary: true,
+        enabled: false,
+        onTap: () {},
+      );
+    } else {
+      action = SceneAction(
+        label: 'Yükselt (Lv.${b.level + 1})',
+        subtitle: 'Maliyet: ${Formatters.resourceDelta({
+              for (final e in b.upgradeCost.entries) e.key: -e.value
+            })} • Süre: ${b.buildDays} gün',
+        primary: true,
+        enabled: affordable,
+        onTap: () {
+          final ok = controller.upgradeBuilding(id);
+          if (ok) {
+            AudioService.instance.playSfx('craft');
+            showFloatingNote(
+                context, '$label inşaatı başladı (${b.buildDays} gün)');
+          } else {
+            AudioService.instance.playSfx('denied');
+            showFloatingNote(context, 'Kaynak yetersiz.', good: false);
+          }
+        },
+      );
+    }
+
     showSceneDetail(
       context,
       title: '$label • Lv.${b.level}/${b.maxLevel}',
       icon: icon,
-      description: '${b.description}\n\n${b.effectDescription}',
-      actions: [
-        SceneAction(
-          label: b.canUpgrade ? 'Yükselt' : 'Azami seviye',
-          subtitle: b.canUpgrade
-              ? 'Maliyet: ${Formatters.resourceDelta({
-                      for (final e in b.upgradeCost.entries) e.key: -e.value
-                    })}'
-              : null,
-          primary: true,
-          enabled: b.canUpgrade && affordable,
-          onTap: () {
-            final ok = controller.upgradeBuilding(id);
-            if (ok) {
-              AudioService.instance.playSfx('craft');
-              showFloatingGain(
-                context,
-                '$label ↑',
-                color: AppColors.goldBright,
-              );
-            } else {
-              AudioService.instance.playSfx('denied');
-              showFloatingNote(context, 'Kaynak yetersiz.', good: false);
-            }
-          },
-        ),
-      ],
+      description: '${b.description}\n\n${b.effectDescription}$production',
+      actions: [action],
     );
   }
 }
@@ -171,7 +191,12 @@ class _IdentityBand extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final state = GameScope.of(context).state;
+    final controller = GameScope.of(context);
+    final state = controller.state;
+    final production = controller.dailyProduction;
+    final job = state.buildQueue.isEmpty ? null : state.buildQueue.first;
+    final jobName =
+        job == null ? null : state.building(job.buildingId)?.name ?? '';
     return OrnatePanel(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -207,6 +232,45 @@ class _IdentityBand extends StatelessWidget {
               _ObaStat('At', state.resource(ResourceType.horse)),
             ],
           ),
+          if (production.isNotEmpty) ...[
+            const SizedBox(height: 6),
+            Row(
+              children: [
+                const Icon(Icons.trending_up,
+                    size: 14, color: AppColors.success),
+                const SizedBox(width: 5),
+                Expanded(
+                  child: Text(
+                    'Üretim/gün: ${Formatters.resourceDelta(production)}',
+                    style: AppTextStyles.meta
+                        .copyWith(color: AppColors.success, fontSize: 11),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+          ],
+          if (jobName != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: Row(
+                children: [
+                  const Icon(Icons.construction,
+                      size: 14, color: AppColors.goldBright),
+                  const SizedBox(width: 5),
+                  Expanded(
+                    child: Text(
+                      'İnşa: $jobName • ${job!.daysLeft} gün',
+                      style: AppTextStyles.meta
+                          .copyWith(color: AppColors.goldBright, fontSize: 11),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ),
         ],
       ),
     );

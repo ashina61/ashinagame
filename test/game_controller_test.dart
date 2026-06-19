@@ -148,12 +148,20 @@ void main() {
         },
       ),
     );
+    // Upgrades now queue: the cost is paid at once but the level lands after
+    // the building's buildDays when the day turns.
     expect(controller.upgradeBuilding('storage'), isTrue);
-    expect(controller.state.building('storage')!.level, 2);
     expect(controller.state.resource(ResourceType.wood), 0);
     expect(controller.state.resource(ResourceType.stone), 0);
+    expect(controller.buildingQueued('storage'), isTrue);
+    expect(controller.state.building('storage')!.level, 1);
+    // Broke now, so the watchtower upgrade cannot even be queued.
     expect(controller.upgradeBuilding('watchtower'), isFalse);
     expect(controller.state.building('watchtower')!.level, 1);
+    // Storage takes two days to finish.
+    controller.endDay();
+    controller.endDay();
+    expect(controller.state.building('storage')!.level, 2);
   });
 
   test('diplomacy action changes relation and consumes AP', () {
@@ -729,11 +737,13 @@ void main() {
 
     final goldBefore = host.state.resource(ResourceType.gold);
     final foodBefore = host.state.resource(ResourceType.food);
+    // Buildings now yield daily income, so net change = production − upkeep.
+    final goldProd = host.dailyProduction[ResourceType.gold] ?? 0;
     host.endDay();
-    // Gold has no other daily drain, so it drops by exactly the wage bill.
-    expect(host.state.resource(ResourceType.gold), goldBefore - 15);
-    // Food also pays the season's cost, so it falls by at least the rations.
-    expect(host.state.resource(ResourceType.food), lessThan(foodBefore - 10));
+    // Gold's only daily flows are the wage bill out and the market in.
+    expect(host.state.resource(ResourceType.gold), goldBefore - 15 + goldProd);
+    // Rations plus the season's cost outrun the herds, so food still falls.
+    expect(host.state.resource(ResourceType.food), lessThan(foodBefore));
   });
 
   test('a fully conquered map still musters a revolt, never goes silent', () {

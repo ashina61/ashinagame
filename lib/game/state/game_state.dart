@@ -31,6 +31,7 @@ class GameState {
     this.gameOver = false,
     this.gameOverReason,
     this.craftQueue = const [],
+    this.buildQueue = const [],
     this.craftedItems = const {},
     this.completedExpeditions = const [],
     this.marketStock = const {},
@@ -117,6 +118,7 @@ class GameState {
   final bool gameOver;
   final String? gameOverReason;
   final List<CraftJob> craftQueue;
+  final List<BuildJob> buildQueue;
   final Map<String, int> craftedItems;
   final List<String> completedExpeditions;
   final Map<String, int> marketStock;
@@ -338,6 +340,7 @@ class GameState {
     bool? gameOver,
     String? gameOverReason,
     List<CraftJob>? craftQueue,
+    List<BuildJob>? buildQueue,
     Map<String, int>? craftedItems,
     List<String>? completedExpeditions,
     Map<String, int>? marketStock,
@@ -415,6 +418,7 @@ class GameState {
       gameOver: gameOver ?? this.gameOver,
       gameOverReason: gameOverReason ?? this.gameOverReason,
       craftQueue: craftQueue ?? this.craftQueue,
+      buildQueue: buildQueue ?? this.buildQueue,
       craftedItems: craftedItems ?? this.craftedItems,
       completedExpeditions: completedExpeditions ?? this.completedExpeditions,
       marketStock: marketStock ?? this.marketStock,

@@ -25,6 +25,7 @@ import '../logic/season_logic.dart';
 import '../logic/tent_upgrade_logic.dart';
 import '../models/achievement.dart';
 import '../models/battle_report.dart';
+import '../models/camp_building.dart';
 import '../models/clan.dart';
 import '../models/craft.dart';
 import '../models/event_choice.dart';
@@ -527,6 +528,42 @@ class GameController extends ChangeNotifier {
       }
     }
 
+    // Construction crews finish what is in the build queue, then every
+    // standing building yields its daily produce — held to the granary cap so
+    // a full store is a prompt to build bigger.
+    var buildings = _state.buildings;
+    final buildQueue = <BuildJob>[];
+    for (final job in _state.buildQueue) {
+      final ticked = job.tick();
+      if (ticked.daysLeft <= 0) {
+        buildings = [
+          for (final b in buildings)
+            b.id == job.buildingId ? b.copyWith(level: b.level + 1) : b,
+        ];
+        final done = buildings.firstWhere((b) => b.id == job.buildingId);
+        log = [
+          '${done.name} inşaatı bitti: seviye ${done.level}.',
+          ...log,
+        ].take(6).toList();
+      } else {
+        buildQueue.add(ticked);
+      }
+    }
+    var cap = 500;
+    for (final b in buildings) {
+      cap += b.storagePerLevel * b.level;
+    }
+    for (final b in buildings) {
+      b.dailyYield.forEach((res, amount) {
+        final current = resources[res] ?? 0;
+        if (current >= cap) return;
+        resources = {
+          ...resources,
+          res: (current + amount).clamp(0, cap).toInt(),
+        };
+      });
+    }
+
     // The leader ages a year each time the seasons come full circle.
     var pendingSuccession = false;
     if (LifeLogic.isYearBoundary(nextDay.day)) {
@@ -839,6 +876,8 @@ class GameController extends ChangeNotifier {
         army: army,
         wounded: wounded,
         quests: quests,
+        buildings: buildings,
+        buildQueue: buildQueue,
         craftQueue: queue,
         craftedItems: crafted,
         marketStock: MarketGoods.startingStock(),
@@ -1219,10 +1258,45 @@ class GameController extends ChangeNotifier {
     return true;
   }
 
+  /// True while [id] has an upgrade in the build queue.
+  bool buildingQueued(String id) =>
+      _state.buildQueue.any((j) => j.buildingId == id);
+
+  /// Days left on [id]'s queued upgrade, or 0 if none is building.
+  int buildDaysLeft(String id) {
+    for (final j in _state.buildQueue) {
+      if (j.buildingId == id) return j.daysLeft;
+    }
+    return 0;
+  }
+
+  /// Total daily resource production from all standing buildings.
+  Map<ResourceType, int> get dailyProduction {
+    final out = <ResourceType, int>{};
+    for (final b in _state.buildings) {
+      b.dailyYield.forEach((k, v) => out[k] = (out[k] ?? 0) + v);
+    }
+    return out;
+  }
+
+  /// The granary cap: a base plus every warehouse level. Daily production is
+  /// held to this ceiling, so a full store means it is time to build bigger.
+  int get storageCapacity {
+    var cap = 500;
+    for (final b in _state.buildings) {
+      cap += b.storagePerLevel * b.level;
+    }
+    return cap;
+  }
+
+  /// Queue a building upgrade: pay the cost now, and it finishes after the
+  /// building's [CampBuilding.buildDays] when the day turns — Ikariam-style
+  /// timed construction rather than an instant level-up.
   bool upgradeBuilding(String id) {
     if (id == 'main_tent') return upgradeTent();
     final building = _state.building(id);
     if (building == null || !building.canUpgrade) return false;
+    if (buildingQueued(id)) return false;
     final craftDiscount =
         id == 'workshop' ? (_state.profile.craft / 5).floor() : 0;
     final cost = {
@@ -1232,24 +1306,19 @@ class GameController extends ChangeNotifier {
     for (final entry in cost.entries) {
       if (_state.resource(entry.key) < entry.value) return false;
     }
-    final buildings = [
-      for (final item in _state.buildings)
-        item.id == id ? item.copyWith(level: item.level + 1) : item,
-    ];
     final resources = ResourceLogic.apply(_state.resources, {
       for (final entry in cost.entries) entry.key: -entry.value,
-      ResourceType.morale: id == 'main_tent' ? 2 : 1,
     });
     _commit(
       _state.copyWith(
-        buildings: buildings,
         resources: resources,
-        maxDailyActionPoints: _dailyActionLimit(
-          resources,
-          buildings: buildings,
+        buildQueue: [
+          ..._state.buildQueue,
+          BuildJob(buildingId: id, daysLeft: building.buildDays),
+        ],
+        log: _prependLog(
+          '${building.name} inşaatı başladı (${building.buildDays} gün).',
         ),
-        profile: ProgressionLogic.addXp(_state.profile, 20),
-        log: _prependLog('${building.name} seviye ${building.level + 1} oldu.'),
       ),
     );
     return true;
