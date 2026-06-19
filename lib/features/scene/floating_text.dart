@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../app/theme/app_colors.dart';
 import '../../app/theme/app_text_styles.dart';
 import '../../core/assets/game_art.dart';
+import '../../core/assets/game_assets.dart';
 import '../../core/utils/formatters.dart';
 import '../../core/widgets/skinned_button.dart';
 import '../../core/widgets/skinned_panel.dart';
@@ -134,22 +135,33 @@ int _foodBagCount(GameState state) {
   return total;
 }
 
-/// A brief dark fade with a "Gün N" plate, played when the day turns, so the
-/// passage of time has a beat. Fail-safe: no overlay, no effect.
-void showDayTransition(BuildContext context, String label) {
+/// A short nightfall beat played when the day turns: the screen sinks into a
+/// dusk gradient while a sun emblem rises and turns behind the "GÜN N" plate
+/// and the season, so the passage of time lands as a moment rather than a
+/// silent counter bump. Fail-safe: no overlay, no effect.
+void showDayTransition(BuildContext context, String label, {String? subtitle}) {
   final overlay = Overlay.maybeOf(context);
   if (overlay == null) return;
   late OverlayEntry entry;
   entry = OverlayEntry(
-    builder: (_) => _DayTransition(label: label, onDone: () => entry.remove()),
+    builder: (_) => _DayTransition(
+      label: label,
+      subtitle: subtitle,
+      onDone: () => entry.remove(),
+    ),
   );
   overlay.insert(entry);
 }
 
 class _DayTransition extends StatefulWidget {
-  const _DayTransition({required this.label, required this.onDone});
+  const _DayTransition({
+    required this.label,
+    required this.onDone,
+    this.subtitle,
+  });
 
   final String label;
+  final String? subtitle;
   final VoidCallback onDone;
 
   @override
@@ -160,7 +172,7 @@ class _DayTransitionState extends State<_DayTransition>
     with SingleTickerProviderStateMixin {
   late final AnimationController _c = AnimationController(
     vsync: this,
-    duration: const Duration(milliseconds: 900),
+    duration: const Duration(milliseconds: 1500),
   )..forward();
 
   @override
@@ -184,15 +196,53 @@ class _DayTransitionState extends State<_DayTransition>
         child: AnimatedBuilder(
           animation: _c,
           builder: (context, child) {
-            // Fade in then out: peak darkness in the middle.
+            // Fade in then out: peak in the middle of the beat.
             final t = _c.value;
             final o = (t < 0.5 ? t * 2 : (1 - t) * 2).clamp(0.0, 1.0);
+            // The emblem rises a little and turns slowly through the beat.
+            final rise = (1 - t) * 22;
             return Opacity(
               opacity: o,
-              child: ColoredBox(
-                color: Colors.black,
+              child: DecoratedBox(
+                decoration: const BoxDecoration(
+                  gradient: RadialGradient(
+                    center: Alignment.center,
+                    radius: 0.9,
+                    colors: [
+                      Color(0xFF3A2410),
+                      Color(0xFF120B06),
+                      Color(0xFF000000),
+                    ],
+                    stops: [0.0, 0.55, 1.0],
+                  ),
+                ),
                 child: Center(
-                  child: Text(widget.label, style: AppTextStyles.display),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Transform.translate(
+                        offset: Offset(0, rise),
+                        child: Transform.rotate(
+                          angle: t * 0.6,
+                          child: Image.asset(
+                            GameAssets.iconSunEmblem,
+                            width: 84,
+                            height: 84,
+                            errorBuilder: (_, __, ___) =>
+                                const SizedBox.shrink(),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+                      Text(widget.label, style: AppTextStyles.display),
+                      if (widget.subtitle != null)
+                        Text(
+                          widget.subtitle!.toUpperCase(),
+                          style:
+                              AppTextStyles.section.copyWith(letterSpacing: 3),
+                        ),
+                    ],
+                  ),
                 ),
               ),
             );
