@@ -15,9 +15,8 @@ import '../../game/logic/tent_upgrade_logic.dart';
 import '../../game/state/game_controller.dart';
 import '../../game/state/game_scope.dart';
 import '../../game/state/game_state.dart';
-import '../achievements/achievements_screen.dart';
 import '../found_oba/found_oba_screen.dart';
-import '../quests/quests_screen.dart';
+import '../goals/goals_screen.dart';
 import '../scene/floating_text.dart';
 import '../scene/scene_atmosphere.dart';
 import '../scene/scene_background.dart';
@@ -328,7 +327,7 @@ class _ObaPathPanel extends StatelessWidget {
                   label: 'GÖREVLER',
                   onPressed: () => Navigator.of(context).push(
                     MaterialPageRoute<void>(
-                      builder: (_) => const QuestsScreen(),
+                      builder: (_) => const GoalsScreen(initialTab: 0),
                     ),
                   ),
                 ),
@@ -339,7 +338,7 @@ class _ObaPathPanel extends StatelessWidget {
                   label: 'BAŞARIMLAR',
                   onPressed: () => Navigator.of(context).push(
                     MaterialPageRoute<void>(
-                      builder: (_) => const AchievementsScreen(),
+                      builder: (_) => const GoalsScreen(initialTab: 1),
                     ),
                   ),
                 ),
