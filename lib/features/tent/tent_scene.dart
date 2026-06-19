@@ -68,6 +68,7 @@ class TentScreen extends StatelessWidget {
             fallback: GameAssets.bgSceneCampNight,
           ),
           const EmberGlow(center: Alignment(0, -0.45)),
+          const RisingEmbers(origin: 0.5, spread: 0.18, count: 10),
           SafeArea(
             child: Column(
               children: [

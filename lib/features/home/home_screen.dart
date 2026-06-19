@@ -105,7 +105,12 @@ class HomeScreen extends StatelessWidget {
       // TODO(asset): camp_night_bg.
       background: GameArt.campNightBg,
       backgroundFallback: GameAssets.bgSceneCampNight,
-      atmosphere: const EmberGlow(center: Alignment(0.32, 0.25)),
+      atmosphere: const Stack(
+        children: [
+          EmberGlow(center: Alignment(0.32, 0.25)),
+          RisingEmbers(origin: 0.66),
+        ],
+      ),
       hud: const _HomeHud(),
       hotspots: hotspots,
       foreground: const _CampTitlePlate(),

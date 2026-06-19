@@ -18,6 +18,7 @@ import '../../game/models/resource.dart';
 import '../../game/state/game_controller.dart';
 import '../../game/state/game_scope.dart';
 import '../npc/npc_screen.dart';
+import '../scene/scene_atmosphere.dart';
 import '../scene/scene_background.dart';
 import '../scene/scene_detail_panel.dart';
 import '../scene/scene_hotspot.dart';
@@ -75,6 +76,8 @@ class _CampScreenState extends State<CampScreen> {
           asset: GameArt.obaSceneBg,
           fallback: GameAssets.bgSceneCampNight,
         ),
+        const EmberGlow(center: Alignment(-0.1, 0.35), radius: 0.5),
+        const RisingEmbers(origin: 0.45, spread: 0.3),
         SafeArea(
           child: Column(
             children: [
