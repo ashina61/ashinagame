@@ -369,8 +369,9 @@ class _CampBottom extends StatelessWidget {
   Widget build(BuildContext context) {
     final controller = GameScope.of(context);
     final state = controller.state;
-    final objective =
-        PhaseLogic.dailyTutorial(state) ?? PhaseLogic.nextObjective(state);
+    final objective = PhaseLogic.dailyTutorial(state) ??
+        PhaseLogic.obaGuide(state) ??
+        PhaseLogic.nextObjective(state);
 
     return Container(
       decoration: const BoxDecoration(

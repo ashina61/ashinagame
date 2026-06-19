@@ -137,6 +137,38 @@ class PhaseLogic {
     return 'Toprak seni çağırıyor — kendi obanı kurmaya hazırlan.';
   }
 
+  /// After the oba is founded the early guide goes quiet — yet this is when
+  /// the deeper systems (a standing army and its upkeep, an heir, the council's
+  /// mood, conquest) come into play. This keeps one clear next move in front of
+  /// the player through the harder mid/late game, in the same low-pressure
+  /// voice. Null before an oba exists, so it never overlaps [dailyTutorial].
+  static String? obaGuide(GameState s) {
+    if (!s.obaFounded) return null;
+    final soldiers = s.totalSoldiers;
+    final food = s.resource(ResourceType.food);
+    // 1) An empty camp is defenceless.
+    if (soldiers == 0) {
+      return 'Ordun yok — Seferler ekranından asker topla, sınırını koru.';
+    }
+    // 2) A host that outgrows the granary will starve the oba.
+    if (soldiers >= 12 && food < soldiers * 2) {
+      return 'Ordunun bakımı kileri zorluyor — erzak üret ya da orduyu küçült.';
+    }
+    // 3) Discontent at the top or bottom gnaws daily; calm it before it spirals.
+    if (s.peopleApproval < 40 || s.councilApproval < 35) {
+      return 'Halk/meclis hoşnutsuz — kurultayda doğru kararı ver, morali yükselt.';
+    }
+    // 4) No line, no future: secure an heir.
+    if (!s.household.isMarried && s.profile.age >= 16) {
+      return 'Soyunu güvenceye al — bir eş al ki mirasçın olsun.';
+    }
+    // 5) With a host in hand, the map is waiting.
+    if (s.conqueredRegions.isEmpty) {
+      return 'İlk kaleyi al — Seferler > Fetih ile toprağını genişlet.';
+    }
+    return 'Obanı büyüt: nüfusu, itibarı ve inancını dengede tut.';
+  }
+
   /// One short, ordered hint of the next milestone to chase. Null once an oba
   /// has been founded and the early road is behind you.
   static String? nextObjective(GameState s) {

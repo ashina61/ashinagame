@@ -1448,6 +1448,24 @@ void main() {
     );
   });
 
+  test('the oba guide takes over once an oba is founded', () {
+    final base = StarterGameData.create();
+    // Before founding: the oba guide stays silent (the early guide leads).
+    expect(PhaseLogic.obaGuide(base), isNull);
+
+    // Founded with no army: the first counsel is to raise a host.
+    final founded = base.copyWith(obaFounded: true, army: const {});
+    expect(PhaseLogic.obaGuide(founded), contains('Ordun yok'));
+
+    // With a host but a discontented council: it flags the unrest next.
+    final restless = founded.copyWith(
+      army: const {'foot_sword': 10},
+      councilApproval: 20,
+      resources: {...base.resources, ResourceType.food: 200},
+    );
+    expect(PhaseLogic.obaGuide(restless), contains('hoşnutsuz'));
+  });
+
   test('a han companion joins as a sworn follower in a role', () {
     final fresh = StarterGameData.create();
     final c = GameController(
