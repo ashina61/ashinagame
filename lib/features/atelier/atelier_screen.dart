@@ -12,6 +12,7 @@ import '../../game/models/craft.dart';
 import '../../game/models/resource.dart';
 import '../../game/state/game_controller.dart';
 import '../../game/state/game_scope.dart';
+import '../scene/floating_text.dart';
 
 /// Atlas icons for each workshop recipe.
 String craftIcon(String recipeId) => switch (recipeId) {
@@ -263,11 +264,10 @@ class _RecipeDetail extends StatelessWidget {
                       CraftStart.queueFull =>
                         'Tezgâhlar dolu. Günü bitirerek bekle.',
                     };
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(message),
-                        duration: const Duration(seconds: 2),
-                      ),
+                    showFloatingNote(
+                      context,
+                      message,
+                      good: result == CraftStart.started,
                     );
                   },
                 ),

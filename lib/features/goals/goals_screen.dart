@@ -9,6 +9,7 @@ import '../../game/data/achievements.dart';
 import '../../game/models/achievement.dart';
 import '../../game/models/quest.dart';
 import '../../game/state/game_scope.dart';
+import '../scene/floating_text.dart';
 
 /// "Hedefler" — the player's goals in one place. Quests (the moment-to-moment
 /// to-do list) and achievements (the long-haul milestones) used to live on two
@@ -146,15 +147,14 @@ class _QuestPanel extends StatelessWidget {
                     label: 'ÖDÜLÜ AL',
                     height: 34,
                     onPressed: () {
+                      final before = controller.state;
                       controller.claimQuest(quest.id);
                       AudioService.instance.playSfx('reward');
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            '${quest.title} tamamlandı. '
-                            'Ödül: ${quest.rewardText}',
-                          ),
-                        ),
+                      showStateDelta(
+                        context,
+                        before,
+                        controller.state,
+                        fallback: '${quest.title} tamamlandı',
                       );
                     },
                   ),
@@ -249,12 +249,14 @@ class _AchievementPanel extends StatelessWidget {
                     label: 'ÖDÜLÜ AL',
                     height: 34,
                     onPressed: () {
+                      final before = controller.state;
                       controller.claimAchievement(achievement.id);
                       AudioService.instance.playSfx('reward');
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('${achievement.title} ödülü alındı.'),
-                        ),
+                      showStateDelta(
+                        context,
+                        before,
+                        controller.state,
+                        fallback: '${achievement.title} alındı',
                       );
                     },
                   ),

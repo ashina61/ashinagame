@@ -19,6 +19,7 @@ import '../../game/state/game_controller.dart';
 import '../../game/state/game_scope.dart';
 import '../equipment/equipment_screen.dart';
 import '../inventory/inventory_screen.dart';
+import '../scene/floating_text.dart';
 
 class CharacterScreen extends StatelessWidget {
   const CharacterScreen({this.showBack = false, super.key});
@@ -597,9 +598,7 @@ class _CandidateCard extends StatelessWidget {
     final reason = controller.marriageBlockReason(candidate.id);
     if (reason != null) {
       AudioService.instance.playSfx('denied');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(reason), duration: const Duration(seconds: 3)),
-      );
+      showFloatingNote(context, reason, good: false);
       return;
     }
     controller.proposeMarriage(candidate.id);

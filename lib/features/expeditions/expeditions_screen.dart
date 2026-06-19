@@ -16,6 +16,7 @@ import '../../game/state/game_controller.dart';
 import '../../game/state/game_scope.dart';
 import '../army/army_screen.dart';
 import '../conquest/conquest_screen.dart';
+import '../scene/floating_text.dart';
 import 'expedition_result_screen.dart';
 
 class _Region {
@@ -313,21 +314,26 @@ class _ExpeditionsScreenState extends State<ExpeditionsScreen> {
                 DarkButton(
                   label: 'KEŞFET',
                   onPressed: () {
+                    final before = controller.state;
                     final done = controller.exploreRegion(
                       region.name,
                       region.effects,
                     );
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          done
-                              ? '${region.name} keşfi: '
-                                  '${Formatters.resourceDelta(region.effects)}'
-                              : 'Enerji tükendi. Günü bitirerek dinlen.',
-                        ),
-                        duration: const Duration(seconds: 2),
-                      ),
-                    );
+                    if (done) {
+                      AudioService.instance.playSfx('reward');
+                      showStateDelta(
+                        context,
+                        before,
+                        controller.state,
+                        fallback: '${region.name} keşfedildi',
+                      );
+                    } else {
+                      showFloatingNote(
+                        context,
+                        'Enerji tükendi. Günü bitirerek dinlen.',
+                        good: false,
+                      );
+                    }
                   },
                 ),
               ],
@@ -360,16 +366,23 @@ class _ExpeditionsScreenState extends State<ExpeditionsScreen> {
                   label: 'ZİYARET',
                   onPressed: controller.state.dailyActionPoints > 0
                       ? () {
+                          final before = controller.state;
                           final done = controller.visitSacredPlace(place.id);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                done
-                                    ? '${place.name} ziyaret edildi.'
-                                    : 'Ziyaret için cooldown/AP uygun değil.',
-                              ),
-                            ),
-                          );
+                          if (done) {
+                            AudioService.instance.playSfx('reward');
+                            showStateDelta(
+                              context,
+                              before,
+                              controller.state,
+                              fallback: '${place.name} ziyaret edildi',
+                            );
+                          } else {
+                            showFloatingNote(
+                              context,
+                              'Ziyaret için cooldown/AP uygun değil',
+                              good: false,
+                            );
+                          }
                         }
                       : null,
                 ),
@@ -383,16 +396,14 @@ class _ExpeditionsScreenState extends State<ExpeditionsScreen> {
   void _embark(BuildContext context, GameController controller) {
     final target = _effectiveTarget(controller);
     if (target == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Tüm hedefler fethedildi. Bozkır senin!')),
-      );
+      showFloatingNote(context, 'Tüm hedefler fethedildi. Bozkır senin!');
       return;
     }
     if (controller.state.dailyActionPoints < GameController.expeditionCost) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Sefer için enerji yetmiyor. Günü bitirerek dinlen.'),
-        ),
+      showFloatingNote(
+        context,
+        'Sefer için enerji yetmiyor. Günü bitirerek dinlen.',
+        good: false,
       );
       return;
     }

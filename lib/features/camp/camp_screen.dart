@@ -9,7 +9,6 @@ import '../../core/utils/formatters.dart';
 import '../../core/widgets/info_sheet.dart';
 import '../../core/widgets/ornate.dart';
 import '../../game/data/game_info.dart';
-import '../scene/floating_text.dart';
 import '../../game/data/companion_roles.dart';
 import '../../game/data/faith_paths.dart';
 import '../../game/data/tamgas.dart';
@@ -18,6 +17,7 @@ import '../../game/models/resource.dart';
 import '../../game/state/game_controller.dart';
 import '../../game/state/game_scope.dart';
 import '../npc/npc_screen.dart';
+import '../scene/floating_text.dart';
 import '../scene/scene_atmosphere.dart';
 import '../scene/scene_background.dart';
 import '../scene/scene_detail_panel.dart';
@@ -154,9 +154,7 @@ class _CampScreenState extends State<CampScreen> {
               );
             } else {
               AudioService.instance.playSfx('denied');
-              ScaffoldMessenger.of(
-                context,
-              ).showSnackBar(const SnackBar(content: Text('Kaynak yetersiz.')));
+              showFloatingNote(context, 'Kaynak yetersiz.', good: false);
             }
           },
         ),
@@ -416,15 +414,12 @@ class _FaithPathPanel extends StatelessWidget {
                     height: 34,
                     onPressed: () {
                       final ok = controller.chooseFaithPath(path.id);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            ok
-                                ? '${path.name} yoluna girildi.'
-                                : 'Bu yol zaten seçili.',
-                          ),
-                          duration: const Duration(seconds: 2),
-                        ),
+                      showFloatingNote(
+                        context,
+                        ok
+                            ? '${path.name} yoluna girildi.'
+                            : 'Bu yol zaten seçili.',
+                        good: ok,
                       );
                     },
                   ),
@@ -492,14 +487,12 @@ class _AdvisorButton extends StatelessWidget {
         onPressed: controller.state.dailyActionPoints > 0
             ? () {
                 final ok = controller.consultAdvisor(action);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      ok
-                          ? '$label tamamlandı.'
-                          : 'Kam için cooldown/AP uygun değil.',
-                    ),
-                  ),
+                showFloatingNote(
+                  context,
+                  ok
+                      ? '$label tamamlandı.'
+                      : 'Kam için cooldown/AP uygun değil.',
+                  good: ok,
                 );
               }
             : null,
@@ -562,16 +555,23 @@ class _RitualCard extends StatelessWidget {
                           affordable &&
                           cooldownLeft == 0
                       ? () {
+                          final before = controller.state;
                           final ok = controller.performRitual(ritual.id);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                ok
-                                    ? '${ritual.name} yapıldı.'
-                                    : 'Tören koşulları uygun değil.',
-                              ),
-                            ),
-                          );
+                          if (ok) {
+                            AudioService.instance.playSfx('reward');
+                            showStateDelta(
+                              context,
+                              before,
+                              controller.state,
+                              fallback: '${ritual.name} yapıldı',
+                            );
+                          } else {
+                            showFloatingNote(
+                              context,
+                              'Tören koşulları uygun değil',
+                              good: false,
+                            );
+                          }
                         }
                       : null,
                 ),
@@ -639,16 +639,23 @@ class _BuildingCard extends StatelessWidget {
                   height: 34,
                   onPressed: building.canUpgrade && affordable
                       ? () {
+                          final before = controller.state;
                           final ok = controller.upgradeBuilding(building.id);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                ok
-                                    ? '${building.name} yükseltildi.'
-                                    : 'Kaynak yetersiz.',
-                              ),
-                            ),
-                          );
+                          if (ok) {
+                            AudioService.instance.playSfx('craft');
+                            showStateDelta(
+                              context,
+                              before,
+                              controller.state,
+                              fallback: '${building.name} yükseltildi',
+                            );
+                          } else {
+                            showFloatingNote(
+                              context,
+                              'Kaynak yetersiz',
+                              good: false,
+                            );
+                          }
                         }
                       : null,
                 ),

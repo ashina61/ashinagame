@@ -84,6 +84,16 @@ void showFloatingGain(BuildContext context, String text, {Color? color}) {
   overlay.insert(entry);
 }
 
+/// A short note floated in the game's voice instead of a material SnackBar.
+/// [good] tints it gold (a confirmation) or ember (a warning / refusal).
+void showFloatingNote(BuildContext context, String text, {bool good = true}) {
+  showFloatingGain(
+    context,
+    text,
+    color: good ? AppColors.goldBright : AppColors.ember,
+  );
+}
+
 /// Floats the net resource (and food-bag) change between two game states, e.g.
 /// "+3 Erzak, +1 Altın". Lets quick actions that only return a bool still show
 /// the gain they produced, without the controller exposing a delta. Falls back

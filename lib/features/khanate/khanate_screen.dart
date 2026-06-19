@@ -6,6 +6,7 @@ import '../../core/assets/game_assets.dart';
 import '../../core/widgets/ornate.dart';
 import '../../game/state/game_controller.dart';
 import '../../game/state/game_scope.dart';
+import '../scene/floating_text.dart';
 
 class KhanateScreen extends StatelessWidget {
   const KhanateScreen({super.key});
@@ -121,14 +122,12 @@ class KhanateScreen extends StatelessWidget {
                                     AudioService.instance.playSfx(
                                       won ? 'victory' : 'defeat',
                                     );
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text(
-                                          won
-                                              ? 'Zafer! Tahta sen geçtin.'
-                                              : 'İsyan bastırıldı; ağır kayıp.',
-                                        ),
-                                      ),
+                                    showFloatingNote(
+                                      context,
+                                      won
+                                          ? 'Zafer! Tahta sen geçtin.'
+                                          : 'İsyan bastırıldı; ağır kayıp.',
+                                      good: won,
                                     );
                                   }
                                 : null,
@@ -180,13 +179,10 @@ class _DutyTile extends StatelessWidget {
               height: 34,
               onPressed: () {
                 final ok = onTap();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      ok ? '$label yapıldı.' : 'Koşullar uygun değil.',
-                    ),
-                    duration: const Duration(seconds: 2),
-                  ),
+                showFloatingNote(
+                  context,
+                  ok ? '$label yapıldı.' : 'Koşullar uygun değil.',
+                  good: ok,
                 );
               },
             ),

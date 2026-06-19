@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../app/theme/app_colors.dart';
 import '../../app/theme/app_text_styles.dart';
 import '../../core/assets/game_assets.dart';
+import '../../core/audio/audio_service.dart';
 import '../../core/widgets/info_sheet.dart';
 import '../../core/widgets/ornate.dart';
 import '../../game/data/game_info.dart';
@@ -13,6 +14,7 @@ import '../../game/models/resource.dart';
 import '../../game/models/tribe_relation.dart';
 import '../../game/state/game_scope.dart';
 import '../khanate/khanate_screen.dart';
+import '../scene/floating_text.dart';
 
 class BoyScreen extends StatelessWidget {
   const BoyScreen({super.key});
@@ -168,17 +170,23 @@ class _RecruitPanel extends StatelessWidget {
                   height: 34,
                   onPressed: hasAp && affordable
                       ? () {
+                          final before = controller.state;
                           final ok = controller.recruit(source.id);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                ok
-                                    ? '${source.name} obana katıldı.'
-                                    : 'Aksiyon ya da kaynak yetersiz.',
-                              ),
-                              duration: const Duration(seconds: 2),
-                            ),
-                          );
+                          if (ok) {
+                            AudioService.instance.playSfx('reward');
+                            showStateDelta(
+                              context,
+                              before,
+                              controller.state,
+                              fallback: '${source.name} obana katıldı',
+                            );
+                          } else {
+                            showFloatingNote(
+                              context,
+                              'Aksiyon ya da kaynak yetersiz',
+                              good: false,
+                            );
+                          }
                         }
                       : null,
                 ),
@@ -440,9 +448,8 @@ class _Action extends StatelessWidget {
       onTap: enabled
           ? () {
               onTap();
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('$label: diplomasi işlendi.')),
-              );
+              AudioService.instance.playSfx('reward');
+              showFloatingNote(context, '$label işlendi');
             }
           : null,
       child: Opacity(

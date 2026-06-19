@@ -9,6 +9,7 @@ import '../../game/models/npc.dart';
 import '../../game/state/game_controller.dart';
 import '../../game/state/game_scope.dart';
 import '../conquest/battle_report_dialog.dart';
+import '../scene/floating_text.dart';
 
 /// Roster of named figures the leader can speak with. Each carries a living
 /// relationship that shifts as conversations play out. The framing (title,
@@ -213,15 +214,12 @@ class _DialogueSheet extends StatelessWidget {
                         return;
                       }
                       AudioService.instance.playSfx(ok ? 'coin' : 'denied');
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            ok
-                                ? controller.lastTalkFeedback ?? choice.reply
-                                : 'Konuşmak için aksiyon gerekiyor.',
-                          ),
-                          duration: const Duration(seconds: 3),
-                        ),
+                      showFloatingNote(
+                        context,
+                        ok
+                            ? controller.lastTalkFeedback ?? choice.reply
+                            : 'Konuşmak için aksiyon gerekiyor.',
+                        good: ok,
                       );
                     },
                   ),
