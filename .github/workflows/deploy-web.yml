@@ -27,11 +27,6 @@ jobs:
           channel: stable
           flutter-version: 3.44.2
           cache: true
-      # Turns Pages on automatically (build type = GitHub Actions) so no manual
-      # repo setting is needed before the first deploy.
-      - uses: actions/configure-pages@v5
-        with:
-          enablement: true
       - run: flutter pub get
       # base-href must match the project-pages path: https://<user>.github.io/ashinagame/
       - run: flutter build web --release --base-href /ashinagame/
