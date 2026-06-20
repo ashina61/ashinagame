@@ -6,6 +6,7 @@ import '../../core/assets/game_art.dart';
 import '../../core/assets/game_assets.dart';
 import '../../core/audio/audio_service.dart';
 import '../../core/utils/formatters.dart';
+import '../../core/utils/resource_visuals.dart';
 import '../../core/widgets/info_sheet.dart';
 import '../../core/widgets/ornate.dart';
 import '../../game/data/game_info.dart';
@@ -14,14 +15,12 @@ import '../../game/data/faith_paths.dart';
 import '../../game/data/tamgas.dart';
 import '../../game/models/camp_building.dart';
 import '../../game/models/resource.dart';
-import '../../game/state/game_controller.dart';
 import '../../game/state/game_scope.dart';
 import '../npc/npc_screen.dart';
 import '../research/research_screen.dart';
 import '../scene/floating_text.dart';
 import '../scene/scene_atmosphere.dart';
 import '../scene/scene_background.dart';
-import '../scene/scene_detail_panel.dart';
 import '../scene/scene_hotspot.dart';
 import '../scene/scene_hud_overlay.dart';
 
@@ -71,7 +70,7 @@ class _CampScreenState extends State<CampScreen> {
             y: y,
             iconData: icon,
             level: state.building(id)!.level,
-            onTap: () => _openBuilding(context, controller, id, label),
+            onTap: () => _openBuilding(context, id, label, icon),
           ),
     ];
 
@@ -134,80 +133,295 @@ class _CampScreenState extends State<CampScreen> {
 
   void _openBuilding(
     BuildContext context,
-    GameController controller,
     String id,
     String label,
+    IconData icon,
   ) {
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (_) => _BuildingSheet(id: id, label: label, icon: icon),
+    );
+  }
+}
+
+/// A clean, framed building card: a gold medallion glyph, the level, and the
+/// production / cost / build-time laid out as labelled icon rows — not a wall
+/// of text. The single building interaction on the Oba hero screen.
+class _BuildingSheet extends StatelessWidget {
+  const _BuildingSheet({
+    required this.id,
+    required this.label,
+    required this.icon,
+  });
+
+  final String id;
+  final String label;
+  final IconData icon;
+
+  @override
+  Widget build(BuildContext context) {
+    final controller = GameScope.of(context);
     final b = controller.state.building(id);
-    if (b == null) return;
+    if (b == null) return const SizedBox.shrink();
     final affordable = b.upgradeCost.entries.every(
       (e) => controller.state.resource(e.key) >= e.value,
     );
     final queued = controller.buildingQueued(id);
     final daysLeft = controller.buildDaysLeft(id);
-    final yield = b.dailyYield;
-    final production = yield.isEmpty
-        ? ''
-        : '\n\nÜretim/gün: ${Formatters.resourceDelta(yield)}';
+    final days = (b.buildDays - controller.researchBonuses.buildDaysReduction)
+        .clamp(1, 99);
 
-    final SceneAction action;
-    if (queued) {
-      action = SceneAction(
-        label: 'İnşa ediliyor • $daysLeft gün',
-        subtitle: 'Usta ekip çalışıyor; günü bitirdikçe ilerler.',
-        primary: true,
-        enabled: false,
-        onTap: () {},
-      );
-    } else if (!b.canUpgrade) {
-      action = SceneAction(
-        label: 'Azami seviye',
-        primary: true,
-        enabled: false,
-        onTap: () {},
-      );
-    } else {
-      action = SceneAction(
-        label: 'Yükselt (Lv.${b.level + 1})',
-        subtitle: 'Maliyet: ${Formatters.resourceDelta({
-              for (final e in b.upgradeCost.entries) e.key: -e.value
-            })} • Süre: ${b.buildDays} gün',
-        primary: true,
-        enabled: affordable,
-        onTap: () {
-          final ok = controller.upgradeBuilding(id);
-          if (ok) {
-            AudioService.instance.playSfx('craft');
-            showFloatingNote(
-                context, '$label inşaatı başladı (${b.buildDays} gün)');
-          } else {
-            AudioService.instance.playSfx('denied');
-            showFloatingNote(context, 'Kaynak yetersiz.', good: false);
-          }
-        },
-      );
-    }
-
-    showSceneDetail(
-      context,
-      title: '$label • Lv.${b.level}/${b.maxLevel}',
-      description: '${b.description}\n\n${b.effectDescription}$production',
-      actions: [
-        if (id == 'academy')
-          SceneAction(
-            label: 'Araştırma Ağacı',
-            subtitle: '${controller.state.researchPoints} puan • '
-                '+${controller.researchPerDay}/gün',
-            primary: false,
-            enabled: true,
-            onTap: () => Navigator.of(context).push(
-              MaterialPageRoute<void>(
-                builder: (_) => const ResearchScreen(),
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.all(8),
+        child: OrnatePanel(
+          margin: EdgeInsets.zero,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    width: 46,
+                    height: 46,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: AppColors.ink.withValues(alpha: 0.6),
+                      border: Border.all(color: AppColors.gold, width: 1.6),
+                    ),
+                    child: Icon(icon, color: AppColors.goldBright, size: 24),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(label,
+                            style: AppTextStyles.title.copyWith(fontSize: 18)),
+                        Text(
+                          '${b.category} • Seviye ${b.level}/${b.maxLevel}',
+                          style: AppTextStyles.meta,
+                        ),
+                      ],
+                    ),
+                  ),
+                  _LevelDots(level: b.level, max: b.maxLevel),
+                ],
               ),
+              const SizedBox(height: 10),
+              Text(b.description, style: AppTextStyles.body),
+              const SizedBox(height: 4),
+              Text(
+                b.effectDescription,
+                style: AppTextStyles.meta.copyWith(color: AppColors.goldBright),
+              ),
+              const Divider(height: 18, color: AppColors.goldDim),
+              if (b.dailyYield.isNotEmpty)
+                _StatRow(
+                  icon: Icons.trending_up,
+                  label: 'Üretim/gün',
+                  child: _ResChips(b.dailyYield, positive: true),
+                ),
+              if (b.canUpgrade) ...[
+                _StatRow(
+                  icon: Icons.payments,
+                  label: 'Yükseltme',
+                  child: _ResChips(b.upgradeCost),
+                ),
+                _StatRow(
+                  icon: Icons.schedule,
+                  label: 'İnşa süresi',
+                  child: Text('$days gün', style: AppTextStyles.value),
+                ),
+              ],
+              const SizedBox(height: 12),
+              if (id == 'academy') ...[
+                GoldButton(
+                  label: 'ARAŞTIRMA AĞACI '
+                      '(${controller.state.researchPoints} puan)',
+                  height: 42,
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) => const ResearchScreen(),
+                      ),
+                    );
+                  },
+                ),
+                const SizedBox(height: 8),
+              ],
+              _UpgradeButton(
+                id: id,
+                label: label,
+                queued: queued,
+                daysLeft: daysLeft,
+                days: days.toInt(),
+                canUpgrade: b.canUpgrade,
+                affordable: affordable,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Row of small filled/empty pips showing a building's level out of its max.
+class _LevelDots extends StatelessWidget {
+  const _LevelDots({required this.level, required this.max});
+
+  final int level;
+  final int max;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        for (var i = 0; i < max; i++)
+          Padding(
+            padding: const EdgeInsets.only(left: 3),
+            child: Icon(
+              i < level ? Icons.circle : Icons.circle_outlined,
+              size: 9,
+              color: i < level ? AppColors.goldBright : AppColors.goldDim,
             ),
           ),
-        action,
       ],
+    );
+  }
+}
+
+/// A labelled stat line: glyph + label on the left, content on the right.
+class _StatRow extends StatelessWidget {
+  const _StatRow({
+    required this.icon,
+    required this.label,
+    required this.child,
+  });
+
+  final IconData icon;
+  final String label;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        children: [
+          Icon(icon, size: 16, color: AppColors.stone),
+          const SizedBox(width: 6),
+          SizedBox(
+            width: 96,
+            child: Text(label, style: AppTextStyles.meta),
+          ),
+          Expanded(child: child),
+        ],
+      ),
+    );
+  }
+}
+
+/// A wrap of resource icon + amount chips, used for production and cost lines.
+class _ResChips extends StatelessWidget {
+  const _ResChips(this.amounts, {this.positive = false});
+
+  final Map<ResourceType, int> amounts;
+  final bool positive;
+
+  @override
+  Widget build(BuildContext context) {
+    return Wrap(
+      spacing: 10,
+      runSpacing: 4,
+      children: [
+        for (final e in amounts.entries)
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Image.asset(
+                ResourceVisuals.icon(e.key),
+                width: 16,
+                height: 16,
+                errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+              ),
+              const SizedBox(width: 3),
+              Text(
+                positive ? '+${e.value}' : '${e.value}',
+                style: AppTextStyles.value.copyWith(
+                  fontSize: 13,
+                  color: positive ? AppColors.success : AppColors.parchment,
+                ),
+              ),
+            ],
+          ),
+      ],
+    );
+  }
+}
+
+/// The primary build/upgrade action, reflecting queue and affordability.
+class _UpgradeButton extends StatelessWidget {
+  const _UpgradeButton({
+    required this.id,
+    required this.label,
+    required this.queued,
+    required this.daysLeft,
+    required this.days,
+    required this.canUpgrade,
+    required this.affordable,
+  });
+
+  final String id;
+  final String label;
+  final bool queued;
+  final int daysLeft;
+  final int days;
+  final bool canUpgrade;
+  final bool affordable;
+
+  @override
+  Widget build(BuildContext context) {
+    final controller = GameScope.of(context);
+    if (queued) {
+      return DarkButton(
+        label: 'İNŞA EDİLİYOR • $daysLeft GÜN',
+        height: 44,
+        onPressed: null,
+      );
+    }
+    if (!canUpgrade) {
+      return const DarkButton(
+        label: 'AZAMİ SEVİYE',
+        height: 44,
+        onPressed: null,
+      );
+    }
+    return GoldButton(
+      label: 'YÜKSELT ($days GÜN)',
+      height: 44,
+      onPressed: affordable
+          ? () {
+              final ok = controller.upgradeBuilding(id);
+              Navigator.of(context).pop();
+              if (ok) {
+                AudioService.instance.playSfx('craft');
+                showFloatingNote(
+                  context,
+                  '$label inşaatı başladı ($days gün)',
+                );
+              } else {
+                AudioService.instance.playSfx('denied');
+                showFloatingNote(context, 'Kaynak yetersiz.', good: false);
+              }
+            }
+          : null,
     );
   }
 }
