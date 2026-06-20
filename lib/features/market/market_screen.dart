@@ -467,72 +467,92 @@ class _MarketScreenState extends State<MarketScreen> {
     final controller = GameScope.of(context);
     final state = controller.state;
     final day = state.day.day;
-    return ListView(
-      padding: const EdgeInsets.only(top: 2, bottom: 8),
+    return GridView.count(
+      crossAxisCount: 2,
+      padding: const EdgeInsets.fromLTRB(10, 4, 10, 8),
+      crossAxisSpacing: 8,
+      mainAxisSpacing: 8,
+      childAspectRatio: 1.55,
       children: [
         for (final (type, amount, goodId) in _sellLots)
-          OrnatePanel(
-            margin: const EdgeInsets.fromLTRB(12, 0, 12, 6),
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-            child: Row(
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(10),
+              gradient: const LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [Color(0xFF1A140C), Color(0xFF241B10)],
+              ),
+              border: Border.all(color: AppColors.goldDim, width: 1.2),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Image.asset(goodIcon(goodId), width: 30, height: 30),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        '$amount ${type.label}',
-                        style: AppTextStyles.bodyStrong.copyWith(fontSize: 14),
-                      ),
-                      Text(
-                        'Depoda: ${state.resource(type)}',
-                        style: AppTextStyles.meta.copyWith(fontSize: 11),
-                      ),
-                    ],
-                  ),
-                ),
                 Row(
                   children: [
-                    Image.asset(GameAssets.iconCoinGold, width: 14, height: 14),
-                    const SizedBox(width: 3),
-                    Text(
-                      '+${MarketLogic.sellPriceFor(MarketGoods.byId(goodId)!, day)}',
-                      style: AppTextStyles.value.copyWith(fontSize: 14),
+                    Image.asset(goodIcon(goodId), width: 26, height: 26),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        '$amount ${type.label}',
+                        style: AppTextStyles.bodyStrong.copyWith(fontSize: 13),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
                   ],
                 ),
-                const SizedBox(width: 8),
-                SkinnedButton(
-                  label: 'SAT',
-                  variant: SkinnedButtonVariant.secondary,
-                  height: 32,
-                  onPressed: () {
-                    final price = MarketLogic.sellPriceFor(
-                      MarketGoods.byId(goodId)!,
-                      day,
-                    );
-                    final done = controller.tryTrade(
-                      '$amount ${type.label} satışı',
-                      {type: -amount, ResourceType.gold: price},
-                    );
-                    AudioService.instance.playSfx(done ? 'coin' : 'denied');
-                    if (done) {
-                      // A light floating gain instead of stacked snackbars, so
-                      // rapid sales feel like coins dropping, not a log spam.
-                      showFloatingGain(
-                        context,
-                        '+$price Altın',
-                        color: AppColors.success,
+                const SizedBox(height: 2),
+                Row(
+                  children: [
+                    Text(
+                      'Depoda: ${state.resource(type)}',
+                      style: AppTextStyles.meta.copyWith(fontSize: 11),
+                    ),
+                    const Spacer(),
+                    Image.asset(GameAssets.iconCoinGold, width: 13, height: 13),
+                    const SizedBox(width: 2),
+                    Text(
+                      '+${MarketLogic.sellPriceFor(MarketGoods.byId(goodId)!, day)}',
+                      style: AppTextStyles.value.copyWith(
+                        fontSize: 13,
+                        color: AppColors.goldBright,
+                      ),
+                    ),
+                  ],
+                ),
+                const Spacer(),
+                SizedBox(
+                  width: double.infinity,
+                  child: SkinnedButton(
+                    label: 'SAT',
+                    variant: SkinnedButtonVariant.secondary,
+                    height: 32,
+                    onPressed: () {
+                      final price = MarketLogic.sellPriceFor(
+                        MarketGoods.byId(goodId)!,
+                        day,
                       );
-                    } else {
-                      _notify(
-                        context,
-                        'Depoda yeterli ${type.label.toLowerCase()} yok.',
+                      final done = controller.tryTrade(
+                        '$amount ${type.label} satışı',
+                        {type: -amount, ResourceType.gold: price},
                       );
-                    }
-                  },
+                      AudioService.instance.playSfx(done ? 'coin' : 'denied');
+                      if (done) {
+                        showFloatingGain(
+                          context,
+                          '+$price Altın',
+                          color: AppColors.success,
+                        );
+                      } else {
+                        _notify(
+                          context,
+                          'Depoda yeterli ${type.label.toLowerCase()} yok.',
+                        );
+                      }
+                    },
+                  ),
                 ),
               ],
             ),
