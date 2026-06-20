@@ -23,10 +23,18 @@ class SceneHudOverlay extends StatelessWidget {
       ResourceType.horse,
       ResourceType.reputation,
     ],
+    this.production = const {},
+    this.foodCap,
     super.key,
   });
 
   final List<ResourceType> resources;
+
+  /// Per-day production, surfaced as small `+N` rates under each resource.
+  final Map<ResourceType, int> production;
+
+  /// When set, the food cell reads `stock/cap` so a full granary is obvious.
+  final int? foodCap;
 
   @override
   Widget build(BuildContext context) {
@@ -38,8 +46,14 @@ class SceneHudOverlay extends StatelessWidget {
         ResourceBar(
           entries: [
             for (final type in resources)
-              (ResourceVisuals.icon(type), '${state.resource(type)}'),
+              (
+                ResourceVisuals.icon(type),
+                type == ResourceType.food && foodCap != null
+                    ? '${state.resource(type)}/$foodCap'
+                    : '${state.resource(type)}',
+              ),
           ],
+          rates: [for (final type in resources) production[type] ?? 0],
           onEntryTap: (i) => showResourceInfoSheet(
             context,
             resources[i],

@@ -23,6 +23,7 @@ import '../scene/scene_atmosphere.dart';
 import '../scene/scene_background.dart';
 import '../scene/scene_detail_panel.dart';
 import '../scene/scene_hotspot.dart';
+import '../scene/scene_hud_overlay.dart';
 
 /// "Oba" — the player's settlement, drawn as a living encampment rather than a
 /// list of buildings. Each structure is a tappable pin over the camp scene; a
@@ -83,11 +84,21 @@ class _CampScreenState extends State<CampScreen> {
         SafeArea(
           child: Column(
             children: [
-              OrnateHeader(
-                title: 'Oba',
+              SceneHudOverlay(
+                resources: const [
+                  ResourceType.gold,
+                  ResourceType.food,
+                  ResourceType.wood,
+                  ResourceType.iron,
+                  ResourceType.horse,
+                ],
+                production: controller.dailyProduction,
+                foodCap: controller.storageCapacity,
+              ),
+              _ObaTitleStrip(
+                onToggle: () => setState(() => _list = !_list),
                 onInfo: () => showHelpSheet(context, HelpId.oba),
               ),
-              _IdentityBand(onToggle: () => setState(() => _list = !_list)),
               Expanded(
                 child: _list
                     ? const _ObaList()
@@ -200,102 +211,102 @@ class _CampScreenState extends State<CampScreen> {
   }
 }
 
-/// Compact oba identity + stats strip with the scene/list toggle.
-class _IdentityBand extends StatelessWidget {
-  const _IdentityBand({required this.onToggle});
+/// Slim identity strip: tamga, clan name, the two stats that matter at a
+/// glance (happiness and housing), a live build chip, and the scene/list and
+/// info toggles — one tight row instead of a tall stat block.
+class _ObaTitleStrip extends StatelessWidget {
+  const _ObaTitleStrip({required this.onToggle, required this.onInfo});
 
   final VoidCallback onToggle;
+  final VoidCallback onInfo;
 
   @override
   Widget build(BuildContext context) {
     final controller = GameScope.of(context);
     final state = controller.state;
-    final production = controller.dailyProduction;
     final job = state.buildQueue.isEmpty ? null : state.buildQueue.first;
-    final jobName =
-        job == null ? null : state.building(job.buildingId)?.name ?? '';
-    return OrnatePanel(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+
+    return Container(
+      margin: const EdgeInsets.fromLTRB(8, 2, 8, 4),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: const Color(0xCC14100A),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: AppColors.goldDim.withValues(alpha: 0.55)),
+      ),
+      child: Row(
         children: [
-          Row(
-            children: [
-              Image.asset(
-                Tamgas.byId(state.tamga).asset,
-                width: 40,
-                height: 40,
-                errorBuilder: (_, __, ___) => const SizedBox(width: 40),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Text(state.clan.name, style: AppTextStyles.title),
-              ),
-              GestureDetector(
-                onTap: onToggle,
-                child: const Icon(Icons.list_alt, color: AppColors.goldBright),
-              ),
-            ],
+          Image.asset(
+            Tamgas.byId(state.tamga).asset,
+            width: 26,
+            height: 26,
+            errorBuilder: (_, __, ___) => const SizedBox(width: 26),
           ),
-          const SizedBox(height: 8),
-          Wrap(
-            spacing: 14,
-            runSpacing: 4,
-            children: [
-              _ObaStat('Nüfus', state.resource(ResourceType.population)),
-              _ObaStat('Mutluluk', controller.happiness),
-              _ObaStat('Moral', state.resource(ResourceType.morale)),
-              _ObaStat('Sadakat', state.peopleApproval),
-              _ObaStat('Güvenlik', state.councilApproval),
-              _ObaStat('Erzak', state.resource(ResourceType.food)),
-            ],
-          ),
-          Padding(
-            padding: const EdgeInsets.only(top: 4),
+          const SizedBox(width: 8),
+          Expanded(
             child: Text(
-              'Konut kapasitesi: ${state.resource(ResourceType.population)} / '
-              '${controller.populationCapacity} • Ana Çadır büyüdükçe artar',
-              style: AppTextStyles.meta.copyWith(fontSize: 11),
+              state.clan.name,
+              style: AppTextStyles.bodyStrong,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
           ),
-          if (production.isNotEmpty) ...[
-            const SizedBox(height: 6),
-            Row(
-              children: [
-                const Icon(Icons.trending_up,
-                    size: 14, color: AppColors.success),
-                const SizedBox(width: 5),
-                Expanded(
-                  child: Text(
-                    'Üretim/gün: ${Formatters.resourceDelta(production)}',
-                    style: AppTextStyles.meta
-                        .copyWith(color: AppColors.success, fontSize: 11),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ],
+          _ObaChip(
+            Icons.sentiment_satisfied_alt,
+            '${controller.happiness}',
+          ),
+          _ObaChip(
+            Icons.groups,
+            '${state.resource(ResourceType.population)}/'
+            '${controller.populationCapacity}',
+          ),
+          if (job != null)
+            _ObaChip(
+              Icons.construction,
+              '${job.daysLeft}g',
+              color: AppColors.goldBright,
             ),
-          ],
-          if (jobName != null)
-            Padding(
-              padding: const EdgeInsets.only(top: 4),
-              child: Row(
-                children: [
-                  const Icon(Icons.construction,
-                      size: 14, color: AppColors.goldBright),
-                  const SizedBox(width: 5),
-                  Expanded(
-                    child: Text(
-                      'İnşa: $jobName • ${job!.daysLeft} gün',
-                      style: AppTextStyles.meta
-                          .copyWith(color: AppColors.goldBright, fontSize: 11),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ],
-              ),
+          GestureDetector(
+            onTap: onToggle,
+            child: const Icon(Icons.list_alt,
+                color: AppColors.goldBright, size: 22),
+          ),
+          const SizedBox(width: 10),
+          GestureDetector(
+            onTap: onInfo,
+            child: const Icon(Icons.info_outline,
+                color: AppColors.stone, size: 20),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// A tiny icon + value pill used in the oba title strip.
+class _ObaChip extends StatelessWidget {
+  const _ObaChip(this.icon, this.value, {this.color});
+
+  final IconData icon;
+  final String value;
+  final Color? color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(right: 12),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 15, color: color ?? AppColors.stone),
+          const SizedBox(width: 3),
+          Text(
+            value,
+            style: AppTextStyles.meta.copyWith(
+              color: color ?? AppColors.parchment,
+              fontSize: 12,
             ),
+          ),
         ],
       ),
     );
@@ -438,30 +449,6 @@ class _ObaList extends StatelessWidget {
         const SectionPlaque('YAPILAR'),
         for (final building in state.buildings)
           _BuildingCard(building: building),
-      ],
-    );
-  }
-}
-
-class _ObaStat extends StatelessWidget {
-  const _ObaStat(this.label, this.value);
-
-  final String label;
-  final int value;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(
-          '$label ',
-          style: AppTextStyles.meta.copyWith(color: AppColors.stone),
-        ),
-        Text(
-          '$value',
-          style: AppTextStyles.value.copyWith(color: AppColors.goldBright),
-        ),
       ],
     );
   }

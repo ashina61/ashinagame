@@ -169,9 +169,18 @@ class _MedallionButton extends StatelessWidget {
 
 /// Top resource strip on the five-slot ornate bar.
 class ResourceBar extends StatelessWidget {
-  const ResourceBar({required this.entries, this.onEntryTap, super.key});
+  const ResourceBar({
+    required this.entries,
+    this.rates,
+    this.onEntryTap,
+    super.key,
+  });
 
   final List<(String asset, String value)> entries;
+
+  /// Optional per-day production, shown as a small green `+N` under the value
+  /// (Travian/Ikariam style). Same length as [entries] when provided.
+  final List<int>? rates;
 
   /// Tapped with the entry index — used to pop a resource tooltip. Null leaves
   /// the bar as a plain readout.
@@ -203,11 +212,28 @@ class ResourceBar extends StatelessWidget {
                     Image.asset(entries[i].$1, width: 22, height: 22),
                     const SizedBox(width: 4),
                     Flexible(
-                      child: Text(
-                        entries[i].$2,
-                        style: AppTextStyles.value.copyWith(fontSize: 13),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            entries[i].$2,
+                            style: AppTextStyles.value.copyWith(fontSize: 13),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          if (rates != null &&
+                              i < rates!.length &&
+                              rates![i] > 0)
+                            Text(
+                              '+${rates![i]}',
+                              style: AppTextStyles.meta.copyWith(
+                                fontSize: 9,
+                                height: 1,
+                                color: AppColors.success,
+                              ),
+                            ),
+                        ],
                       ),
                     ),
                   ],
