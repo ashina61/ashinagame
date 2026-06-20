@@ -89,6 +89,25 @@ class ResearchData {
       requires: ['scholarship'],
       effectDescription: 'Akademi araştırma üretimi bir kat daha artar.',
     ),
+    // --- Askerî ---
+    ResearchTech(
+      id: 'conscription',
+      name: 'Tımar Düzeni',
+      description:
+          'Topraklı askerlik, daha kalabalık bir ordu beslemeyi sağlar.',
+      category: 'Askerî',
+      cost: 45,
+      effectDescription: 'Ordu kapasitesi +30.',
+    ),
+    ResearchTech(
+      id: 'steel_forge',
+      name: 'Çelik Ocağı',
+      description: 'Su verme tekniği, daha çok savaşçıyı donatır.',
+      category: 'Askerî',
+      cost: 80,
+      requires: ['conscription', 'smithing'],
+      effectDescription: 'Ordu kapasitesi ek olarak +40.',
+    ),
   ];
 
   static ResearchTech? byId(String id) {
@@ -111,6 +130,8 @@ class ResearchData {
       buildDaysReduction: done.contains('engineering') ? 1 : 0,
       researchMult: (done.contains('scholarship') ? 1.5 : 1.0) *
           (done.contains('university') ? 2.0 : 1.0),
+      armyCapacityBonus: (done.contains('conscription') ? 30 : 0) +
+          (done.contains('steel_forge') ? 40 : 0),
     );
   }
 }

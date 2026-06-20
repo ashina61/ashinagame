@@ -1974,12 +1974,29 @@ class GameController extends ChangeNotifier {
   /// How many wounded the healer's çadırı mends each day.
   int get healCapacity => 2 + ((_state.building('healer')?.level ?? 1) - 1) * 2;
 
+  /// How large a host the oba can keep: the training ground is its barracks,
+  /// the main tent quarters officers, and the military lane of research widens
+  /// the muster roll. Recruitment stops at this ceiling, so fielding a great
+  /// army for conquest means building and researching toward it.
+  int get armyCapacity {
+    var cap = 20 + researchBonuses.armyCapacityBonus;
+    cap += (_state.building('training')?.level ?? 0) * 12;
+    cap += (_state.building('main_tent')?.level ?? 0) * 5;
+    return cap;
+  }
+
+  /// Soldiers (fit and wounded) the oba can still take before hitting capacity.
+  int get armyHeadroom =>
+      armyCapacity - _state.totalSoldiers - _state.totalWounded;
+
   /// Raises [qty] soldiers of a type, paying gold (and horses for riders).
+  /// Blocked when the muster roll would overflow [armyCapacity].
   bool recruitUnit(String unitId, int qty) {
     final unit = UnitTypes.byId(unitId);
     if (unit == null || qty <= 0 || _state.dailyActionPoints < 1) {
       return false;
     }
+    if (qty > armyHeadroom) return false;
     final cost = UnitTypes.recruitCost(unit, qty);
     for (final entry in cost.entries) {
       if (_state.resource(entry.key) < entry.value) {

@@ -49,11 +49,13 @@ class _ArmyScreenState extends State<ArmyScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Asker: ${state.totalSoldiers}',
+                          'Asker: ${state.totalSoldiers} / '
+                          '${controller.armyCapacity}',
                           style: AppTextStyles.bodyStrong,
                         ),
                         Text(
-                          'Yaralı: ${state.totalWounded}',
+                          'Yaralı: ${state.totalWounded} • Kışla ve Tımar '
+                          'düzeni kapasiteyi büyütür',
                           style: AppTextStyles.meta,
                         ),
                       ],
@@ -148,6 +150,7 @@ class _UnitPanel extends StatelessWidget {
       (e) => state.resource(e.key) >= e.value,
     );
     final hasAp = state.dailyActionPoints > 0;
+    final hasRoom = controller.armyHeadroom > 0;
     final costText =
         cost.entries.map((e) => '${e.value} ${e.key.label}').join(', ');
 
@@ -178,14 +181,19 @@ class _UnitPanel extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                child: Text('Bedel: $costText', style: AppTextStyles.meta),
+                child: Text(
+                  hasRoom ? 'Bedel: $costText' : 'Ordu kapasitesi dolu',
+                  style: AppTextStyles.meta.copyWith(
+                    color: hasRoom ? null : AppColors.danger,
+                  ),
+                ),
               ),
               SizedBox(
                 width: 110,
                 child: DarkButton(
                   label: 'TOPLA',
                   height: 34,
-                  onPressed: hasAp && affordable
+                  onPressed: hasAp && affordable && hasRoom
                       ? () {
                           final ok = controller.recruitUnit(unit.id, 1);
                           AudioService.instance.playSfx(ok ? 'coin' : 'denied');
@@ -194,7 +202,7 @@ class _UnitPanel extends StatelessWidget {
                               content: Text(
                                 ok
                                     ? '${unit.name} orduya katıldı.'
-                                    : 'Aksiyon ya da kaynak yetersiz.',
+                                    : 'Aksiyon, kaynak ya da kapasite yetersiz.',
                               ),
                               duration: const Duration(seconds: 2),
                             ),

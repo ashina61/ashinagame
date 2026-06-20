@@ -1734,4 +1734,39 @@ void main() {
       lessThan(grimPop),
     );
   });
+
+  test('army capacity gates recruitment and grows with barracks and research',
+      () {
+    final base = StarterGameData.create();
+    final controller = GameController(
+      base.copyWith(
+        resources: {
+          ...base.resources,
+          ResourceType.gold: 100000,
+          ResourceType.horse: 200,
+        },
+      ),
+    );
+    final cap = controller.armyCapacity;
+    expect(cap, greaterThan(0));
+    // Cannot recruit beyond capacity in one go.
+    expect(controller.recruitUnit('foot_sword', cap + 1), isFalse);
+
+    // A bigger training ground (the barracks) widens the muster roll.
+    final trained = GameController(
+      base.copyWith(
+        buildings: [
+          for (final b in base.buildings)
+            b.id == 'training' ? b.copyWith(level: 3) : b,
+        ],
+      ),
+    );
+    expect(trained.armyCapacity, greaterThan(cap));
+
+    // The military research lane widens it further.
+    final researched = GameController(
+      base.copyWith(researchedTechs: const ['conscription']),
+    );
+    expect(researched.armyCapacity, cap + 30);
+  });
 }

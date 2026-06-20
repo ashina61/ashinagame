@@ -17,7 +17,7 @@ import '../scene/floating_text.dart';
 class ResearchScreen extends StatelessWidget {
   const ResearchScreen({super.key});
 
-  static const _categories = ['Ekonomi', 'Altyapı', 'Bilim'];
+  static const _categories = ['Ekonomi', 'Altyapı', 'Bilim', 'Askerî'];
 
   @override
   Widget build(BuildContext context) {

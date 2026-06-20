@@ -42,6 +42,7 @@ class ResearchBonuses {
     this.storageBonus = 0,
     this.buildDaysReduction = 0,
     this.researchMult = 1.0,
+    this.armyCapacityBonus = 0,
   });
 
   /// Multiplier on food production (Tarım).
@@ -67,4 +68,7 @@ class ResearchBonuses {
 
   /// Multiplier on daily research output (Üniversite).
   final double researchMult;
+
+  /// Flat extra army capacity from the military lane (Tımar, Çelik Ocağı).
+  final int armyCapacityBonus;
 }
