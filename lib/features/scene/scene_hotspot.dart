@@ -22,6 +22,7 @@ class SceneHotspot {
     this.locked = false,
     this.lockHint,
     this.badge,
+    this.level,
     this.onTap,
   });
 
@@ -44,6 +45,9 @@ class SceneHotspot {
 
   /// Small count shown on the pin (e.g. an unread event), null to hide.
   final String? badge;
+
+  /// Building level, shown as a small gold "Lv" chip on the pin, null to hide.
+  final int? level;
 
   final VoidCallback? onTap;
 }
@@ -142,6 +146,31 @@ class _SceneHotspotWidgetState extends State<SceneHotspotWidget>
                 ),
                 if (locked)
                   const Icon(Icons.lock, size: 18, color: AppColors.sand),
+                if (hot.level != null && !locked)
+                  Positioned(
+                    right: -1,
+                    bottom: -1,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 4,
+                        vertical: 1,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.gold,
+                        borderRadius: BorderRadius.circular(7),
+                        border: Border.all(color: AppColors.ink, width: 1),
+                      ),
+                      child: Text(
+                        '${hot.level}',
+                        style: AppTextStyles.meta.copyWith(
+                          color: AppColors.ink,
+                          fontSize: 10,
+                          height: 1,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
                 if (hot.badge != null)
                   Positioned(
                     right: 2,

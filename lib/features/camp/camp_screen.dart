@@ -39,20 +39,22 @@ class CampScreen extends StatefulWidget {
 class _CampScreenState extends State<CampScreen> {
   bool _list = false;
 
-  /// Each oba structure placed around the settlement scene.
+  /// Each oba structure placed around the settlement scene. Pins use clean,
+  /// uniform glyphs (not the building art) so the map reads as a designed game
+  /// board and stays consistent regardless of which PNGs are in flight.
   static const _spots =
-      <(String id, String label, double x, double y, String icon)>[
-    ('main_tent', 'Ana Çadır', 0.5, 0.3, GameArt.obaMainTent),
-    ('watchtower', 'Gözcü Kulesi', 0.85, 0.22, GameArt.obaWatchtower),
-    ('storage', 'Depo', 0.2, 0.46, GameArt.obaStorage),
-    ('pen', 'Ağıl', 0.8, 0.48, GameArt.obaHorsePen),
-    ('market_tent', 'Pazar Çadırı', 0.5, 0.56, GameArt.obaMarketTent),
-    ('workshop', 'Atölye', 0.16, 0.72, GameArt.obaWorkshop),
-    ('academy', 'Akademi', 0.3, 0.56, GameArt.obaShamanTentAlt),
-    ('kam_tent', 'Kam Çadırı', 0.34, 0.78, GameArt.obaShamanTent),
-    ('sacred_fire', 'Ritüel Ateşi', 0.66, 0.78, GameArt.obaRitualFire),
-    ('healer', 'Şifacı Çadırı', 0.64, 0.66, GameArt.obaBigTent),
-    ('training', 'Eğitim Alanı', 0.86, 0.74, GameAssets.iconSwordsCrossed),
+      <(String id, String label, double x, double y, IconData icon)>[
+    ('main_tent', 'Ana Çadır', 0.5, 0.3, Icons.festival),
+    ('watchtower', 'Gözcü Kulesi', 0.85, 0.22, Icons.visibility),
+    ('storage', 'Depo', 0.2, 0.46, Icons.warehouse),
+    ('pen', 'Ağıl', 0.8, 0.48, Icons.pets),
+    ('market_tent', 'Pazar Çadırı', 0.5, 0.56, Icons.storefront),
+    ('workshop', 'Atölye', 0.16, 0.72, Icons.handyman),
+    ('academy', 'Akademi', 0.3, 0.56, Icons.menu_book),
+    ('kam_tent', 'Kam Çadırı', 0.34, 0.78, Icons.auto_awesome),
+    ('sacred_fire', 'Ritüel Ateşi', 0.66, 0.78, Icons.local_fire_department),
+    ('healer', 'Şifacı Çadırı', 0.64, 0.66, Icons.medical_services),
+    ('training', 'Eğitim Alanı', 0.86, 0.74, Icons.shield),
   ];
 
   @override
@@ -67,8 +69,9 @@ class _CampScreenState extends State<CampScreen> {
             title: label,
             x: x,
             y: y,
-            icon: icon,
-            onTap: () => _openBuilding(context, controller, id, label, icon),
+            iconData: icon,
+            level: state.building(id)!.level,
+            onTap: () => _openBuilding(context, controller, id, label),
           ),
     ];
 
@@ -134,7 +137,6 @@ class _CampScreenState extends State<CampScreen> {
     GameController controller,
     String id,
     String label,
-    String icon,
   ) {
     final b = controller.state.building(id);
     if (b == null) return;
@@ -189,7 +191,6 @@ class _CampScreenState extends State<CampScreen> {
     showSceneDetail(
       context,
       title: '$label • Lv.${b.level}/${b.maxLevel}',
-      icon: icon,
       description: '${b.description}\n\n${b.effectDescription}$production',
       actions: [
         if (id == 'academy')
