@@ -17,6 +17,7 @@ import '../../game/models/resource.dart';
 import '../../game/state/game_controller.dart';
 import '../../game/state/game_scope.dart';
 import '../npc/npc_screen.dart';
+import '../research/research_screen.dart';
 import '../scene/floating_text.dart';
 import '../scene/scene_atmosphere.dart';
 import '../scene/scene_background.dart';
@@ -46,6 +47,7 @@ class _CampScreenState extends State<CampScreen> {
     ('pen', 'Ağıl', 0.8, 0.48, GameArt.obaHorsePen),
     ('market_tent', 'Pazar Çadırı', 0.5, 0.56, GameArt.obaMarketTent),
     ('workshop', 'Atölye', 0.16, 0.72, GameArt.obaWorkshop),
+    ('academy', 'Akademi', 0.3, 0.56, GameArt.obaShamanTentAlt),
     ('kam_tent', 'Kam Çadırı', 0.34, 0.78, GameArt.obaShamanTent),
     ('sacred_fire', 'Ritüel Ateşi', 0.66, 0.78, GameArt.obaRitualFire),
     ('healer', 'Şifacı Çadırı', 0.64, 0.66, GameArt.obaBigTent),
@@ -178,7 +180,22 @@ class _CampScreenState extends State<CampScreen> {
       title: '$label • Lv.${b.level}/${b.maxLevel}',
       icon: icon,
       description: '${b.description}\n\n${b.effectDescription}$production',
-      actions: [action],
+      actions: [
+        if (id == 'academy')
+          SceneAction(
+            label: 'Araştırma Ağacı',
+            subtitle: '${controller.state.researchPoints} puan • '
+                '+${controller.researchPerDay}/gün',
+            primary: false,
+            enabled: true,
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (_) => const ResearchScreen(),
+              ),
+            ),
+          ),
+        action,
+      ],
     );
   }
 }

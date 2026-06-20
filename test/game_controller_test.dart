@@ -3,6 +3,7 @@ import 'dart:math';
 
 import 'package:ashinagame/game/data/achievements.dart';
 import 'package:ashinagame/game/data/market_goods.dart';
+import 'package:ashinagame/game/data/research_data.dart';
 import 'package:ashinagame/game/data/starter_game_data.dart';
 import 'package:ashinagame/game/logic/market_logic.dart';
 import 'package:ashinagame/game/logic/unlock_logic.dart';
@@ -1633,5 +1634,40 @@ void main() {
     final spentMerchant =
         goldB - withMerchant.state.resource(ResourceType.gold);
     expect(spentMerchant, lessThan(spentPlain));
+  });
+
+  test('the academy accrues research points and unlocks techs with effects', () {
+    final controller = GameController(StarterGameData.create());
+    // Academy starts at level 1, so a day yields its base research output.
+    expect(controller.researchPerDay, ResearchData.pointsPerLevel);
+    expect(controller.state.researchPoints, 0);
+    controller.endDay();
+    expect(controller.state.researchPoints, ResearchData.pointsPerLevel);
+
+    // Cannot research a gated tech, nor afford one without points.
+    expect(controller.canResearch('husbandry'), isFalse); // needs agriculture
+    expect(controller.canResearch('agriculture'), isFalse); // no points yet
+
+    // Grant points and research Tarım: food production must jump by +50%.
+    final funded = GameController(
+      StarterGameData.create().copyWith(researchPoints: 100),
+    );
+    final foodBefore = funded.dailyProduction[ResourceType.food]!;
+    expect(funded.research('agriculture'), isTrue);
+    expect(funded.state.researchedTechs, contains('agriculture'));
+    expect(funded.state.researchPoints, 100 - 30);
+    expect(
+      funded.dailyProduction[ResourceType.food],
+      (foodBefore * 1.5).round(),
+    );
+    // Now the gated follow-up becomes available.
+    expect(funded.canResearch('husbandry'), isTrue);
+
+    // Research survives a save/load round-trip.
+    final restored = GameController(
+      GameSerializer.decode(GameSerializer.encode(funded.state))!,
+    );
+    expect(restored.state.researchedTechs, contains('agriculture'));
+    expect(restored.state.researchPoints, 70);
   });
 }

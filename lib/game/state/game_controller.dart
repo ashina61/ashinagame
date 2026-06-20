@@ -12,6 +12,7 @@ import '../data/kurultay_decisions.dart';
 import '../data/market_goods.dart';
 import '../data/nations.dart';
 import '../data/npc_dialogues.dart';
+import '../data/research_data.dart';
 import '../data/recruitment.dart';
 import '../data/starter_game_data.dart';
 import '../data/survival_catalog.dart';
@@ -33,6 +34,7 @@ import '../models/faith.dart';
 import '../models/expedition.dart';
 import '../models/horse.dart';
 import '../models/nation.dart';
+import '../models/research.dart';
 import '../models/npc.dart';
 import '../models/quest.dart';
 import '../models/resource.dart';
@@ -549,12 +551,13 @@ class GameController extends ChangeNotifier {
         buildQueue.add(ticked);
       }
     }
-    var cap = 500;
+    final bonus = ResearchData.bonusesFor(_state.researchedTechs.toSet());
+    var cap = 500 + bonus.storageBonus;
     for (final b in buildings) {
       cap += b.storagePerLevel * b.level;
     }
     for (final b in buildings) {
-      b.dailyYield.forEach((res, amount) {
+      _adjustedYield(b, bonus).forEach((res, amount) {
         final current = resources[res] ?? 0;
         if (current >= cap) return;
         resources = {
@@ -563,6 +566,13 @@ class GameController extends ChangeNotifier {
         };
       });
     }
+    // The academy turns the day's study into research points.
+    final academyLevel = _buildingById(buildings, 'academy')?.level ?? 0;
+    final researchGain =
+        (academyLevel * ResearchData.pointsPerLevel).toDouble() *
+            bonus.researchMult;
+    final researchPoints =
+        (_state.researchPoints + researchGain.round()).toInt();
 
     // The leader ages a year each time the seasons come full circle.
     var pendingSuccession = false;
@@ -878,6 +888,7 @@ class GameController extends ChangeNotifier {
         quests: quests,
         buildings: buildings,
         buildQueue: buildQueue,
+        researchPoints: researchPoints,
         craftQueue: queue,
         craftedItems: crafted,
         marketStock: MarketGoods.startingStock(),
@@ -1270,23 +1281,90 @@ class GameController extends ChangeNotifier {
     return 0;
   }
 
-  /// Total daily resource production from all standing buildings.
+  /// The passive bonuses the academy's researched techs grant the economy.
+  ResearchBonuses get researchBonuses =>
+      ResearchData.bonusesFor(_state.researchedTechs.toSet());
+
+  /// A building's daily yield after research multipliers are applied.
+  Map<ResourceType, int> _adjustedYield(CampBuilding b, ResearchBonuses bonus) {
+    final out = <ResourceType, int>{};
+    b.dailyYield.forEach((res, amount) {
+      var v = amount.toDouble();
+      if (res == ResourceType.food) {
+        v *= bonus.foodMult;
+      } else if (res == ResourceType.gold) {
+        v *= bonus.goldMult;
+      } else if (res == ResourceType.horse) {
+        v *= bonus.horseMult;
+      } else if (res == ResourceType.iron || res == ResourceType.leather) {
+        v *= bonus.craftMult;
+      }
+      v *= bonus.allMult;
+      out[res] = v.round();
+    });
+    return out;
+  }
+
+  /// Total daily resource production from all standing buildings, including
+  /// research bonuses.
   Map<ResourceType, int> get dailyProduction {
+    final bonus = researchBonuses;
     final out = <ResourceType, int>{};
     for (final b in _state.buildings) {
-      b.dailyYield.forEach((k, v) => out[k] = (out[k] ?? 0) + v);
+      _adjustedYield(b, bonus).forEach(
+        (k, v) => out[k] = (out[k] ?? 0) + v,
+      );
     }
     return out;
   }
 
-  /// The granary cap: a base plus every warehouse level. Daily production is
-  /// held to this ceiling, so a full store means it is time to build bigger.
+  /// Research points the academy yields per day, after Bilim techs.
+  int get researchPerDay {
+    final academy = _state.building('academy')?.level ?? 0;
+    return (academy *
+            ResearchData.pointsPerLevel *
+            researchBonuses.researchMult)
+        .round();
+  }
+
+  /// The granary cap: a base, every warehouse level, plus Taşçılık. Daily
+  /// production is held here, so a full store is a prompt to build bigger.
   int get storageCapacity {
-    var cap = 500;
+    var cap = 500 + researchBonuses.storageBonus;
     for (final b in _state.buildings) {
       cap += b.storagePerLevel * b.level;
     }
     return cap;
+  }
+
+  /// Techs whose prerequisites are met but which are not yet researched.
+  List<ResearchTech> get availableResearch => [
+        for (final t in ResearchData.techs)
+          if (!_state.researchedTechs.contains(t.id) &&
+              t.requires.every(_state.researchedTechs.contains))
+            t,
+      ];
+
+  /// Whether [techId] can be researched right now (prereqs met, points enough).
+  bool canResearch(String techId) {
+    final tech = ResearchData.byId(techId);
+    if (tech == null || _state.researchedTechs.contains(techId)) return false;
+    if (!tech.requires.every(_state.researchedTechs.contains)) return false;
+    return _state.researchPoints >= tech.cost;
+  }
+
+  /// Spend accumulated research points to unlock a technology.
+  bool research(String techId) {
+    if (!canResearch(techId)) return false;
+    final tech = ResearchData.byId(techId)!;
+    _commit(
+      _state.copyWith(
+        researchPoints: _state.researchPoints - tech.cost,
+        researchedTechs: [..._state.researchedTechs, techId],
+        log: _prependLog('Araştırma tamamlandı: ${tech.name}.'),
+      ),
+    );
+    return true;
   }
 
   /// Queue a building upgrade: pay the cost now, and it finishes after the
@@ -1309,16 +1387,17 @@ class GameController extends ChangeNotifier {
     final resources = ResourceLogic.apply(_state.resources, {
       for (final entry in cost.entries) entry.key: -entry.value,
     });
+    final days = (building.buildDays - researchBonuses.buildDaysReduction)
+        .clamp(1, 99)
+        .toInt();
     _commit(
       _state.copyWith(
         resources: resources,
         buildQueue: [
           ..._state.buildQueue,
-          BuildJob(buildingId: id, daysLeft: building.buildDays),
+          BuildJob(buildingId: id, daysLeft: days),
         ],
-        log: _prependLog(
-          '${building.name} inşaatı başladı (${building.buildDays} gün).',
-        ),
+        log: _prependLog('${building.name} inşaatı başladı ($days gün).'),
       ),
     );
     return true;

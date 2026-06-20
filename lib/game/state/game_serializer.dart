@@ -72,6 +72,8 @@ class GameSerializer {
           for (final j in state.buildQueue)
             {'buildingId': j.buildingId, 'daysLeft': j.daysLeft},
         ],
+        'researchPoints': state.researchPoints,
+        'researchedTechs': state.researchedTechs,
         'craftedItems': state.craftedItems,
         'completedExpeditions': state.completedExpeditions,
         'marketStock': state.marketStock,
@@ -253,6 +255,9 @@ class GameSerializer {
               daysLeft: job['daysLeft'] as int,
             ),
         ],
+        researchPoints: json['researchPoints'] as int? ?? 0,
+        researchedTechs:
+            (json['researchedTechs'] as List<dynamic>? ?? []).cast<String>(),
         craftedItems: (json['craftedItems'] as Map<String, dynamic>? ?? {})
             .cast<String, int>(),
         completedExpeditions:

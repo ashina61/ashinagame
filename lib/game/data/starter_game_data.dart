@@ -365,6 +365,23 @@ class StarterGameData {
       buildDays: 2,
     ),
     CampBuilding(
+      id: 'academy',
+      name: 'Akademi',
+      description: 'Bilginlerin gök, takvim ve zanaat üzerine çalıştığı çadır.',
+      level: 1,
+      maxLevel: 5,
+      category: 'Bilim',
+      upgradeCost: {
+        ResourceType.wood: 35,
+        ResourceType.leather: 12,
+        ResourceType.gold: 90,
+      },
+      effectDescription:
+          'Her seviye günlük araştırma üretimini artırır; akademiden tekno '
+          'ağacını açarsın.',
+      buildDays: 3,
+    ),
+    CampBuilding(
       id: 'council',
       name: 'Yaşlılar Meclisi',
       description: 'Bilge yaşlılar zor kararları tartışır.',

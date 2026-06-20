@@ -32,6 +32,8 @@ class GameState {
     this.gameOverReason,
     this.craftQueue = const [],
     this.buildQueue = const [],
+    this.researchPoints = 0,
+    this.researchedTechs = const [],
     this.craftedItems = const {},
     this.completedExpeditions = const [],
     this.marketStock = const {},
@@ -119,6 +121,8 @@ class GameState {
   final String? gameOverReason;
   final List<CraftJob> craftQueue;
   final List<BuildJob> buildQueue;
+  final int researchPoints;
+  final List<String> researchedTechs;
   final Map<String, int> craftedItems;
   final List<String> completedExpeditions;
   final Map<String, int> marketStock;
@@ -341,6 +345,8 @@ class GameState {
     String? gameOverReason,
     List<CraftJob>? craftQueue,
     List<BuildJob>? buildQueue,
+    int? researchPoints,
+    List<String>? researchedTechs,
     Map<String, int>? craftedItems,
     List<String>? completedExpeditions,
     Map<String, int>? marketStock,
@@ -419,6 +425,8 @@ class GameState {
       gameOverReason: gameOverReason ?? this.gameOverReason,
       craftQueue: craftQueue ?? this.craftQueue,
       buildQueue: buildQueue ?? this.buildQueue,
+      researchPoints: researchPoints ?? this.researchPoints,
+      researchedTechs: researchedTechs ?? this.researchedTechs,
       craftedItems: craftedItems ?? this.craftedItems,
       completedExpeditions: completedExpeditions ?? this.completedExpeditions,
       marketStock: marketStock ?? this.marketStock,
