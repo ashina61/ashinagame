@@ -799,8 +799,11 @@ void main() {
         },
       ),
     );
-    controller.endDay(); // day 8 -> +2 population
-    expect(controller.state.resource(ResourceType.population), 42);
+    // Day 8 is a growth day; a content starter oba (level-1 welfare) draws
+    // one new soul. Upgraded welfare buildings push happiness past 80 for the
+    // faster +2 cadence.
+    controller.endDay();
+    expect(controller.state.resource(ResourceType.population), 41);
   });
 
   test('a lone traveller draws no new people before founding an oba', () {
@@ -1670,5 +1673,65 @@ void main() {
     );
     expect(restored.state.researchedTechs, contains('agriculture'));
     expect(restored.state.researchPoints, 70);
+  });
+
+  test('housing capacity grows with the main tent and caps the population', () {
+    final base = StarterGameData.create();
+    final lvl1 = GameController(base);
+    final cap1 = lvl1.populationCapacity;
+    final lvl3 = GameController(
+      base.copyWith(
+        buildings: [
+          for (final b in base.buildings)
+            b.id == 'main_tent' ? b.copyWith(level: 3) : b,
+        ],
+      ),
+    );
+    // A bigger main tent houses more people.
+    expect(lvl3.populationCapacity, greaterThan(cap1));
+  });
+
+  test('happiness lifts with welfare buildings and drives population', () {
+    final base = StarterGameData.create();
+    // A high-morale, well-fed, founded oba on a growth-day day gains people.
+    GameState content(int day) => base.copyWith(
+          obaFounded: true,
+          day: GameDay(day: day, season: Season.summer),
+          resources: {
+            ...base.resources,
+            ResourceType.morale: 90,
+            ResourceType.food: 400,
+            ResourceType.population: 20,
+          },
+        );
+    final controller = GameController(content(7)); // day turns to 8
+    expect(controller.happiness, greaterThan(60));
+    final popBefore = controller.state.resource(ResourceType.population);
+    controller.endDay();
+    expect(
+      controller.state.resource(ResourceType.population),
+      greaterThan(popBefore),
+    );
+
+    // A miserable, crowded camp instead loses people on a drift-day.
+    final grim = GameController(
+      base.copyWith(
+        obaFounded: true,
+        day: const GameDay(day: 5, season: Season.winter), // turns to 6
+        resources: {
+          ...base.resources,
+          ResourceType.morale: 5,
+          ResourceType.food: 0,
+          ResourceType.population: 200,
+        },
+      ),
+    );
+    expect(grim.happiness, lessThan(30));
+    final grimPop = grim.state.resource(ResourceType.population);
+    grim.endDay();
+    expect(
+      grim.state.resource(ResourceType.population),
+      lessThan(grimPop),
+    );
   });
 }

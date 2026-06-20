@@ -242,12 +242,20 @@ class _IdentityBand extends StatelessWidget {
             runSpacing: 4,
             children: [
               _ObaStat('Nüfus', state.resource(ResourceType.population)),
+              _ObaStat('Mutluluk', controller.happiness),
               _ObaStat('Moral', state.resource(ResourceType.morale)),
               _ObaStat('Sadakat', state.peopleApproval),
               _ObaStat('Güvenlik', state.councilApproval),
               _ObaStat('Erzak', state.resource(ResourceType.food)),
-              _ObaStat('At', state.resource(ResourceType.horse)),
             ],
+          ),
+          Padding(
+            padding: const EdgeInsets.only(top: 4),
+            child: Text(
+              'Konut kapasitesi: ${state.resource(ResourceType.population)} / '
+              '${controller.populationCapacity} • Ana Çadır büyüdükçe artar',
+              style: AppTextStyles.meta.copyWith(fontSize: 11),
+            ),
           ),
           if (production.isNotEmpty) ...[
             const SizedBox(height: 6),

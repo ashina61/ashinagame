@@ -616,23 +616,34 @@ class GameController extends ChangeNotifier {
       }
     }
 
-    // A content, well-fed oba steadily draws and raises new people. A lone
+    // A content, well-fed oba steadily draws and raises new people, faster the
+    // happier it is; a miserable, crowded camp instead bleeds them away. A lone
     // traveller with no oba yet draws no one — the world stays quiet.
-    final growMorale = resources[ResourceType.morale] ?? 0;
+    final popCap = _populationCapacityFor(buildings);
+    final happy = _happinessFor(buildings, resources, popCap);
     final growFood = resources[ResourceType.food] ?? 0;
     final growPop = resources[ResourceType.population] ?? 0;
-    if (_state.obaFounded &&
-        growMorale >= 55 &&
-        growFood >= 40 &&
-        growPop < 220 &&
-        nextDay.day % 8 == 0) {
-      resources = ResourceLogic.apply(resources, const {
-        ResourceType.population: 2,
-      });
-      log = [
-        'Oba büyüyor: yeni canlar ocağa katıldı.',
-        ...log,
-      ].take(6).toList();
+    if (_state.obaFounded) {
+      if (happy >= 60 && growFood >= 40 && growPop < popCap) {
+        final fast = happy >= 80;
+        if (nextDay.day % (fast ? 4 : 8) == 0) {
+          resources = ResourceLogic.apply(resources, {
+            ResourceType.population: fast ? 2 : 1,
+          });
+          log = [
+            'Oba büyüyor: yeni canlar ocağa katıldı (mutluluk $happy).',
+            ...log,
+          ].take(6).toList();
+        }
+      } else if (happy < 30 && growPop > 0 && nextDay.day % 6 == 0) {
+        resources = ResourceLogic.apply(resources, const {
+          ResourceType.population: -1,
+        });
+        log = [
+          'Hoşnutsuz canlar obadan göçüyor (mutluluk $happy).',
+          ...log,
+        ].take(6).toList();
+      }
     }
 
     // Discontent at the bottom or top of the camp gnaws at it daily.
@@ -1336,6 +1347,50 @@ class GameController extends ChangeNotifier {
     }
     return cap;
   }
+
+  /// How many people the oba can house: a base plus the main tent's levels.
+  /// Growth slows and the camp sours once the population presses this ceiling.
+  int _populationCapacityFor(List<CampBuilding> buildings) {
+    var cap = 50;
+    for (final b in buildings) {
+      if (b.id == 'main_tent') cap += b.level * 30;
+    }
+    return cap;
+  }
+
+  int get populationCapacity => _populationCapacityFor(_state.buildings);
+
+  /// The oba's contentment (0-100): healer, ritual fire, council and market
+  /// lift it, overcrowding and empty granaries drag it down, and morale tips
+  /// the balance. High happiness draws new people; low happiness scatters them.
+  int _happinessFor(
+    List<CampBuilding> buildings,
+    Map<ResourceType, int> res,
+    int cap,
+  ) {
+    var h = 40;
+    for (final b in buildings) {
+      if (b.id == 'healer') {
+        h += b.level * 5;
+      } else if (b.id == 'sacred_fire') {
+        h += b.level * 4;
+      } else if (b.id == 'council') {
+        h += b.level * 3;
+      } else if (b.id == 'market_tent') {
+        h += b.level * 3;
+      } else if (b.id == 'main_tent') {
+        h += b.level * 2;
+      }
+    }
+    final pop = res[ResourceType.population] ?? 0;
+    if (pop > cap) h -= (pop - cap) ~/ 2;
+    if ((res[ResourceType.food] ?? 0) < pop) h -= 10;
+    h += (((res[ResourceType.morale] ?? 0) - 50) * 0.2).round();
+    return h.clamp(0, 100).toInt();
+  }
+
+  int get happiness =>
+      _happinessFor(_state.buildings, _state.resources, populationCapacity);
 
   /// Techs whose prerequisites are met but which are not yet researched.
   List<ResearchTech> get availableResearch => [
