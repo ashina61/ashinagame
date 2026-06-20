@@ -1636,7 +1636,8 @@ void main() {
     expect(spentMerchant, lessThan(spentPlain));
   });
 
-  test('the academy accrues research points and unlocks techs with effects', () {
+  test('the academy accrues research points and unlocks techs with effects',
+      () {
     final controller = GameController(StarterGameData.create());
     // Academy starts at level 1, so a day yields its base research output.
     expect(controller.researchPerDay, ResearchData.pointsPerLevel);
