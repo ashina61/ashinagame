@@ -17,6 +17,7 @@ import '../../game/state/game_scope.dart';
 import '../army/army_screen.dart';
 import '../conquest/conquest_screen.dart';
 import '../scene/floating_text.dart';
+import '../scene/scene_hud_overlay.dart';
 import 'expedition_result_screen.dart';
 
 class _Region {
@@ -135,6 +136,7 @@ class _ExpeditionsScreenState extends State<ExpeditionsScreen> {
             title: 'Seferler',
             onInfo: () => showHelpSheet(context, HelpId.expeditions),
           ),
+          const ResourceStrip(),
           OrnatePanel(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             child: Column(

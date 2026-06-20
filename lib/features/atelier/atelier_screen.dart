@@ -13,6 +13,7 @@ import '../../game/models/resource.dart';
 import '../../game/state/game_controller.dart';
 import '../../game/state/game_scope.dart';
 import '../scene/floating_text.dart';
+import '../scene/scene_hud_overlay.dart';
 
 /// Atlas icons for each workshop recipe.
 String craftIcon(String recipeId) => switch (recipeId) {
@@ -51,6 +52,7 @@ class _AtelierScreenState extends State<AtelierScreen> {
             title: 'Atölye',
             onInfo: () => showHelpSheet(context, HelpId.atelier),
           ),
+          const ResourceStrip(),
           OrnateTabs(
             tabs: const ['Üretim', 'Geliştirme', 'Tamir'],
             index: _tab,

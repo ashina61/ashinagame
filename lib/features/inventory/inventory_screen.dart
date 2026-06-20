@@ -10,6 +10,7 @@ import '../../game/models/craft.dart';
 import '../../game/models/resource.dart';
 import '../../game/state/game_scope.dart';
 import '../atelier/atelier_screen.dart';
+import '../scene/scene_hud_overlay.dart';
 
 class _Entry {
   const _Entry(this.asset, this.label, this.count, this.kind);
@@ -78,6 +79,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
         child: Column(
           children: [
             const OrnateHeader(title: 'Envanter', showBack: true),
+            const ResourceStrip(),
             OrnateTabs(
               tabs: const ['Tümü', 'Kaynaklar', 'Ekipman', 'Diğer'],
               index: _tab,
