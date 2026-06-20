@@ -104,7 +104,18 @@ class _ArmyScreenState extends State<ArmyScreen> {
                 padding: const EdgeInsets.only(top: 4, bottom: 16),
                 children: [
                   const SectionPlaque('BİRLİK TOPLA'),
-                  for (final unit in UnitTypes.all) _UnitPanel(unit: unit),
+                  GridView.count(
+                    crossAxisCount: 2,
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                    crossAxisSpacing: 8,
+                    mainAxisSpacing: 8,
+                    childAspectRatio: 1.2,
+                    children: [
+                      for (final unit in UnitTypes.all) _UnitTile(unit: unit),
+                    ],
+                  ),
                   if (state.totalWounded > 0) ...[
                     const SectionPlaque('YARALILAR (TEDAVİDE)'),
                     OrnatePanel(
@@ -138,8 +149,11 @@ class _ArmyScreenState extends State<ArmyScreen> {
   }
 }
 
-class _UnitPanel extends StatelessWidget {
-  const _UnitPanel({required this.unit});
+/// A compact recruit tile in the army grid: the unit, its count, attack /
+/// defence, the per-soldier cost and a TOPLA button that respects gold, the
+/// action point and the army-capacity ceiling.
+class _UnitTile extends StatelessWidget {
+  const _UnitTile({required this.unit});
 
   final UnitType unit;
 
@@ -156,7 +170,17 @@ class _UnitPanel extends StatelessWidget {
     final costText =
         cost.entries.map((e) => '${e.value} ${e.key.label}').join(', ');
 
-    return OrnatePanel(
+    return Container(
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(10),
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFF1A140C), Color(0xFF241B10)],
+        ),
+        border: Border.all(color: AppColors.goldDim, width: 1.2),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -165,55 +189,65 @@ class _UnitPanel extends StatelessWidget {
               Expanded(
                 child: Text(
                   unit.name,
-                  style: AppTextStyles.bodyStrong.copyWith(fontSize: 16),
+                  style: AppTextStyles.bodyStrong.copyWith(fontSize: 14),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
               Text(
                 'x${state.unitCount(unit.id)}',
-                style: AppTextStyles.value.copyWith(fontSize: 14),
+                style: AppTextStyles.value
+                    .copyWith(fontSize: 13, color: AppColors.goldBright),
               ),
             ],
           ),
-          Text(
-            'Saldırı ${unit.attack} • Savunma ${unit.defense}'
-            '${unit.requiresHorse ? ' • Atlı' : ''}',
-            style: AppTextStyles.meta,
-          ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 2),
           Row(
             children: [
-              Expanded(
-                child: Text(
-                  hasRoom ? 'Bedel: $costText' : 'Ordu kapasitesi dolu',
-                  style: AppTextStyles.meta.copyWith(
-                    color: hasRoom ? null : AppColors.danger,
-                  ),
-                ),
-              ),
-              SizedBox(
-                width: 110,
-                child: DarkButton(
-                  label: 'TOPLA',
-                  height: 34,
-                  onPressed: hasAp && affordable && hasRoom
-                      ? () {
-                          final ok = controller.recruitUnit(unit.id, 1);
-                          AudioService.instance.playSfx(ok ? 'coin' : 'denied');
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                ok
-                                    ? '${unit.name} orduya katıldı.'
-                                    : 'Aksiyon, kaynak ya da kapasite yetersiz.',
-                              ),
-                              duration: const Duration(seconds: 2),
-                            ),
-                          );
-                        }
-                      : null,
-                ),
-              ),
+              const Icon(Icons.colorize, size: 12, color: AppColors.ember),
+              Text(' ${unit.attack}', style: AppTextStyles.meta),
+              const SizedBox(width: 8),
+              const Icon(Icons.shield, size: 12, color: AppColors.info),
+              Text(' ${unit.defense}', style: AppTextStyles.meta),
+              if (unit.requiresHorse) ...[
+                const SizedBox(width: 6),
+                const Icon(Icons.bedtime, size: 12, color: AppColors.stone),
+              ],
             ],
+          ),
+          const Spacer(),
+          Text(
+            hasRoom ? costText : 'Kapasite dolu',
+            style: AppTextStyles.meta.copyWith(
+              fontSize: 11,
+              color: hasRoom ? AppColors.stone : AppColors.danger,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 6),
+          SizedBox(
+            width: double.infinity,
+            child: DarkButton(
+              label: 'TOPLA',
+              height: 32,
+              onPressed: hasAp && affordable && hasRoom
+                  ? () {
+                      final ok = controller.recruitUnit(unit.id, 1);
+                      AudioService.instance.playSfx(ok ? 'coin' : 'denied');
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            ok
+                                ? '${unit.name} orduya katıldı.'
+                                : 'Aksiyon, kaynak ya da kapasite yetersiz.',
+                          ),
+                          duration: const Duration(seconds: 2),
+                        ),
+                      );
+                    }
+                  : null,
+            ),
           ),
         ],
       ),

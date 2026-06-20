@@ -67,7 +67,7 @@ class ResearchScreen extends StatelessWidget {
                 children: [
                   for (final category in _categories) ...[
                     Padding(
-                      padding: const EdgeInsets.fromLTRB(18, 10, 18, 2),
+                      padding: const EdgeInsets.fromLTRB(18, 12, 18, 4),
                       child: Text(
                         category.toUpperCase(),
                         style: AppTextStyles.meta.copyWith(
@@ -76,8 +76,21 @@ class ResearchScreen extends StatelessWidget {
                         ),
                       ),
                     ),
-                    for (final tech in ResearchData.techs)
-                      if (tech.category == category) _TechCard(tech: tech),
+                    // Each lane is a left-to-right progression track of compact
+                    // tiles — prerequisites sit before what they unlock, so it
+                    // reads as a tech tree rather than a stack of cards.
+                    SizedBox(
+                      height: 124,
+                      child: ListView(
+                        scrollDirection: Axis.horizontal,
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        children: [
+                          for (final tech in ResearchData.techs)
+                            if (tech.category == category)
+                              _TechTile(tech: tech),
+                        ],
+                      ),
+                    ),
                   ],
                 ],
               ),
@@ -89,8 +102,11 @@ class ResearchScreen extends StatelessWidget {
   }
 }
 
-class _TechCard extends StatelessWidget {
-  const _TechCard({required this.tech});
+/// One node in a research lane: a compact, tappable tile whose border and
+/// glyph encode its state (done / available / locked / too costly). Tapping
+/// researches it when possible, or floats why it can't be researched yet.
+class _TechTile extends StatelessWidget {
+  const _TechTile({required this.tech});
 
   final ResearchTech tech;
 
@@ -117,81 +133,105 @@ class _TechCard extends StatelessWidget {
       accent = AppColors.stone;
     }
 
-    return OrnatePanel(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(
-                researched
-                    ? Icons.check_circle
-                    : locked
-                        ? Icons.lock
-                        : Icons.science,
-                color: accent,
-                size: 20,
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(tech.name, style: AppTextStyles.section),
-              ),
-              if (!researched)
-                Text(
-                  '${tech.cost} puan',
-                  style: AppTextStyles.meta.copyWith(color: accent),
+    return GestureDetector(
+      onTap: () {
+        if (researched) {
+          showFloatingNote(context, '${tech.name} zaten araştırıldı.');
+          return;
+        }
+        if (locked) {
+          AudioService.instance.playSfx('denied');
+          showFloatingNote(context, 'Önce gerekli: ${unmet.join(", ")}',
+              good: false);
+          return;
+        }
+        final ok = controller.research(tech.id);
+        if (ok) {
+          AudioService.instance.playSfx('craft');
+          showFloatingGain(context, '${tech.name} açıldı',
+              color: AppColors.goldBright);
+        } else {
+          AudioService.instance.playSfx('denied');
+          showFloatingNote(context, '${tech.cost} araştırma puanı gerekli.',
+              good: false);
+        }
+      },
+      child: Container(
+        width: 152,
+        margin: const EdgeInsets.only(right: 10),
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(10),
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: researched
+                ? [const Color(0xFF1C2A1C), const Color(0xFF14200F)]
+                : [const Color(0xFF1A140C), const Color(0xFF241B10)],
+          ),
+          border: Border.all(color: accent.withValues(alpha: 0.85), width: 1.4),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(
+                  researched
+                      ? Icons.check_circle
+                      : locked
+                          ? Icons.lock
+                          : Icons.science,
+                  color: accent,
+                  size: 18,
                 ),
-            ],
-          ),
-          const SizedBox(height: 4),
-          Text(tech.description, style: AppTextStyles.body),
-          const SizedBox(height: 2),
-          Text(
-            '⚙ ${tech.effectDescription}',
-            style: AppTextStyles.meta.copyWith(color: AppColors.success),
-          ),
-          if (locked)
-            Padding(
-              padding: const EdgeInsets.only(top: 4),
+                const Spacer(),
+                if (!researched)
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.menu_book, size: 12, color: accent),
+                      const SizedBox(width: 2),
+                      Text(
+                        '${tech.cost}',
+                        style: AppTextStyles.meta.copyWith(color: accent),
+                      ),
+                    ],
+                  ),
+              ],
+            ),
+            const SizedBox(height: 4),
+            Text(
+              tech.name,
+              style: AppTextStyles.bodyStrong.copyWith(fontSize: 14),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(height: 2),
+            Expanded(
               child: Text(
-                'Önce gerekli: ${unmet.join(", ")}',
-                style: AppTextStyles.meta.copyWith(color: AppColors.danger),
+                tech.effectDescription,
+                style: AppTextStyles.meta.copyWith(fontSize: 11),
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
               ),
             ),
-          if (researched)
-            Padding(
-              padding: const EdgeInsets.only(top: 6),
-              child: Text(
-                'Araştırıldı ✓',
-                style: AppTextStyles.meta.copyWith(color: AppColors.success),
-              ),
-            )
-          else if (!locked)
-            Padding(
-              padding: const EdgeInsets.only(top: 8),
-              child: GoldButton(
-                label: canResearch ? 'Araştır' : 'Puan yetersiz (${tech.cost})',
-                height: 44,
-                onPressed: canResearch
-                    ? () {
-                        final ok = controller.research(tech.id);
-                        if (ok) {
-                          AudioService.instance.playSfx('craft');
-                          showFloatingGain(
-                            context,
-                            '${tech.name} açıldı',
-                            color: AppColors.goldBright,
-                          );
-                        } else {
-                          AudioService.instance.playSfx('denied');
-                          showFloatingNote(context, 'Araştırma yapılamadı.',
-                              good: false);
-                        }
-                      }
-                    : null,
+            Text(
+              researched
+                  ? 'Araştırıldı ✓'
+                  : locked
+                      ? 'Kilitli'
+                      : canResearch
+                          ? 'Dokun → Araştır'
+                          : 'Puan yetersiz',
+              style: AppTextStyles.meta.copyWith(
+                color: accent,
+                fontSize: 10,
+                letterSpacing: 0.5,
               ),
             ),
-        ],
+          ],
+        ),
       ),
     );
   }
