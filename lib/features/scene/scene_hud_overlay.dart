@@ -43,22 +43,10 @@ class SceneHudOverlay extends StatelessWidget {
     final day = state.day;
     return Column(
       children: [
-        ResourceBar(
-          entries: [
-            for (final type in resources)
-              (
-                ResourceVisuals.icon(type),
-                type == ResourceType.food && foodCap != null
-                    ? '${state.resource(type)}/$foodCap'
-                    : '${state.resource(type)}',
-              ),
-          ],
-          rates: [for (final type in resources) production[type] ?? 0],
-          onEntryTap: (i) => showResourceInfoSheet(
-            context,
-            resources[i],
-            state.resource(resources[i]),
-          ),
+        ResourceStrip(
+          resources: resources,
+          production: production,
+          foodCap: foodCap,
         ),
         Padding(
           padding: const EdgeInsets.fromLTRB(12, 0, 12, 4),
@@ -99,6 +87,51 @@ class SceneHudOverlay extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+/// Just the framed, icon-led resource bar — the persistent strip we drop at
+/// the top of management sub-screens (research, army, market…) so the player's
+/// stock is always in view, the way it is in Ikariam/Travian. No day/AP/end
+/// controls, so it is safe under a back-navigable header.
+class ResourceStrip extends StatelessWidget {
+  const ResourceStrip({
+    this.resources = const [
+      ResourceType.gold,
+      ResourceType.food,
+      ResourceType.wood,
+      ResourceType.iron,
+      ResourceType.horse,
+    ],
+    this.production = const {},
+    this.foodCap,
+    super.key,
+  });
+
+  final List<ResourceType> resources;
+  final Map<ResourceType, int> production;
+  final int? foodCap;
+
+  @override
+  Widget build(BuildContext context) {
+    final state = GameScope.of(context).state;
+    return ResourceBar(
+      entries: [
+        for (final type in resources)
+          (
+            ResourceVisuals.icon(type),
+            type == ResourceType.food && foodCap != null
+                ? '${state.resource(type)}/$foodCap'
+                : '${state.resource(type)}',
+          ),
+      ],
+      rates: [for (final type in resources) production[type] ?? 0],
+      onEntryTap: (i) => showResourceInfoSheet(
+        context,
+        resources[i],
+        state.resource(resources[i]),
+      ),
     );
   }
 }

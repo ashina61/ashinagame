@@ -12,6 +12,7 @@ import '../../game/models/resource.dart';
 import '../../game/state/game_controller.dart';
 import '../../game/state/game_scope.dart';
 import '../scene/floating_text.dart';
+import '../scene/scene_hud_overlay.dart';
 import 'battle_report_dialog.dart';
 
 class ConquestScreen extends StatefulWidget {
@@ -51,6 +52,7 @@ class _ConquestScreenState extends State<ConquestScreen> {
         child: Column(
           children: [
             const OrnateHeader(title: 'Fetih Haritası', showBack: true),
+            const ResourceStrip(),
             OrnatePanel(
               child: Row(
                 children: [

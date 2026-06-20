@@ -9,6 +9,7 @@ import '../../game/data/research_data.dart';
 import '../../game/models/research.dart';
 import '../../game/state/game_scope.dart';
 import '../scene/floating_text.dart';
+import '../scene/scene_hud_overlay.dart';
 
 /// The academy's research tree. Points accrue each day from the academy; the
 /// player spends them here to unlock economy and infrastructure techs. Locked
@@ -32,6 +33,7 @@ class ResearchScreen extends StatelessWidget {
         child: Column(
           children: [
             const OrnateHeader(title: 'Akademi • Araştırma'),
+            const ResourceStrip(),
             OrnatePanel(
               child: Row(
                 children: [

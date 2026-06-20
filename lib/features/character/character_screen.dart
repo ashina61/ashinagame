@@ -20,6 +20,7 @@ import '../../game/state/game_scope.dart';
 import '../equipment/equipment_screen.dart';
 import '../inventory/inventory_screen.dart';
 import '../scene/floating_text.dart';
+import '../scene/scene_hud_overlay.dart';
 
 class CharacterScreen extends StatelessWidget {
   const CharacterScreen({this.showBack = false, super.key});
@@ -49,6 +50,7 @@ class CharacterScreen extends StatelessWidget {
               showBack: showBack,
               onInfo: () => showHelpSheet(context, HelpId.character),
             ),
+            const ResourceStrip(),
             Expanded(
               child: ListView(
                 padding: const EdgeInsets.only(top: 4, bottom: 16),

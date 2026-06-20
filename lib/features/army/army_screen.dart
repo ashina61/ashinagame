@@ -8,6 +8,7 @@ import '../../core/widgets/ornate.dart';
 import '../../game/models/resource.dart';
 import '../../game/models/unit_type.dart';
 import '../../game/state/game_scope.dart';
+import '../scene/scene_hud_overlay.dart';
 
 class ArmyScreen extends StatefulWidget {
   const ArmyScreen({super.key});
@@ -41,6 +42,7 @@ class _ArmyScreenState extends State<ArmyScreen> {
         child: Column(
           children: [
             const OrnateHeader(title: 'Ordu', showBack: true),
+            const ResourceStrip(),
             OrnatePanel(
               child: Row(
                 children: [

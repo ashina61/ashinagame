@@ -21,6 +21,7 @@ import '../../game/logic/market_logic.dart';
 import '../../game/models/resource.dart';
 import '../../game/state/game_scope.dart';
 import '../scene/floating_text.dart';
+import '../scene/scene_hud_overlay.dart';
 
 /// Atlas icons for market goods.
 String goodIcon(String goodId) => switch (goodId) {
@@ -306,6 +307,7 @@ class _MarketScreenState extends State<MarketScreen> {
               showBack: true,
               onInfo: () => showHelpSheet(context, HelpId.market),
             ),
+            const ResourceStrip(),
             Align(
               alignment: Alignment.centerLeft,
               child: Container(
