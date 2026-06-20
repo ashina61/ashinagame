@@ -85,6 +85,24 @@ class _ConquestScreenState extends State<ConquestScreen> {
               ),
             ),
             if (pending != null) _GovernancePanel(nation: pending),
+            if (controller.colonyOutput.armyCap > 0)
+              OrnatePanel(
+                child: Row(
+                  children: [
+                    const Icon(Icons.account_balance,
+                        color: AppColors.goldBright, size: 22),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Sömürge katkısı/gün: +${controller.colonyOutput.food} '
+                        'erzak, +${controller.colonyOutput.research} araştırma, '
+                        '+${controller.colonyOutput.armyCap} ordu kapasitesi',
+                        style: AppTextStyles.meta,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             const _RaidThreatBanner(),
             const _MarchBanner(),
             Expanded(

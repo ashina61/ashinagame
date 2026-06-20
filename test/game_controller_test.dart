@@ -1769,4 +1769,48 @@ void main() {
     );
     expect(researched.armyCapacity, cap + 30);
   });
+
+  test('governed colonies feed production, research and army capacity', () {
+    final base = StarterGameData.create();
+    final plain = GameController(base);
+    final colonyFoodBefore = plain.dailyProduction[ResourceType.food] ?? 0;
+    final researchBefore = plain.researchPerDay;
+    final capBefore = plain.armyCapacity;
+
+    // A directly ruled province works as a strong colony.
+    final empire = GameController(
+      base.copyWith(nationPolicies: const {'ote_iran': 'directRule'}),
+    );
+    final out = empire.colonyOutput;
+    expect(out.food, 8);
+    expect(out.research, 3);
+    expect(out.armyCap, 6);
+    // Each channel grows by the colony's share.
+    expect(empire.dailyProduction[ResourceType.food], colonyFoodBefore + 8);
+    expect(empire.researchPerDay, researchBefore + 3);
+    expect(empire.armyCapacity, capBefore + 6);
+
+    // The colony's grain and study actually land when the day turns: an
+    // identical oba with the province ends the day richer in both.
+    final without = GameController(base);
+    final withColony = GameController(
+      base.copyWith(nationPolicies: const {'ote_iran': 'directRule'}),
+    );
+    without.endDay();
+    withColony.endDay();
+    expect(
+      withColony.state.resource(ResourceType.food),
+      greaterThan(without.state.resource(ResourceType.food)),
+    );
+    expect(
+      withColony.state.researchPoints,
+      greaterThan(without.state.researchPoints),
+    );
+
+    // A razed land is no colony — it yields nothing lasting.
+    final razed = GameController(
+      base.copyWith(nationPolicies: const {'ote_iran': 'yik'}),
+    );
+    expect(razed.colonyOutput.armyCap, 0);
+  });
 }

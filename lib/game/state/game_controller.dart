@@ -556,6 +556,7 @@ class GameController extends ChangeNotifier {
     for (final b in buildings) {
       cap += b.storagePerLevel * b.level;
     }
+    final colony = colonyOutput;
     for (final b in buildings) {
       _adjustedYield(b, bonus).forEach((res, amount) {
         final current = resources[res] ?? 0;
@@ -566,13 +567,24 @@ class GameController extends ChangeNotifier {
         };
       });
     }
-    // The academy turns the day's study into research points.
+    // Governed colonies ship grain home, held to the same granary cap.
+    if (colony.food > 0) {
+      final current = resources[ResourceType.food] ?? 0;
+      if (current < cap) {
+        resources = {
+          ...resources,
+          ResourceType.food: (current + colony.food).clamp(0, cap).toInt(),
+        };
+      }
+    }
+    // The academy and the colonies' cities turn study into research points.
     final academyLevel = _buildingById(buildings, 'academy')?.level ?? 0;
     final researchGain =
         (academyLevel * ResearchData.pointsPerLevel).toDouble() *
             bonus.researchMult;
     final researchPoints =
-        (_state.researchPoints + researchGain.round()).toInt();
+        (_state.researchPoints + researchGain.round() + colony.research)
+            .toInt();
 
     // The leader ages a year each time the seasons come full circle.
     var pendingSuccession = false;
@@ -1326,16 +1338,20 @@ class GameController extends ChangeNotifier {
         (k, v) => out[k] = (out[k] ?? 0) + v,
       );
     }
+    final colonyFood = colonyOutput.food;
+    if (colonyFood > 0) {
+      out[ResourceType.food] = (out[ResourceType.food] ?? 0) + colonyFood;
+    }
     return out;
   }
 
-  /// Research points the academy yields per day, after Bilim techs.
+  /// Research points the academy yields per day, after Bilim techs and the
+  /// libraries of governed colonies.
   int get researchPerDay {
     final academy = _state.building('academy')?.level ?? 0;
-    return (academy *
-            ResearchData.pointsPerLevel *
-            researchBonuses.researchMult)
-        .round();
+    final base =
+        academy * ResearchData.pointsPerLevel * researchBonuses.researchMult;
+    return base.round() + colonyOutput.research;
   }
 
   /// The granary cap: a base, every warehouse level, plus Taşçılık. Daily
@@ -1982,6 +1998,7 @@ class GameController extends ChangeNotifier {
     var cap = 20 + researchBonuses.armyCapacityBonus;
     cap += (_state.building('training')?.level ?? 0) * 12;
     cap += (_state.building('main_tent')?.level ?? 0) * 5;
+    cap += colonyOutput.armyCap;
     return cap;
   }
 
@@ -2348,6 +2365,36 @@ class GameController extends ChangeNotifier {
 
   /// Number of nations fully under your banner.
   int get conqueredNations => _state.nationPolicies.length;
+
+  /// Beyond their gold tribute, governed lands work as colonies: their fields
+  /// feed the oba, their cities copy knowledge, and their people swell the
+  /// levy. A directly ruled province gives most, a vassal least; plundered or
+  /// razed lands give nothing lasting. Folds into production, research and
+  /// army capacity so conquest feeds the whole economy, not just the treasury.
+  ({int food, int research, int armyCap}) get colonyOutput {
+    var food = 0;
+    var research = 0;
+    var cap = 0;
+    for (final policyId in _state.nationPolicies.values) {
+      switch (NationPolicyInfo.byId(policyId)) {
+        case NationPolicy.directRule:
+          food += 8;
+          research += 3;
+          cap += 6;
+        case NationPolicy.vali:
+          food += 6;
+          research += 2;
+          cap += 5;
+        case NationPolicy.vassal:
+          food += 3;
+          research += 1;
+          cap += 2;
+        case _:
+          break;
+      }
+    }
+    return (food: food, research: research, armyCap: cap);
+  }
 
   /// Daily gold from governed nations: a province (vali) pays most, a bound
   /// state (vassal) less; plundered or razed lands yield nothing lasting.
