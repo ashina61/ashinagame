@@ -631,4 +631,344 @@ const deck = <KaganCard>[
       outcome: 'Çabuk toparlanıldı; yaşlılar bunu saygısızlık saydı.',
     ),
   ),
+  KaganCard(
+    id: 'kan_davasi',
+    speaker: 'Aksakal Tonga',
+    title: 'Boyun Aksakalı',
+    prompt:
+        'İki aile arasında kan davası büyüyor. Araya girip barıştıralım mı, yoksa töre gereği kanı kanla mı ödetelim?',
+    left: Choice(
+      label: 'Barıştır',
+      effects: {Metric.halk: 10, Metric.tore: -6},
+      outcome: 'Eller sıkıldı; bazıları öcün alınmadığına yandı.',
+    ),
+    right: Choice(
+      label: 'Töreyi uygula',
+      effects: {Metric.tore: 10, Metric.halk: -8},
+      outcome: 'Kan kanla ödendi; töre yerini buldu, oba sustu.',
+    ),
+  ),
+  KaganCard(
+    id: 'kusatma',
+    speaker: 'Komutan Bayan',
+    title: 'Sağ Kol Beyi',
+    prompt:
+        'Düşman kalesini kuşattık. Hemen hücum mu edelim, yoksa açlığa terk edip teslim mi bekleyelim?',
+    left: Choice(
+      label: 'Hücum et',
+      effects: {Metric.ordu: 6, Metric.hazine: 8, Metric.halk: -10},
+      outcome: 'Kale düştü; surların önü yiğit cesetleriyle doldu.',
+    ),
+    right: Choice(
+      label: 'Açlığa terk et',
+      effects: {Metric.hazine: -8, Metric.ordu: -4, Metric.tore: 4},
+      outcome: 'Kale aylar sonra teslim oldu; sabır pahalıya patladı.',
+    ),
+  ),
+  KaganCard(
+    id: 'ay_tutulmasi',
+    speaker: 'Kam Udun',
+    title: 'Boyun Kamı',
+    prompt:
+        'Ay kana boyandı, gök bir uyarı verdi. Büyük bir kurbanla Tengri\'yi yatıştıralım mı, yoksa korkuya boyun eğmeyelim mi?',
+    left: Choice(
+      label: 'Kurban sun',
+      effects: {Metric.tore: 10, Metric.hazine: -8, Metric.halk: 4},
+      outcome: 'Kurbanlar kesildi; korkan halk biraz yatıştı.',
+    ),
+    right: Choice(
+      label: 'Boyun eğme',
+      effects: {Metric.tore: -10, Metric.ordu: 6},
+      outcome: 'Kağan göğe meydan okudu; kimi cesaret, kimi dehşet duydu.',
+    ),
+  ),
+  KaganCard(
+    id: 'kole_pazari',
+    speaker: 'Tüccar Maniak',
+    title: 'Soğd Kervanbaşı',
+    prompt:
+        'Savaş tutsaklarını köle pazarımda iyi paraya satabilirim. Satalım mı, yoksa bu işe bulaşmayalım mı?',
+    left: Choice(
+      label: 'Sat',
+      effects: {Metric.hazine: 12, Metric.tore: -8},
+      outcome: 'Keseler doldu; aksakallar bu kazancı kirli buldu.',
+    ),
+    right: Choice(
+      label: 'Bulaşma',
+      effects: {Metric.tore: 8, Metric.hazine: -4},
+      outcome: 'Tutsaklar pazara çıkmadı; tüccar omuz silkti.',
+    ),
+  ),
+  KaganCard(
+    id: 'sahte_para',
+    speaker: 'Defterdar Üge',
+    title: 'Hazine Yazıcısı',
+    prompt:
+        'Sikkenin altınını azaltıp daha çok para basabiliriz kağanım. Hazineyi böyle mi şişirelim, yoksa paranın ayarı mı korunsun?',
+    left: Choice(
+      label: 'Ayarı düşür',
+      effects: {Metric.hazine: 12, Metric.halk: -8, Metric.tore: -4},
+      outcome: 'Kese doldu; pazarda fiyatlar fırladı, güven sarsıldı.',
+    ),
+    right: Choice(
+      label: 'Ayarı koru',
+      effects: {Metric.hazine: -6, Metric.halk: 8},
+      outcome: 'Para itibarlı kaldı; tüccarlar obaya akın etti.',
+    ),
+  ),
+  KaganCard(
+    id: 'ikinci_hatun',
+    speaker: 'Hatun',
+    title: 'Baş Hatun',
+    prompt:
+        'Bir bey, ittifak için kızını sana hatun vermek ister. İkinci bir hatun alıp bağı mı güçlendirelim, yoksa ocağına mı sadık kalalım?',
+    left: Choice(
+      label: 'Hatun al',
+      effects: {Metric.ordu: 10, Metric.hazine: 6, Metric.halk: -8},
+      outcome: 'İttifak mühürlendi; otağda bir gönül kırıldı.',
+    ),
+    right: Choice(
+      label: 'Sadık kal',
+      effects: {Metric.halk: 8, Metric.tore: 4, Metric.ordu: -8},
+      outcome: 'Vefan konuşuldu; bey teklifini geri çekti.',
+    ),
+  ),
+  KaganCard(
+    id: 'sinir_komutasi',
+    speaker: 'Genç Bey Böri',
+    title: 'Hırslı Bey',
+    prompt:
+        'Böri artık sadık ama hırslı. Sınır boyunun komutasını ona mı verelim, yoksa gözümüzün önünde mi tutalım?',
+    left: Choice(
+      label: 'Sınırı ver',
+      effects: {Metric.ordu: 12, Metric.tore: -6},
+      outcome: 'Sınır sağlama alındı; Böri uzakta güçleniyor.',
+    ),
+    right: Choice(
+      label: 'Yanında tut',
+      effects: {Metric.ordu: -6, Metric.tore: 6, Metric.halk: 4},
+      outcome: 'Böri otağda kaldı; sınır biraz daha zayıf.',
+    ),
+  ),
+  KaganCard(
+    id: 'duello',
+    speaker: 'Yüzbaşı Alp Er',
+    title: 'Genç Süvari',
+    prompt:
+        'Düşman, iki ordu yerine er meydanında tek bir yiğitle işi çözmeyi öneriyor. Alp Er\'i meydana mı sürelim, yoksa reddedip savaşa mı tutuşalım?',
+    left: Choice(
+      label: 'Meydana sür',
+      effects: {Metric.halk: 10, Metric.ordu: 6, Metric.hazine: 4},
+      outcome: 'Alp Er er meydanında galip geldi; oba bir hafta şenlendi.',
+    ),
+    right: Choice(
+      label: 'Reddet',
+      effects: {Metric.ordu: -8, Metric.halk: -6},
+      outcome: 'Meydan okuma geri çevrildi; düşman korkaklıkla suçladı.',
+    ),
+  ),
+  KaganCard(
+    id: 'yaralilar',
+    speaker: 'Hekim Otacı',
+    title: 'Otacı (Hekim)',
+    prompt:
+        'Savaştan dönen yaralılar inliyor. Hazineyi açıp hepsini tedavi mi ettirelim, yoksa kaderlerine mi bırakalım?',
+    left: Choice(
+      label: 'Tedavi ettir',
+      effects: {Metric.hazine: -8, Metric.ordu: 8, Metric.halk: 6},
+      outcome: 'Yiğitler ayağa kalktı; ordu kağanına minnettar.',
+    ),
+    right: Choice(
+      label: 'Kadere bırak',
+      effects: {Metric.hazine: 6, Metric.ordu: -10, Metric.halk: -6},
+      outcome: 'Hazine korundu; çadırlardan iniltiler yükseldi.',
+    ),
+  ),
+  KaganCard(
+    id: 'damizlik_at',
+    speaker: 'Yılkıcı Sübeg',
+    title: 'Baş Yılkıcı',
+    prompt:
+        'Komşu han, en iyi damızlık aygırlarımıza ağır altın veriyor. Satalım mı, yoksa kan hattını kendimize mi saklayalım?',
+    left: Choice(
+      label: 'Sat',
+      effects: {Metric.hazine: 12, Metric.ordu: -8},
+      outcome: 'Altın aktı; en iyi kan rakibin ahırına girdi.',
+    ),
+    right: Choice(
+      label: 'Sakla',
+      effects: {Metric.ordu: 8, Metric.hazine: -4},
+      outcome: 'Soy bizde kaldı; süvarimiz bozkırın en hızlısı.',
+    ),
+  ),
+  KaganCard(
+    id: 'tang_prensesi',
+    speaker: 'Çin Elçisi Pei',
+    title: 'Tang Sarayı Elçisi',
+    prompt:
+        'İmparator, barış için bir prensesi ve büyük bir çeyizi sana vermeyi öneriyor. Kabul edip akraba mı olalım, yoksa bozkır onurunu mu koruyalım?',
+    left: Choice(
+      label: 'Kabul et',
+      effects: {Metric.hazine: 12, Metric.ordu: 6, Metric.tore: -10},
+      outcome: 'Saray ihtişama büründü; bozkır Çin\'e yanaşıldı diye söylendi.',
+    ),
+    right: Choice(
+      label: 'Onuru koru',
+      effects: {Metric.tore: 10, Metric.hazine: -6},
+      outcome: 'Teklif reddedildi; bağımsızlık türkülere kondu.',
+    ),
+  ),
+  KaganCard(
+    id: 'kut_sorgusu',
+    speaker: 'Beyler Heyeti',
+    title: 'Kurultay',
+    prompt:
+        'Bir yenilgiden sonra beyler kutunu sorguluyor. Kurultay toplayıp seçimini yenileyelim mi, yoksa muhalefeti ezip otoriteyi mi gösterelim?',
+    left: Choice(
+      label: 'Kurultay topla',
+      effects: {Metric.tore: 8, Metric.ordu: 6, Metric.hazine: -6},
+      outcome: 'Beyler yeniden biat etti; meşruiyetin tazelendi.',
+    ),
+    right: Choice(
+      label: 'Muhalefeti ez',
+      effects: {Metric.ordu: 8, Metric.halk: -8, Metric.tore: -6},
+      outcome: 'Sesler kısıldı; korku itaati getirdi, sevgiyi değil.',
+    ),
+  ),
+  KaganCard(
+    id: 'esir_takasi',
+    speaker: 'Elçi Yamtar',
+    title: 'Komşu Boyun Elçisi',
+    prompt:
+        'Tutsak düşen beyini geri istiyorlar. Asker takasıyla mı geri alalım, yoksa ağır bir fidyeye mi bağlayalım?',
+    left: Choice(
+      label: 'Takas yap',
+      effects: {Metric.ordu: 8, Metric.hazine: -6},
+      outcome: 'Beyimiz yurda döndü; saflar tazelendi.',
+    ),
+    right: Choice(
+      label: 'Fidye iste',
+      effects: {Metric.hazine: 12, Metric.ordu: -6, Metric.halk: -4},
+      outcome: 'Kese doldu; tutsak beyin ailesi kırgın kaldı.',
+    ),
+  ),
+  KaganCard(
+    id: 'suikast_plani',
+    speaker: 'İç Oğuş Başı',
+    title: 'Muhafız Beyi',
+    prompt:
+        'Muhafızlar arasında bir suikast planı sezdik kağanım. Bütün muhafızı eleyip yenileyelim mi, yoksa sessizce elebaşını mı kaldıralım?',
+    left: Choice(
+      label: 'Muhafızı ele',
+      effects: {Metric.tore: 6, Metric.ordu: -8, Metric.halk: -4},
+      outcome: 'Saray temizlendi; ama güvenlik bir süre aksadı.',
+    ),
+    right: Choice(
+      label: 'Elebaşını kaldır',
+      effects: {Metric.ordu: 6, Metric.tore: -6},
+      outcome: 'Tehlike sessizce yok edildi; dedikodu fısıltıyla yayıldı.',
+    ),
+  ),
+  KaganCard(
+    id: 'zirh_mi_kilic_mi',
+    speaker: 'Demirci Başı',
+    title: 'Ergene Ustası',
+    prompt:
+        'Sınırlı demirimiz var. Halkı koruyacak zırh mı dövelim, yoksa düşmanı biçecek kılıç mı?',
+    left: Choice(
+      label: 'Zırh döv',
+      effects: {Metric.halk: 8, Metric.ordu: 4, Metric.hazine: -8},
+      outcome: 'Yiğitler zırha büründü; halk kendini güvende hissetti.',
+    ),
+    right: Choice(
+      label: 'Kılıç döv',
+      effects: {Metric.ordu: 10, Metric.hazine: -8, Metric.halk: -2},
+      outcome: 'Keskin kılıçlar kuşanıldı; saldırı gücü arttı.',
+    ),
+  ),
+  KaganCard(
+    id: 'tapinak',
+    speaker: 'Yabancı Vaiz',
+    title: 'Gezgin Rahip',
+    prompt:
+        'İnananlar bir ibadethane yapmak için izin ve yardım ister. Tapınağı fonlayalım mı, yoksa Gök Tengri töresi adına reddedelim mi?',
+    left: Choice(
+      label: 'Tapınağı fonla',
+      effects: {Metric.hazine: -8, Metric.halk: 8, Metric.tore: -8},
+      outcome: 'Tapınak yükseldi; tüccarlar memnun, kamlar küskün.',
+    ),
+    right: Choice(
+      label: 'Reddet',
+      effects: {Metric.tore: 8, Metric.halk: -6},
+      outcome: 'Eski töre korundu; bir cemaat sessizce küstü.',
+    ),
+  ),
+  KaganCard(
+    id: 'destan',
+    speaker: 'İhtiyar Bilge',
+    title: 'Gezgin Ozan',
+    prompt:
+        'Zaferlerini ölümsüz kılacak bir destan düzmek isterim kağanım. Beni ağırlayıp destanı yazdıralım mı, yoksa böbürlenmeye gerek var mı?',
+    left: Choice(
+      label: 'Destanı yazdır',
+      effects: {Metric.halk: 8, Metric.tore: 6, Metric.hazine: -6},
+      outcome: 'Adın kopuz tellerinde yedi boya yayıldı.',
+    ),
+    right: Choice(
+      label: 'Gerek yok',
+      effects: {Metric.tore: -4, Metric.hazine: 4},
+      outcome: 'Ozan başka kapı çaldı; namın dilden dile kalmadı.',
+    ),
+  ),
+  KaganCard(
+    id: 'su_kanali',
+    speaker: 'Yabancı Usta',
+    title: 'Gezgin Zanaatkâr',
+    prompt:
+        'Irmaktan su kanalı çekersem otlakların yeşerir, tarla biçersiniz. Yerleşik düzene mi geçelim, yoksa göçer töresine mi sadık kalalım?',
+    left: Choice(
+      label: 'Kanalı kazdır',
+      effects: {Metric.halk: 10, Metric.hazine: -8, Metric.tore: -6},
+      outcome: 'Tarlalar yeşerdi; kimi yaşlı göçer hayatına ağladı.',
+    ),
+    right: Choice(
+      label: 'Göçer kal',
+      effects: {Metric.tore: 8, Metric.halk: -4},
+      outcome: 'Oklar yine bozkıra sürüldü; töre korundu.',
+    ),
+  ),
+  KaganCard(
+    id: 'firariler',
+    speaker: 'Yüzbaşı Alp Er',
+    title: 'Genç Süvari',
+    prompt:
+        'Savaştan kaçan birkaç asker yakalandı. Disiplin için onları idam mı edelim, yoksa bağışlayıp orduya mı katalım?',
+    left: Choice(
+      label: 'İdam et',
+      effects: {Metric.ordu: 8, Metric.tore: 6, Metric.halk: -8},
+      outcome: 'Saflar hizaya geldi; çadırlara korku çöktü.',
+    ),
+    right: Choice(
+      label: 'Bağışla',
+      effects: {Metric.halk: 8, Metric.ordu: -6, Metric.tore: -4},
+      outcome: 'Merhametin konuşuldu; kimi bunu gevşeklik saydı.',
+    ),
+  ),
+  KaganCard(
+    id: 'varis_hasta',
+    speaker: 'Hatun',
+    title: 'Baş Hatun',
+    prompt:
+        'Veliahtımız ateşler içinde yatıyor. Yabancı bir hekim mi getirtelim, yoksa kamın ellerine mi bırakalım?',
+    left: Choice(
+      label: 'Hekim getirt',
+      effects: {Metric.hazine: -8, Metric.tore: -6, Metric.halk: 6},
+      outcome: 'Yabancı ilaçlar vârisi kurtardı; kamlar gücendi.',
+    ),
+    right: Choice(
+      label: 'Kama bırak',
+      effects: {Metric.tore: 8, Metric.halk: -4},
+      outcome: 'Kam günlerce okudu; vâris termiş gibi atlattı, töre güçlendi.',
+    ),
+  ),
 ];
