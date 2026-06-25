@@ -10,6 +10,7 @@ dependencies:
   flutter:
     sdk: flutter
   shared_preferences: ^2.5.3
+  audioplayers: ^6.1.0
 
 dev_dependencies:
   flutter_test:
@@ -36,3 +37,10 @@ flutter:
     - family: Alegreya
       fonts:
         - asset: assets/fonts/Alegreya.ttf
+  # Drop-in art & audio. Files are optional — the app falls back to painted
+  # visuals / silence when a file is missing. See docs/ART_PROMPTS.md.
+  assets:
+    - assets/images/portraits/
+    - assets/images/bg/
+    - assets/audio/sfx/
+    - assets/audio/music/

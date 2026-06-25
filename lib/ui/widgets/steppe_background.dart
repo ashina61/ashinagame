@@ -26,9 +26,30 @@ class SteppeBackground extends StatelessWidget {
       ),
       child: Stack(
         children: [
+          // Optional steppe photo/illustration; falls back to the painted
+          // ring backdrop when the asset is absent.
           Positioned.fill(
             child: IgnorePointer(
-              child: CustomPaint(painter: _RingPainter()),
+              child: Image.asset(
+                'assets/images/bg/steppe.png',
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stack) =>
+                    CustomPaint(painter: _RingPainter()),
+              ),
+            ),
+          ),
+          // Scrim so card/text stay legible over any background image.
+          const Positioned.fill(
+            child: IgnorePointer(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [Color(0x66000000), Color(0xAA000000)],
+                  ),
+                ),
+              ),
             ),
           ),
           if (child != null) Positioned.fill(child: child!),

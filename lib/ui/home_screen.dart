@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../state/audio_service.dart';
 import '../state/stats_store.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
@@ -19,6 +20,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   Future<void> _play() async {
+    AudioService.instance.tap();
     await Navigator.of(context).push(
       MaterialPageRoute(builder: (_) => GameScreen(stats: widget.stats)),
     );
@@ -26,6 +28,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _openStats() {
+    AudioService.instance.tap();
     Navigator.of(context).push(
       MaterialPageRoute(builder: (_) => StatsScreen(stats: widget.stats)),
     );

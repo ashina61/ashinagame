@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import 'state/audio_service.dart';
 import 'state/stats_store.dart';
 import 'theme/app_theme.dart';
 import 'ui/home_screen.dart';
@@ -9,6 +10,7 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   final stats = await StatsStore.create();
+  await AudioService.instance.init();
   runApp(AshinaApp(stats: stats));
 }
 

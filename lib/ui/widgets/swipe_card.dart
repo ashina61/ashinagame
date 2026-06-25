@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../data/portraits.dart';
 import '../../models/kagan_card.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
@@ -109,27 +110,52 @@ class _Portrait extends StatelessWidget {
 
   final String speaker;
 
+  static const double _size = 92;
+
   @override
   Widget build(BuildContext context) {
-    final initial = speaker.isNotEmpty ? speaker.substring(0, 1) : '?';
+    final asset = portraitFor(speaker);
     return Container(
-      width: 76,
-      height: 76,
+      width: _size,
+      height: _size,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         gradient: const RadialGradient(
           colors: [AppColors.bronze, AppColors.leatherDeep],
         ),
         border: Border.all(color: AppColors.gold, width: 2),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.4),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
+      clipBehavior: Clip.antiAlias,
       alignment: Alignment.center,
+      child: asset == null
+          ? _monogram()
+          : Image.asset(
+              asset,
+              width: _size,
+              height: _size,
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stack) => _monogram(),
+            ),
+    );
+  }
+
+  Widget _monogram() {
+    final initial = speaker.isNotEmpty ? speaker.substring(0, 1) : '?';
+    return Center(
       child: Text(
         initial,
         style: const TextStyle(
           fontFamily: 'Cinzel',
           fontVariations: [FontVariation('wght', 800)],
           color: AppColors.goldBright,
-          fontSize: 34,
+          fontSize: 40,
         ),
       ),
     );

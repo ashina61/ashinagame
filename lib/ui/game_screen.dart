@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../models/metric.dart';
+import '../state/audio_service.dart';
 import '../state/game_state.dart';
 import '../state/stats_store.dart';
 import '../theme/app_colors.dart';
@@ -50,6 +51,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
         vsync: this, duration: const Duration(milliseconds: 360));
     _shownId = _game.current?.id;
     _entry.forward(from: 0);
+    AudioService.instance.startMusic();
   }
 
   @override
@@ -58,12 +60,16 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     _game.dispose();
     _ctrl.dispose();
     _entry.dispose();
+    AudioService.instance.stopMusic();
     super.dispose();
   }
 
   void _onGame() {
-    // Heavy buzz the moment a reign ends.
-    if (_game.dead && !_wasDead) HapticFeedback.heavyImpact();
+    // Heavy buzz + toll the moment a reign ends.
+    if (_game.dead && !_wasDead) {
+      HapticFeedback.heavyImpact();
+      AudioService.instance.death();
+    }
     _wasDead = _game.dead;
     // Play an entrance whenever a fresh card takes the stage.
     final id = _game.current?.id;
@@ -111,7 +117,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
       _commitRight = (_drag.abs() > 4 ? _drag : velocity) > 0;
       _committing = true;
       HapticFeedback.lightImpact();
-      SystemSound.play(SystemSoundType.click);
+      AudioService.instance.swipe();
       _animateTo(_commitRight ? width * 1.3 : -width * 1.3);
     } else {
       _pastThreshold = false;
@@ -205,6 +211,23 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                   ),
                   _Footer(game: _game),
                 ],
+              ),
+              Positioned(
+                top: 2,
+                right: 2,
+                child: IconButton(
+                  onPressed: () async {
+                    await AudioService.instance.toggleMute();
+                    setState(() {});
+                  },
+                  icon: Icon(
+                    AudioService.instance.muted
+                        ? Icons.volume_off_rounded
+                        : Icons.volume_up_rounded,
+                    color: AppColors.sand,
+                    size: 20,
+                  ),
+                ),
               ),
               if (_game.dead) _DeathOverlay(game: _game, onEnd: _endRun),
             ],
@@ -338,7 +361,10 @@ class _DeathOverlay extends StatelessWidget {
             GoldButton(
               label: 'VÂRİS TAHTA ÇIKSIN',
               icon: Icons.account_balance_rounded,
-              onTap: game.succeed,
+              onTap: () {
+                AudioService.instance.succeed();
+                game.succeed();
+              },
             ),
             const SizedBox(height: 12),
             TextButton(
