@@ -21,7 +21,8 @@ class GameScreen extends StatefulWidget {
   State<GameScreen> createState() => _GameScreenState();
 }
 
-class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateMixin {
+class _GameScreenState extends State<GameScreen>
+    with SingleTickerProviderStateMixin {
   late final GameState _game;
   late final AnimationController _ctrl;
 
@@ -35,7 +36,8 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
   void initState() {
     super.initState();
     _game = GameState(widget.stats)..addListener(_onGame);
-    _ctrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 240))
+    _ctrl = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 240))
       ..addListener(_tickAnim)
       ..addStatusListener(_onAnimStatus);
   }
@@ -52,7 +54,8 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
 
   void _tickAnim() {
     setState(() {
-      _drag = lerpDouble(_from, _to, Curves.easeOut.transform(_ctrl.value)) ?? _to;
+      _drag =
+          lerpDouble(_from, _to, Curves.easeOut.transform(_ctrl.value)) ?? _to;
     });
   }
 
@@ -111,7 +114,8 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
                   const SizedBox(height: 8),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 12),
-                    child: MetricMeters(metrics: _game.metrics, preview: _preview),
+                    child:
+                        MetricMeters(metrics: _game.metrics, preview: _preview),
                   ),
                   Expanded(
                     child: card == null
@@ -122,14 +126,17 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
                             behavior: HitTestBehavior.opaque,
                             child: Center(
                               child: Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 20, vertical: 16),
                                 child: Transform.translate(
                                   offset: Offset(_drag, 0),
                                   child: Transform.rotate(
                                     angle: _progress * 0.12,
                                     child: ConstrainedBox(
-                                      constraints: const BoxConstraints(maxWidth: 420, maxHeight: 460),
-                                      child: SwipeCard(card: card, progress: _progress),
+                                      constraints: const BoxConstraints(
+                                          maxWidth: 420, maxHeight: 460),
+                                      child: SwipeCard(
+                                          card: card, progress: _progress),
                                     ),
                                   ),
                                 ),
@@ -175,7 +182,7 @@ class _Footer extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   )
-                : Text('Kararını vermek için kartı kaydır',
+                : const Text('Kararını vermek için kartı kaydır',
                     style: AppTextStyles.meta, textAlign: TextAlign.center),
           ),
           const SizedBox(height: 6),
@@ -216,7 +223,8 @@ class _DeathOverlay extends StatelessWidget {
               size: 56,
             ),
             const SizedBox(height: 16),
-            Text('SALTANAT SONA ERDİ', style: AppTextStyles.header, textAlign: TextAlign.center),
+            const Text('SALTANAT SONA ERDİ',
+                style: AppTextStyles.header, textAlign: TextAlign.center),
             const SizedBox(height: 8),
             Text(
               '${game.rulerName} Kağan, ${game.reignYears} yıl hüküm sürdü.',
@@ -224,7 +232,8 @@ class _DeathOverlay extends StatelessWidget {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 16),
-            Text(game.deathCause, style: AppTextStyles.body, textAlign: TextAlign.center),
+            Text(game.deathCause,
+                style: AppTextStyles.body, textAlign: TextAlign.center),
             const SizedBox(height: 28),
             GoldButton(
               label: 'VÂRİS TAHTA ÇIKSIN',
@@ -234,7 +243,8 @@ class _DeathOverlay extends StatelessWidget {
             const SizedBox(height: 12),
             TextButton(
               onPressed: onEnd,
-              child: Text('HANEDANI BİTİR', style: AppTextStyles.buttonDark),
+              child:
+                  const Text('HANEDANI BİTİR', style: AppTextStyles.buttonDark),
             ),
           ],
         ),

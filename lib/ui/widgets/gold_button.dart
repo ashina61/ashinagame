@@ -5,7 +5,8 @@ import '../../theme/app_text_styles.dart';
 
 /// Primary ornate gold action button.
 class GoldButton extends StatelessWidget {
-  const GoldButton({super.key, required this.label, required this.onTap, this.icon});
+  const GoldButton(
+      {super.key, required this.label, required this.onTap, this.icon});
 
   final String label;
   final VoidCallback onTap;
@@ -26,7 +27,8 @@ class GoldButton extends StatelessWidget {
               colors: [AppColors.goldBright, AppColors.gold],
             ),
             boxShadow: [
-              BoxShadow(color: AppColors.gold.withValues(alpha: 0.4), blurRadius: 16),
+              BoxShadow(
+                  color: AppColors.gold.withValues(alpha: 0.4), blurRadius: 16),
             ],
           ),
           child: Row(

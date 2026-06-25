@@ -30,7 +30,8 @@ class MetricMeters extends StatelessWidget {
 }
 
 class _Meter extends StatelessWidget {
-  const _Meter({required this.metric, required this.value, required this.delta});
+  const _Meter(
+      {required this.metric, required this.value, required this.delta});
 
   final Metric metric;
   final int value;
@@ -49,7 +50,9 @@ class _Meter extends StatelessWidget {
           height: 18,
           child: active
               ? Icon(
-                  up ? Icons.keyboard_arrow_up_rounded : Icons.keyboard_arrow_down_rounded,
+                  up
+                      ? Icons.keyboard_arrow_up_rounded
+                      : Icons.keyboard_arrow_down_rounded,
                   color: hintColor,
                   size: 18,
                 )

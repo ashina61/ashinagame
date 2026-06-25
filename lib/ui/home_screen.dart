@@ -41,15 +41,16 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Column(
               children: [
                 const Spacer(flex: 3),
-                Text('ASHINA', style: AppTextStyles.display, textAlign: TextAlign.center),
+                const Text('ASHINA',
+                    style: AppTextStyles.display, textAlign: TextAlign.center),
                 const SizedBox(height: 10),
-                Text(
+                const Text(
                   'BOZKIRDA KAĞANLIK',
                   style: AppTextStyles.section,
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 20),
-                Text(
+                const Text(
                   'Halkı, orduyu, hazineyi ve töreyi dengede tut. '
                   'Kartı sağa ya da sola kaydırarak karar ver; biri tükenir '
                   'ya da taşarsa tahtını yitirirsin. Hanedanın ne kadar yaşar?',
@@ -57,12 +58,16 @@ class _HomeScreenState extends State<HomeScreen> {
                   textAlign: TextAlign.center,
                 ),
                 const Spacer(flex: 2),
-                GoldButton(label: 'TAHTA ÇIK', icon: Icons.play_arrow_rounded, onTap: _play),
+                GoldButton(
+                    label: 'TAHTA ÇIK',
+                    icon: Icons.play_arrow_rounded,
+                    onTap: _play),
                 const SizedBox(height: 14),
                 TextButton.icon(
                   onPressed: _openStats,
-                  icon: const Icon(Icons.history_edu_rounded, color: AppColors.sand, size: 18),
-                  label: Text('GÜNCE', style: AppTextStyles.buttonDark),
+                  icon: const Icon(Icons.history_edu_rounded,
+                      color: AppColors.sand, size: 18),
+                  label: const Text('GÜNCE', style: AppTextStyles.buttonDark),
                 ),
                 const Spacer(flex: 2),
                 Text('En uzun saltanat: ${widget.stats.bestReign} yıl',

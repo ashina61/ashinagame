@@ -199,7 +199,12 @@ const deck = <KaganCard>[
         'Genç yiğitler şan için bir akın diler. İzin verip onları bozkıra mı salalım, yoksa dizginleri mi tutalım?',
     left: Choice(
       label: 'İzin ver',
-      effects: {Metric.ordu: 8, Metric.hazine: 8, Metric.halk: -6, Metric.tore: -4},
+      effects: {
+        Metric.ordu: 8,
+        Metric.hazine: 8,
+        Metric.halk: -6,
+        Metric.tore: -4
+      },
       outcome: 'Ganimetle döndüler; birkaç ana evladını gömdü.',
     ),
     right: Choice(
@@ -420,7 +425,12 @@ const deck = <KaganCard>[
         'Bozkırın en güçlü hanı kızını ister. Kızını verip ittifak mı kuralım, yoksa onu yanında mı tutalım?',
     left: Choice(
       label: 'Kızını ver',
-      effects: {Metric.ordu: 10, Metric.hazine: 8, Metric.halk: -6, Metric.tore: -4},
+      effects: {
+        Metric.ordu: 10,
+        Metric.hazine: 8,
+        Metric.halk: -6,
+        Metric.tore: -4
+      },
       outcome: 'İki yurt akraba oldu; otağda bir ocak söndü.',
     ),
     right: Choice(
@@ -488,7 +498,12 @@ const deck = <KaganCard>[
         'Tengri sana "kut" verdi diye haykıralım mı, görkemli bir tören kuralım mı; yoksa kağan alçakgönüllü mü kalsın?',
     left: Choice(
       label: 'Kut\'u ilan et',
-      effects: {Metric.tore: 10, Metric.halk: 8, Metric.ordu: 4, Metric.hazine: -10},
+      effects: {
+        Metric.tore: 10,
+        Metric.halk: 8,
+        Metric.ordu: 4,
+        Metric.hazine: -10
+      },
       outcome: 'Davullar gümbürdedi; kutun yedi iklime yayıldı.',
     ),
     right: Choice(

@@ -14,7 +14,11 @@ class StatsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final rows = <(IconData, String, String)>[
       (Icons.timer_rounded, 'En uzun saltanat', '${stats.bestReign} yıl'),
-      (Icons.account_balance_rounded, 'En uzun hanedan', '${stats.bestDynasty} yıl'),
+      (
+        Icons.account_balance_rounded,
+        'En uzun hanedan',
+        '${stats.bestDynasty} yıl'
+      ),
       (Icons.history_edu_rounded, 'Toplam hüküm', '${stats.totalYears} yıl'),
       (Icons.flag_rounded, 'Oynanan hanedan', '${stats.gamesPlayed}'),
     ];
@@ -30,10 +34,11 @@ class StatsScreen extends StatelessWidget {
                   children: [
                     IconButton(
                       onPressed: () => Navigator.of(context).pop(),
-                      icon: const Icon(Icons.arrow_back_rounded, color: AppColors.sand),
+                      icon: const Icon(Icons.arrow_back_rounded,
+                          color: AppColors.sand),
                     ),
                     const SizedBox(width: 4),
-                    Text('GÜNCE', style: AppTextStyles.header),
+                    const Text('GÜNCE', style: AppTextStyles.header),
                   ],
                 ),
               ),
@@ -42,7 +47,8 @@ class StatsScreen extends StatelessWidget {
                 child: ListView(
                   padding: const EdgeInsets.symmetric(horizontal: 24),
                   children: [
-                    for (final r in rows) _StatRow(icon: r.$1, label: r.$2, value: r.$3),
+                    for (final r in rows)
+                      _StatRow(icon: r.$1, label: r.$2, value: r.$3),
                   ],
                 ),
               ),
@@ -55,7 +61,8 @@ class StatsScreen extends StatelessWidget {
 }
 
 class _StatRow extends StatelessWidget {
-  const _StatRow({required this.icon, required this.label, required this.value});
+  const _StatRow(
+      {required this.icon, required this.label, required this.value});
 
   final IconData icon;
   final String label;

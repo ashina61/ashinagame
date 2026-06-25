@@ -29,7 +29,8 @@ class SwipeCard extends StatelessWidget {
           end: Alignment.bottomCenter,
           colors: [AppColors.leather, AppColors.leatherDeep],
         ),
-        border: Border.all(color: showChoice ? accent : AppColors.bronze, width: 2),
+        border:
+            Border.all(color: showChoice ? accent : AppColors.bronze, width: 2),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.5),
@@ -46,10 +47,13 @@ class SwipeCard extends StatelessWidget {
               children: [
                 _Portrait(speaker: card.speaker),
                 const SizedBox(height: 12),
-                Text(card.speaker, style: AppTextStyles.speaker, textAlign: TextAlign.center),
-                Text(card.title, style: AppTextStyles.meta, textAlign: TextAlign.center),
+                Text(card.speaker,
+                    style: AppTextStyles.speaker, textAlign: TextAlign.center),
+                Text(card.title,
+                    style: AppTextStyles.meta, textAlign: TextAlign.center),
                 const SizedBox(height: 16),
-                Container(height: 1, color: AppColors.bronze.withValues(alpha: 0.5)),
+                Container(
+                    height: 1, color: AppColors.bronze.withValues(alpha: 0.5)),
                 const SizedBox(height: 16),
                 Expanded(
                   child: Center(
@@ -63,7 +67,10 @@ class SwipeCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 12),
-                _ChoiceHints(left: card.left.label, right: card.right.label, progress: progress),
+                _ChoiceHints(
+                    left: card.left.label,
+                    right: card.right.label,
+                    progress: progress),
               ],
             ),
           ),
@@ -78,13 +85,15 @@ class SwipeCard extends StatelessWidget {
                 child: Transform.rotate(
                   angle: toRight ? -0.18 : 0.18,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(color: AppColors.goldBright, width: 2),
                       color: AppColors.ink.withValues(alpha: 0.7),
                     ),
-                    child: Text(choice.label.toUpperCase(), style: AppTextStyles.section),
+                    child: Text(choice.label.toUpperCase(),
+                        style: AppTextStyles.section),
                   ),
                 ),
               ),
@@ -128,7 +137,8 @@ class _Portrait extends StatelessWidget {
 }
 
 class _ChoiceHints extends StatelessWidget {
-  const _ChoiceHints({required this.left, required this.right, required this.progress});
+  const _ChoiceHints(
+      {required this.left, required this.right, required this.progress});
 
   final String left;
   final String right;
@@ -142,7 +152,9 @@ class _ChoiceHints extends StatelessWidget {
             size: 12, color: AppColors.sand.withValues(alpha: 0.6)),
         Expanded(
           child: Text(left,
-              style: AppTextStyles.body, maxLines: 1, overflow: TextOverflow.ellipsis),
+              style: AppTextStyles.body,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis),
         ),
         const SizedBox(width: 8),
         Expanded(
