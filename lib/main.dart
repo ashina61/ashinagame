@@ -1,14 +1,29 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
-import 'app/ashina_app.dart';
-import 'core/audio/audio_service.dart';
-import 'core/settings/app_settings.dart';
-import 'game/state/game_storage.dart';
+import 'state/stats_store.dart';
+import 'theme/app_theme.dart';
+import 'ui/home_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  final storage = await GameStorage.create();
-  await AudioService.instance.init();
-  await AppSettings.instance.init();
-  runApp(AshinaApp(storage: storage));
+  await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+  final stats = await StatsStore.create();
+  runApp(AshinaApp(stats: stats));
+}
+
+class AshinaApp extends StatelessWidget {
+  const AshinaApp({super.key, required this.stats});
+
+  final StatsStore stats;
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Ashina',
+      debugShowCheckedModeBanner: false,
+      theme: AppTheme.theme,
+      home: HomeScreen(stats: stats),
+    );
+  }
 }
