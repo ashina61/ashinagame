@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
 import '../../models/metric.dart';
@@ -6,6 +8,7 @@ import '../../theme/app_text_styles.dart';
 
 /// The four pillar gauges across the top of the game screen. When [preview]
 /// holds the pending choice's effects, affected pillars show a direction hint.
+/// When a value changes, the affected meter gives a short pulse.
 class MetricMeters extends StatelessWidget {
   const MetricMeters({super.key, required this.metrics, this.preview});
 
@@ -29,7 +32,7 @@ class MetricMeters extends StatelessWidget {
   }
 }
 
-class _Meter extends StatelessWidget {
+class _Meter extends StatefulWidget {
   const _Meter(
       {required this.metric, required this.value, required this.delta});
 
@@ -38,9 +41,39 @@ class _Meter extends StatelessWidget {
   final int delta;
 
   @override
+  State<_Meter> createState() => _MeterState();
+}
+
+class _MeterState extends State<_Meter> with SingleTickerProviderStateMixin {
+  late final AnimationController _pulse;
+
+  @override
+  void initState() {
+    super.initState();
+    _pulse = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 420),
+    );
+  }
+
+  @override
+  void didUpdateWidget(covariant _Meter oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.value != widget.value) {
+      _pulse.forward(from: 0);
+    }
+  }
+
+  @override
+  void dispose() {
+    _pulse.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final active = delta != 0;
-    final up = delta > 0;
+    final active = widget.delta != 0;
+    final up = widget.delta > 0;
     final hintColor = up ? AppColors.success : AppColors.danger;
 
     return Column(
@@ -58,24 +91,46 @@ class _Meter extends StatelessWidget {
                 )
               : null,
         ),
-        Container(
-          width: 40,
-          height: 40,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: AppColors.card,
-            border: Border.all(
-              color: active ? hintColor : AppColors.bronze,
-              width: active ? 2 : 1,
-            ),
-          ),
-          child: Icon(metric.icon, color: metric.color, size: 20),
+        AnimatedBuilder(
+          animation: _pulse,
+          builder: (context, child) {
+            // 0 -> peak -> 0 over the controller's run.
+            final t = math.sin(_pulse.value * math.pi);
+            return Transform.scale(
+              scale: 1 + 0.22 * t,
+              child: Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppColors.card,
+                  border: Border.all(
+                    color: active
+                        ? hintColor
+                        : Color.lerp(AppColors.bronze, widget.metric.color, t)!,
+                    width: active ? 2 : 1 + t,
+                  ),
+                  boxShadow: t > 0.01
+                      ? [
+                          BoxShadow(
+                            color:
+                                widget.metric.color.withValues(alpha: 0.5 * t),
+                            blurRadius: 12 * t,
+                          ),
+                        ]
+                      : null,
+                ),
+                child: Icon(widget.metric.icon,
+                    color: widget.metric.color, size: 20),
+              ),
+            );
+          },
         ),
         const SizedBox(height: 6),
-        _Bar(value: value, color: metric.color),
+        _Bar(value: widget.value, color: widget.metric.color),
         const SizedBox(height: 4),
-        Text('$value', style: AppTextStyles.value),
-        Text(metric.label, style: AppTextStyles.meta),
+        Text('${widget.value}', style: AppTextStyles.value),
+        Text(widget.metric.label, style: AppTextStyles.meta),
       ],
     );
   }

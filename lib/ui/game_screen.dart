@@ -1,6 +1,7 @@
 import 'dart:ui' show lerpDouble;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../models/metric.dart';
 import '../state/game_state.dart';
@@ -12,6 +13,8 @@ import 'widgets/metric_meters.dart';
 import 'widgets/steppe_background.dart';
 import 'widgets/swipe_card.dart';
 
+const _cardConstraints = BoxConstraints(maxWidth: 420, maxHeight: 460);
+
 class GameScreen extends StatefulWidget {
   const GameScreen({super.key, required this.stats});
 
@@ -21,16 +24,19 @@ class GameScreen extends StatefulWidget {
   State<GameScreen> createState() => _GameScreenState();
 }
 
-class _GameScreenState extends State<GameScreen>
-    with SingleTickerProviderStateMixin {
+class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
   late final GameState _game;
-  late final AnimationController _ctrl;
+  late final AnimationController _ctrl; // snap / fling
+  late final AnimationController _entry; // new-card entrance
 
   double _drag = 0; // horizontal offset in px
   double _from = 0;
   double _to = 0;
   bool _committing = false;
   bool _commitRight = false;
+  bool _pastThreshold = false;
+  bool _wasDead = false;
+  String? _shownId;
 
   @override
   void initState() {
@@ -40,6 +46,10 @@ class _GameScreenState extends State<GameScreen>
         vsync: this, duration: const Duration(milliseconds: 240))
       ..addListener(_tickAnim)
       ..addStatusListener(_onAnimStatus);
+    _entry = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 360));
+    _shownId = _game.current?.id;
+    _entry.forward(from: 0);
   }
 
   @override
@@ -47,10 +57,23 @@ class _GameScreenState extends State<GameScreen>
     _game.removeListener(_onGame);
     _game.dispose();
     _ctrl.dispose();
+    _entry.dispose();
     super.dispose();
   }
 
-  void _onGame() => setState(() {});
+  void _onGame() {
+    // Heavy buzz the moment a reign ends.
+    if (_game.dead && !_wasDead) HapticFeedback.heavyImpact();
+    _wasDead = _game.dead;
+    // Play an entrance whenever a fresh card takes the stage.
+    final id = _game.current?.id;
+    if (!_game.dead && id != null && id != _shownId) {
+      _shownId = id;
+      _pastThreshold = false;
+      _entry.forward(from: 0);
+    }
+    setState(() {});
+  }
 
   void _tickAnim() {
     setState(() {
@@ -71,17 +94,27 @@ class _GameScreenState extends State<GameScreen>
   void _onPanUpdate(DragUpdateDetails d) {
     if (_ctrl.isAnimating || _game.dead) return;
     setState(() => _drag += d.delta.dx);
+    final past = _drag.abs() > _threshold;
+    if (past != _pastThreshold) {
+      _pastThreshold = past;
+      if (past) HapticFeedback.selectionClick(); // tick when a side arms
+    }
   }
 
   void _onPanEnd(DragEndDetails d) {
     if (_ctrl.isAnimating || _game.dead) return;
     final width = MediaQuery.of(context).size.width;
-    final threshold = width * 0.26;
-    if (_drag.abs() > threshold) {
-      _commitRight = _drag > 0;
+    final velocity = d.velocity.pixelsPerSecond.dx;
+    final flung = velocity.abs() > 720 && _drag.abs() > 24;
+    final committed = _drag.abs() > _threshold || flung;
+    if (committed) {
+      _commitRight = (_drag.abs() > 4 ? _drag : velocity) > 0;
       _committing = true;
+      HapticFeedback.lightImpact();
+      SystemSound.play(SystemSoundType.click);
       _animateTo(_commitRight ? width * 1.3 : -width * 1.3);
     } else {
+      _pastThreshold = false;
       _animateTo(0);
     }
   }
@@ -128,17 +161,43 @@ class _GameScreenState extends State<GameScreen>
                               child: Padding(
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 20, vertical: 16),
-                                child: Transform.translate(
-                                  offset: Offset(_drag, 0),
-                                  child: Transform.rotate(
-                                    angle: _progress * 0.12,
-                                    child: ConstrainedBox(
-                                      constraints: const BoxConstraints(
-                                          maxWidth: 420, maxHeight: 460),
-                                      child: SwipeCard(
-                                          card: card, progress: _progress),
+                                child: Stack(
+                                  alignment: Alignment.center,
+                                  children: [
+                                    const _DeckBack(),
+                                    AnimatedBuilder(
+                                      animation: _entry,
+                                      builder: (context, child) {
+                                        final e = _entry.value;
+                                        final opacity =
+                                            Curves.easeOut.transform(e);
+                                        final scale = 0.94 +
+                                            0.06 *
+                                                Curves.easeOutBack.transform(e);
+                                        final dy = (1 - opacity) * 26;
+                                        return Opacity(
+                                          opacity: opacity,
+                                          child: Transform.translate(
+                                            offset: Offset(0, dy),
+                                            child: Transform.scale(
+                                                scale: scale, child: child),
+                                          ),
+                                        );
+                                      },
+                                      child: Transform.translate(
+                                        offset: Offset(_drag, 0),
+                                        child: Transform.rotate(
+                                          angle: _progress * 0.12,
+                                          child: ConstrainedBox(
+                                            constraints: _cardConstraints,
+                                            child: SwipeCard(
+                                                card: card,
+                                                progress: _progress),
+                                          ),
+                                        ),
+                                      ),
                                     ),
-                                  ),
+                                  ],
                                 ),
                               ),
                             ),
@@ -158,6 +217,38 @@ class _GameScreenState extends State<GameScreen>
   void _endRun() {
     _game.endDynasty();
     Navigator.of(context).pop();
+  }
+}
+
+/// A faint, slightly smaller card behind the active one to suggest a deck.
+class _DeckBack extends StatelessWidget {
+  const _DeckBack();
+
+  @override
+  Widget build(BuildContext context) {
+    return Transform.translate(
+      offset: const Offset(0, 14),
+      child: Transform.scale(
+        scale: 0.93,
+        child: Opacity(
+          opacity: 0.45,
+          child: ConstrainedBox(
+            constraints: _cardConstraints,
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(22),
+                gradient: const LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [AppColors.leather, AppColors.leatherDeep],
+                ),
+                border: Border.all(color: AppColors.bronze),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
 
@@ -209,9 +300,18 @@ class _DeathOverlay extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final metric = game.deathMetric;
-    return Container(
-      color: Colors.black.withValues(alpha: 0.82),
-      alignment: Alignment.center,
+    return TweenAnimationBuilder<double>(
+      duration: const Duration(milliseconds: 360),
+      curve: Curves.easeOut,
+      tween: Tween(begin: 0, end: 1),
+      builder: (context, t, child) => Opacity(
+        opacity: t,
+        child: Container(
+          color: Colors.black.withValues(alpha: 0.82 * t),
+          alignment: Alignment.center,
+          child: Transform.scale(scale: 0.92 + 0.08 * t, child: child),
+        ),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(28),
         child: Column(
