@@ -1,0 +1,380 @@
+import 'dart:ui' show lerpDouble;
+
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+
+import '../models/metric.dart';
+import '../state/audio_service.dart';
+import '../state/game_state.dart';
+import '../state/stats_store.dart';
+import '../theme/app_colors.dart';
+import '../theme/app_text_styles.dart';
+import 'widgets/gold_button.dart';
+import 'widgets/metric_meters.dart';
+import 'widgets/steppe_background.dart';
+import 'widgets/swipe_card.dart';
+
+const _cardConstraints = BoxConstraints(maxWidth: 420, maxHeight: 460);
+
+class GameScreen extends StatefulWidget {
+  const GameScreen({super.key, required this.stats});
+
+  final StatsStore stats;
+
+  @override
+  State<GameScreen> createState() => _GameScreenState();
+}
+
+class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
+  late final GameState _game;
+  late final AnimationController _ctrl; // snap / fling
+  late final AnimationController _entry; // new-card entrance
+
+  double _drag = 0; // horizontal offset in px
+  double _from = 0;
+  double _to = 0;
+  bool _committing = false;
+  bool _commitRight = false;
+  bool _pastThreshold = false;
+  bool _wasDead = false;
+  String? _shownId;
+
+  @override
+  void initState() {
+    super.initState();
+    _game = GameState(widget.stats)..addListener(_onGame);
+    _ctrl = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 240))
+      ..addListener(_tickAnim)
+      ..addStatusListener(_onAnimStatus);
+    _entry = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 360));
+    _shownId = _game.current?.id;
+    _entry.forward(from: 0);
+    AudioService.instance.startMusic();
+  }
+
+  @override
+  void dispose() {
+    _game.removeListener(_onGame);
+    _game.dispose();
+    _ctrl.dispose();
+    _entry.dispose();
+    AudioService.instance.stopMusic();
+    super.dispose();
+  }
+
+  void _onGame() {
+    // Heavy buzz + toll the moment a reign ends.
+    if (_game.dead && !_wasDead) {
+      HapticFeedback.heavyImpact();
+      AudioService.instance.death();
+    }
+    _wasDead = _game.dead;
+    // Play an entrance whenever a fresh card takes the stage.
+    final id = _game.current?.id;
+    if (!_game.dead && id != null && id != _shownId) {
+      _shownId = id;
+      _pastThreshold = false;
+      _entry.forward(from: 0);
+    }
+    setState(() {});
+  }
+
+  void _tickAnim() {
+    setState(() {
+      _drag =
+          lerpDouble(_from, _to, Curves.easeOut.transform(_ctrl.value)) ?? _to;
+    });
+  }
+
+  void _onAnimStatus(AnimationStatus status) {
+    if (status != AnimationStatus.completed) return;
+    if (_committing) {
+      _committing = false;
+      _drag = 0;
+      _game.choose(_commitRight); // triggers _onGame -> setState
+    }
+  }
+
+  void _onPanUpdate(DragUpdateDetails d) {
+    if (_ctrl.isAnimating || _game.dead) return;
+    setState(() => _drag += d.delta.dx);
+    final past = _drag.abs() > _threshold;
+    if (past != _pastThreshold) {
+      _pastThreshold = past;
+      if (past) HapticFeedback.selectionClick(); // tick when a side arms
+    }
+  }
+
+  void _onPanEnd(DragEndDetails d) {
+    if (_ctrl.isAnimating || _game.dead) return;
+    final width = MediaQuery.of(context).size.width;
+    final velocity = d.velocity.pixelsPerSecond.dx;
+    final flung = velocity.abs() > 720 && _drag.abs() > 24;
+    final committed = _drag.abs() > _threshold || flung;
+    if (committed) {
+      _commitRight = (_drag.abs() > 4 ? _drag : velocity) > 0;
+      _committing = true;
+      HapticFeedback.lightImpact();
+      AudioService.instance.swipe();
+      _animateTo(_commitRight ? width * 1.3 : -width * 1.3);
+    } else {
+      _pastThreshold = false;
+      _animateTo(0);
+    }
+  }
+
+  void _animateTo(double target) {
+    _from = _drag;
+    _to = target;
+    _ctrl.forward(from: 0);
+  }
+
+  double get _threshold => MediaQuery.of(context).size.width * 0.26;
+
+  double get _progress => (_drag / _threshold).clamp(-1.0, 1.0);
+
+  Map<Metric, int>? get _preview {
+    if (_game.current == null || _drag.abs() < 8 || _committing) return null;
+    return (_drag > 0 ? _game.current!.right : _game.current!.left).effects;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final card = _game.current;
+    return Scaffold(
+      body: SteppeBackground(
+        child: SafeArea(
+          child: Stack(
+            children: [
+              Column(
+                children: [
+                  const SizedBox(height: 8),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    child:
+                        MetricMeters(metrics: _game.metrics, preview: _preview),
+                  ),
+                  Expanded(
+                    child: card == null
+                        ? const SizedBox.shrink()
+                        : GestureDetector(
+                            onPanUpdate: _onPanUpdate,
+                            onPanEnd: _onPanEnd,
+                            behavior: HitTestBehavior.opaque,
+                            child: Center(
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 20, vertical: 16),
+                                child: Stack(
+                                  alignment: Alignment.center,
+                                  children: [
+                                    const _DeckBack(),
+                                    AnimatedBuilder(
+                                      animation: _entry,
+                                      builder: (context, child) {
+                                        final e = _entry.value;
+                                        final opacity =
+                                            Curves.easeOut.transform(e);
+                                        final scale = 0.94 +
+                                            0.06 *
+                                                Curves.easeOutBack.transform(e);
+                                        final dy = (1 - opacity) * 26;
+                                        return Opacity(
+                                          opacity: opacity,
+                                          child: Transform.translate(
+                                            offset: Offset(0, dy),
+                                            child: Transform.scale(
+                                                scale: scale, child: child),
+                                          ),
+                                        );
+                                      },
+                                      child: Transform.translate(
+                                        offset: Offset(_drag, 0),
+                                        child: Transform.rotate(
+                                          angle: _progress * 0.12,
+                                          child: ConstrainedBox(
+                                            constraints: _cardConstraints,
+                                            child: SwipeCard(
+                                                card: card,
+                                                progress: _progress),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                  ),
+                  _Footer(game: _game),
+                ],
+              ),
+              Positioned(
+                top: 2,
+                right: 2,
+                child: IconButton(
+                  onPressed: () async {
+                    await AudioService.instance.toggleMute();
+                    setState(() {});
+                  },
+                  icon: Icon(
+                    AudioService.instance.muted
+                        ? Icons.volume_off_rounded
+                        : Icons.volume_up_rounded,
+                    color: AppColors.sand,
+                    size: 20,
+                  ),
+                ),
+              ),
+              if (_game.dead) _DeathOverlay(game: _game, onEnd: _endRun),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _endRun() {
+    _game.endDynasty();
+    Navigator.of(context).pop();
+  }
+}
+
+/// A faint, slightly smaller card behind the active one to suggest a deck.
+class _DeckBack extends StatelessWidget {
+  const _DeckBack();
+
+  @override
+  Widget build(BuildContext context) {
+    return Transform.translate(
+      offset: const Offset(0, 14),
+      child: Transform.scale(
+        scale: 0.93,
+        child: Opacity(
+          opacity: 0.45,
+          child: ConstrainedBox(
+            constraints: _cardConstraints,
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(22),
+                gradient: const LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [AppColors.leather, AppColors.leatherDeep],
+                ),
+                border: Border.all(color: AppColors.bronze),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _Footer extends StatelessWidget {
+  const _Footer({required this.game});
+
+  final GameState game;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 0, 20, 18),
+      child: Column(
+        children: [
+          SizedBox(
+            height: 22,
+            child: game.lastOutcome != null
+                ? Text(
+                    '» ${game.lastOutcome}',
+                    style: AppTextStyles.meta,
+                    textAlign: TextAlign.center,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  )
+                : const Text('Kararını vermek için kartı kaydır',
+                    style: AppTextStyles.meta, textAlign: TextAlign.center),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            '${game.rulerName} Kağan · Ashina Hanedanı',
+            style: AppTextStyles.bodyStrong,
+          ),
+          Text(
+            '${game.reign}. hükümdar · ${game.reignYears}. yıl · hanedan ${game.dynastyYears} yaşında',
+            style: AppTextStyles.meta,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _DeathOverlay extends StatelessWidget {
+  const _DeathOverlay({required this.game, required this.onEnd});
+
+  final GameState game;
+  final VoidCallback onEnd;
+
+  @override
+  Widget build(BuildContext context) {
+    final metric = game.deathMetric;
+    return TweenAnimationBuilder<double>(
+      duration: const Duration(milliseconds: 360),
+      curve: Curves.easeOut,
+      tween: Tween(begin: 0, end: 1),
+      builder: (context, t, child) => Opacity(
+        opacity: t,
+        child: Container(
+          color: Colors.black.withValues(alpha: 0.82 * t),
+          alignment: Alignment.center,
+          child: Transform.scale(scale: 0.92 + 0.08 * t, child: child),
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(28),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              metric?.icon ?? Icons.dangerous_rounded,
+              color: AppColors.danger,
+              size: 56,
+            ),
+            const SizedBox(height: 16),
+            const Text('SALTANAT SONA ERDİ',
+                style: AppTextStyles.header, textAlign: TextAlign.center),
+            const SizedBox(height: 8),
+            Text(
+              '${game.rulerName} Kağan, ${game.reignYears} yıl hüküm sürdü.',
+              style: AppTextStyles.value,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 16),
+            Text(game.deathCause,
+                style: AppTextStyles.body, textAlign: TextAlign.center),
+            const SizedBox(height: 28),
+            GoldButton(
+              label: 'VÂRİS TAHTA ÇIKSIN',
+              icon: Icons.account_balance_rounded,
+              onTap: () {
+                AudioService.instance.succeed();
+                game.succeed();
+              },
+            ),
+            const SizedBox(height: 12),
+            TextButton(
+              onPressed: onEnd,
+              child:
+                  const Text('HANEDANI BİTİR', style: AppTextStyles.buttonDark),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
