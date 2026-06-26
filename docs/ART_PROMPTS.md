@@ -71,3 +71,26 @@ Sonra karaktere özel kısmı ekle:
 | `music/steppe.mp3` | Müzik (loop) | sakin ambiyans: alçak çerçeve-davul nabzı + kopuz/morin khuur drone + rüzgâr, ~1-2 dk döngü |
 
 **Format:** SFX `.wav` (düşük gecikme), müzik `.mp3`. Adları birebir koru.
+
+---
+
+## 4) Uygulama ikonu (launcher) — `assets/icon/app_icon.png`
+
+**Format:** kare **1024×1024** PNG, kenar boşluğu az, merkezde net amblem. Telefon
+ana ekranındaki yuvarlak/köşeli ikona maskeleneceği için önemli detay ortada
+olsun. (`dart run flutter_launcher_icons` ile tüm boyutlar üretilir.)
+
+> App icon for a steppe-khanate game, a bold Göktürk-style wolf-head (Bozkurt)
+> or a single tamga emblem, gold on a near-black background, clean flat
+> vector-like emblem, centered, strong silhouette readable at small sizes,
+> subtle metallic gold gradient, no text, square 1:1, 1024×1024.
+
+## 5) Ana ekran logosu (opsiyonel) — `assets/images/ui/logo.png`
+
+**Format:** yatay/şeffaf **PNG**, ~1200×400 (yükseklik ~120px gösterilir). Yoksa
+"ASHINA" yazısına düşer.
+
+> "ASHINA" wordmark logo for a steppe-khanate game, ornate engraved gold
+> serif lettering with a small wolf-head or tamga emblem above or beside it,
+> transparent background, weathered metallic gold, subtle depth, no extra
+> text, horizontal lockup.

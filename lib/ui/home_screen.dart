@@ -44,8 +44,18 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Column(
               children: [
                 const Spacer(flex: 3),
-                const Text('ASHINA',
-                    style: AppTextStyles.display, textAlign: TextAlign.center),
+                // Optional wordmark/emblem; falls back to the Cinzel title
+                // when assets/images/ui/logo.png is absent.
+                Image.asset(
+                  'assets/images/ui/logo.png',
+                  height: 120,
+                  fit: BoxFit.contain,
+                  errorBuilder: (context, error, stack) => const Text(
+                    'ASHINA',
+                    style: AppTextStyles.display,
+                    textAlign: TextAlign.center,
+                  ),
+                ),
                 const SizedBox(height: 10),
                 const Text(
                   'BOZKIRDA KAĞANLIK',
