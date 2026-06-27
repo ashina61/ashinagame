@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../data/portraits.dart';
+import '../../l10n.dart';
 import '../../models/kagan_card.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
@@ -19,7 +20,6 @@ class SwipeCard extends StatelessWidget {
     final toRight = progress > 0;
     final mag = progress.abs().clamp(0.0, 1.0);
     final showChoice = mag > 0.04;
-    final choice = toRight ? card.right : card.left;
     final accent = AppColors.gold.withValues(alpha: 0.4 + 0.6 * mag);
 
     return Container(
@@ -50,7 +50,7 @@ class SwipeCard extends StatelessWidget {
                 const SizedBox(height: 12),
                 Text(card.speaker,
                     style: AppTextStyles.speaker, textAlign: TextAlign.center),
-                Text(card.title,
+                Text(cardTitle(card),
                     style: AppTextStyles.meta, textAlign: TextAlign.center),
                 const SizedBox(height: 16),
                 Container(
@@ -60,7 +60,7 @@ class SwipeCard extends StatelessWidget {
                   child: Center(
                     child: SingleChildScrollView(
                       child: Text(
-                        '«${card.prompt}»',
+                        '«${cardPrompt(card)}»',
                         style: AppTextStyles.prompt,
                         textAlign: TextAlign.center,
                       ),
@@ -69,8 +69,8 @@ class SwipeCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 12),
                 _ChoiceHints(
-                    left: card.left.label,
-                    right: card.right.label,
+                    left: cardLabel(card, false),
+                    right: cardLabel(card, true),
                     progress: progress),
               ],
             ),
@@ -93,7 +93,7 @@ class SwipeCard extends StatelessWidget {
                       border: Border.all(color: AppColors.goldBright, width: 2),
                       color: AppColors.ink.withValues(alpha: 0.7),
                     ),
-                    child: Text(choice.label.toUpperCase(),
+                    child: Text(cardLabel(card, toRight).toUpperCase(),
                         style: AppTextStyles.section),
                   ),
                 ),

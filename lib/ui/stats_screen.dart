@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../data/achievements.dart';
+import '../l10n.dart';
 import '../models/metric.dart';
 import '../state/stats_store.dart';
 import '../theme/app_colors.dart';
@@ -14,15 +15,28 @@ class StatsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final yr = tr2('yıl', 'yrs');
     final summary = <(IconData, String, String)>[
-      (Icons.timer_rounded, 'En uzun saltanat', '${stats.bestReign} yıl'),
+      (
+        Icons.timer_rounded,
+        tr2('En uzun saltanat', 'Longest reign'),
+        '${stats.bestReign} $yr'
+      ),
       (
         Icons.account_balance_rounded,
-        'En uzun hanedan',
-        '${stats.bestDynasty} yıl'
+        tr2('En uzun hanedan', 'Longest dynasty'),
+        '${stats.bestDynasty} $yr'
       ),
-      (Icons.history_edu_rounded, 'Toplam hüküm', '${stats.totalYears} yıl'),
-      (Icons.flag_rounded, 'Oynanan hanedan', '${stats.gamesPlayed}'),
+      (
+        Icons.history_edu_rounded,
+        tr2('Toplam hüküm', 'Total rule'),
+        '${stats.totalYears} $yr'
+      ),
+      (
+        Icons.flag_rounded,
+        tr2('Oynanan hanedan', 'Dynasties played'),
+        '${stats.gamesPlayed}'
+      ),
     ];
 
     return Scaffold(
@@ -40,7 +54,8 @@ class StatsScreen extends StatelessWidget {
                           color: AppColors.sand),
                     ),
                     const SizedBox(width: 4),
-                    const Text('GÜNCE', style: AppTextStyles.header),
+                    Text(tr2('GÜNCE', 'CHRONICLE'),
+                        style: AppTextStyles.header),
                   ],
                 ),
               ),
@@ -50,9 +65,9 @@ class StatsScreen extends StatelessWidget {
                   children: [
                     for (final r in summary)
                       _StatRow(icon: r.$1, label: r.$2, value: r.$3),
-                    const _Section('ÖLÜM GÜNCESİ'),
+                    _Section(tr2('ÖLÜM GÜNCESİ', 'BOOK OF DEATHS')),
                     _DeathGallery(seen: stats.deathsSeen),
-                    const _Section('BAŞARIMLAR'),
+                    _Section(tr2('BAŞARIMLAR', 'ACHIEVEMENTS')),
                     for (final a in achievements)
                       _AchievementRow(
                         a: a,
@@ -113,7 +128,8 @@ class _DeathCell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final title = '${metric.label} — ${high ? 'Taştı (100)' : 'Tükendi (0)'}';
+    final title = '${metricLabel(metric)} — '
+        '${high ? tr2('Taştı (100)', 'Maxed (100)') : tr2('Tükendi (0)', 'Drained (0)')}';
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(14),
@@ -135,7 +151,9 @@ class _DeathCell extends StatelessWidget {
                 Text(seen ? title : '???', style: AppTextStyles.bodyStrong),
                 const SizedBox(height: 2),
                 Text(
-                  seen ? metric.deathCause(high) : 'Henüz görülmedi.',
+                  seen
+                      ? deathCause(metric, high)
+                      : tr2('Henüz görülmedi.', 'Not yet seen.'),
                   style: AppTextStyles.meta,
                 ),
               ],
@@ -173,8 +191,8 @@ class _AchievementRow extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(a.name, style: AppTextStyles.bodyStrong),
-                Text(a.blurb, style: AppTextStyles.meta),
+                Text(achName(a), style: AppTextStyles.bodyStrong),
+                Text(achBlurb(a), style: AppTextStyles.meta),
               ],
             ),
           ),
