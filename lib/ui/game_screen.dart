@@ -1,3 +1,4 @@
+import 'dart:async' show Timer;
 import 'dart:math' show Random;
 import 'dart:ui' show lerpDouble;
 
@@ -46,7 +47,10 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
   bool _pastThreshold = false;
   bool _wasDead = false;
   bool _showTutorial = false;
+  bool _showHoop = false;
   String? _shownId;
+  final List<DateTime> _commitTimes = [];
+  Timer? _hoopTimer;
 
   @override
   void initState() {
@@ -72,8 +76,39 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     _game.dispose();
     _ctrl.dispose();
     _entry.dispose();
+    _hoopTimer?.cancel();
     AudioService.instance.stopMusic();
     super.dispose();
+  }
+
+  /// Plays a commit sound matching the dominant pillar of the chosen answer.
+  void _playCommitSound() {
+    final choice = _commitRight ? _game.current?.right : _game.current?.left;
+    final effects = choice?.effects;
+    if (effects == null || effects.isEmpty) {
+      AudioService.instance.swipe();
+      return;
+    }
+    var best = effects.keys.first;
+    for (final e in effects.entries) {
+      if (e.value.abs() > effects[best]!.abs()) best = e.key;
+    }
+    AudioService.instance.accent(best);
+  }
+
+  /// Light-hearted nudge when the player mashes swipes too fast.
+  void _noteCommit() {
+    final now = DateTime.now();
+    _commitTimes.add(now);
+    _commitTimes.removeWhere((t) => now.difference(t).inMilliseconds > 2500);
+    if (_commitTimes.length >= 4) {
+      _commitTimes.clear();
+      setState(() => _showHoop = true);
+      _hoopTimer?.cancel();
+      _hoopTimer = Timer(const Duration(milliseconds: 1600), () {
+        if (mounted) setState(() => _showHoop = false);
+      });
+    }
   }
 
   void _onGame() {
@@ -152,7 +187,8 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
       _commitRight = (_drag.abs() > 4 ? _drag : velocity) > 0;
       _committing = true;
       if (Settings.instance.haptics) HapticFeedback.lightImpact();
-      AudioService.instance.swipe();
+      _playCommitSound();
+      _noteCommit();
       if (_showTutorial) {
         _showTutorial = false;
         widget.stats.markTutorialSeen();
@@ -269,6 +305,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                 ),
               ),
               if (_showTutorial && !_game.dead) const _TutorialHint(),
+              if (_showHoop && !_game.dead) const _HoopToast(),
               if (_game.dead) _DeathOverlay(game: _game, onEnd: _endRun),
             ],
           ),
@@ -357,6 +394,46 @@ class _TutorialHint extends StatelessWidget {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Playful nudge shown when the player mashes swipes too fast.
+class _HoopToast extends StatelessWidget {
+  const _HoopToast();
+
+  @override
+  Widget build(BuildContext context) {
+    return IgnorePointer(
+      child: Center(
+        child: TweenAnimationBuilder<double>(
+          duration: const Duration(milliseconds: 220),
+          curve: Curves.easeOutBack,
+          tween: Tween(begin: 0.8, end: 1),
+          builder: (context, s, child) =>
+              Transform.scale(scale: s, child: child),
+          child: Container(
+            margin: const EdgeInsets.symmetric(horizontal: 32),
+            padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 16),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              color: AppColors.ink.withValues(alpha: 0.92),
+              border: Border.all(color: AppColors.goldBright, width: 2),
+              boxShadow: [
+                BoxShadow(
+                    color: AppColors.gold.withValues(alpha: 0.3),
+                    blurRadius: 20),
+              ],
+            ),
+            child: Text(
+              tr2('Hoop kardeşim! 🖐️\nBiraz yavaş — kağanlık şakaya gelmez.',
+                  'Whoa there! 🖐️\nSlow down — ruling is no joke.'),
+              style: AppTextStyles.bodyStrong,
+              textAlign: TextAlign.center,
+            ),
+          ),
         ),
       ),
     );

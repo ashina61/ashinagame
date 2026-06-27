@@ -177,6 +177,8 @@ class GameState extends ChangeNotifier {
     deathCause = m.deathCause(tooHigh);
     _stats.recordReign(reignYears);
     _stats.recordDeath('${m.name}_${tooHigh ? 'high' : 'low'}');
+    _stats.recordLeader(
+        rulerName, reignYears, Settings.instance.difficulty.index);
     _checkAchievements(died: true);
     notifyListeners();
   }

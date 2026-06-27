@@ -2,6 +2,7 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../models/metric.dart';
 import 'settings.dart';
 
 /// Plays short sound effects and a looping ambient track. Every call is
@@ -50,6 +51,20 @@ class AudioService {
   void death() => _play('audio/sfx/death.wav');
   void succeed() => _play('audio/sfx/succeed.wav');
   void tap() => _play('audio/sfx/tap.wav');
+
+  /// Event-specific commit sound based on the dominant pillar affected.
+  void accent(Metric m) {
+    switch (m) {
+      case Metric.ordu:
+        _play('audio/sfx/war.wav');
+      case Metric.hazine:
+        _play('audio/sfx/coin.wav');
+      case Metric.tore:
+        _play('audio/sfx/faith.wav');
+      case Metric.halk:
+        _play('audio/sfx/people.wav');
+    }
+  }
 
   Future<void> startMusic() async {
     _musicOn = true;
