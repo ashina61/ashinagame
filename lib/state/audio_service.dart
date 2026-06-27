@@ -2,6 +2,8 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'settings.dart';
+
 /// Plays short sound effects and a looping ambient track. Every call is
 /// wrapped so a missing asset (none shipped yet) is silently ignored — drop
 /// files into `assets/audio/` and they start playing with no code change.
@@ -25,9 +27,13 @@ class AudioService {
     _muted = _prefs?.getBool(_kMuted) ?? false;
     await _sfx.setReleaseMode(ReleaseMode.stop);
     await _music.setReleaseMode(ReleaseMode.loop);
-    // Keep the ambient bed under the effects so it never overpowers.
-    await _safe(() => _sfx.setVolume(0.9));
-    await _safe(() => _music.setVolume(0.4));
+    await applyVolumes();
+  }
+
+  /// Push the current Settings volumes into the players (call after changes).
+  Future<void> applyVolumes() async {
+    await _safe(() => _sfx.setVolume(Settings.instance.sfxVolume));
+    await _safe(() => _music.setVolume(Settings.instance.musicVolume));
   }
 
   Future<void> toggleMute() async {

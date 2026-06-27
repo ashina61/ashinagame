@@ -3,9 +3,12 @@ import 'dart:ui' show lerpDouble;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../data/achievements.dart';
+import '../models/era.dart';
 import '../models/metric.dart';
 import '../state/audio_service.dart';
 import '../state/game_state.dart';
+import '../state/settings.dart';
 import '../state/stats_store.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
@@ -37,11 +40,13 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
   bool _commitRight = false;
   bool _pastThreshold = false;
   bool _wasDead = false;
+  bool _showTutorial = false;
   String? _shownId;
 
   @override
   void initState() {
     super.initState();
+    _showTutorial = !widget.stats.tutorialSeen;
     _game = GameState(widget.stats)..addListener(_onGame);
     _ctrl = AnimationController(
         vsync: this, duration: const Duration(milliseconds: 240))
@@ -67,10 +72,15 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
   void _onGame() {
     // Heavy buzz + toll the moment a reign ends.
     if (_game.dead && !_wasDead) {
-      HapticFeedback.heavyImpact();
+      if (Settings.instance.haptics) HapticFeedback.heavyImpact();
       AudioService.instance.death();
     }
     _wasDead = _game.dead;
+    if (_game.newAchievements.isNotEmpty) {
+      final ids = List<String>.from(_game.newAchievements);
+      _game.clearNewAchievements();
+      _showAchievements(ids);
+    }
     // Play an entrance whenever a fresh card takes the stage.
     final id = _game.current?.id;
     if (!_game.dead && id != null && id != _shownId) {
@@ -103,7 +113,24 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     final past = _drag.abs() > _threshold;
     if (past != _pastThreshold) {
       _pastThreshold = past;
-      if (past) HapticFeedback.selectionClick(); // tick when a side arms
+      if (past && Settings.instance.haptics) {
+        HapticFeedback.selectionClick(); // tick when a side arms
+      }
+    }
+  }
+
+  void _showAchievements(List<String> ids) {
+    final messenger = ScaffoldMessenger.maybeOf(context);
+    if (messenger == null) return;
+    for (final id in ids) {
+      final a = achievements.where((x) => x.id == id);
+      if (a.isEmpty) continue;
+      messenger.showSnackBar(
+        SnackBar(
+          duration: const Duration(seconds: 2),
+          content: Text('🏆 Başarım: ${a.first.name}'),
+        ),
+      );
     }
   }
 
@@ -116,8 +143,12 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     if (committed) {
       _commitRight = (_drag.abs() > 4 ? _drag : velocity) > 0;
       _committing = true;
-      HapticFeedback.lightImpact();
+      if (Settings.instance.haptics) HapticFeedback.lightImpact();
       AudioService.instance.swipe();
+      if (_showTutorial) {
+        _showTutorial = false;
+        widget.stats.markTutorialSeen();
+      }
       _animateTo(_commitRight ? width * 1.3 : -width * 1.3);
     } else {
       _pastThreshold = false;
@@ -229,6 +260,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                   ),
                 ),
               ),
+              if (_showTutorial && !_game.dead) const _TutorialHint(),
               if (_game.dead) _DeathOverlay(game: _game, onEnd: _endRun),
             ],
           ),
@@ -275,6 +307,50 @@ class _DeckBack extends StatelessWidget {
   }
 }
 
+/// First-run coachmark. Ignores pointer events so the swipe still reaches the
+/// card; the game screen hides it after the first committed swipe.
+class _TutorialHint extends StatelessWidget {
+  const _TutorialHint();
+
+  @override
+  Widget build(BuildContext context) {
+    return IgnorePointer(
+      child: Container(
+        color: Colors.black.withValues(alpha: 0.55),
+        alignment: Alignment.center,
+        child: const Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.keyboard_double_arrow_left_rounded,
+                    color: AppColors.sand, size: 40),
+                SizedBox(width: 16),
+                Icon(Icons.swipe_rounded,
+                    color: AppColors.goldBright, size: 56),
+                SizedBox(width: 16),
+                Icon(Icons.keyboard_double_arrow_right_rounded,
+                    color: AppColors.sand, size: 40),
+              ],
+            ),
+            SizedBox(height: 20),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 40),
+              child: Text(
+                'Kartı sağa ya da sola kaydırarak karar ver.\n'
+                'Hangi yöne çektiğine göre dört denge değişir.',
+                style: AppTextStyles.body,
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _Footer extends StatelessWidget {
   const _Footer({required this.game});
 
@@ -301,11 +377,13 @@ class _Footer extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           Text(
-            '${game.rulerName} Kağan · Ashina Hanedanı',
+            '${game.rulerName} Kağan'
+            '${game.trait != null ? ' · ${game.trait!.name}' : ''}',
             style: AppTextStyles.bodyStrong,
           ),
           Text(
-            '${game.reign}. hükümdar · ${game.reignYears}. yıl · hanedan ${game.dynastyYears} yaşında',
+            '${game.reign}. hükümdar · ${game.era.label} çağı · '
+            '${game.reignYears}. yıl · hanedan ${game.dynastyYears} yaşında',
             style: AppTextStyles.meta,
           ),
         ],
