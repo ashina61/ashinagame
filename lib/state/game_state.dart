@@ -44,6 +44,12 @@ class GameState extends ChangeNotifier {
   int _reignStartYear = 0;
   int cardsSeen = 0;
 
+  /// Relationship with the neighbouring khanate (0..100); persists across
+  /// reigns within a run.
+  int relation = 50;
+  bool _sawWar = false;
+  bool _sawAlliance = false;
+
   final Set<String> flags = {};
   final List<_Pending> _queue = [];
 
@@ -70,6 +76,7 @@ class GameState extends ChangeNotifier {
         era: era,
         reign: reign,
         year: year,
+        relation: relation,
       );
 
   void _startReign() {
@@ -150,6 +157,11 @@ class GameState extends ChangeNotifier {
       final d = (delta * _mult).round();
       metrics[metric] = (metrics[metric]! + d).clamp(0, 100);
     });
+    if (choice.relation != 0) {
+      relation = (relation + choice.relation).clamp(0, 100);
+    }
+    if (current!.id == 'komsu_savas') _sawWar = true;
+    if (current!.id == 'komsu_ittifak') _sawAlliance = true;
     flags.addAll(choice.setFlags);
     if (choice.enqueue != null) {
       _queue.add(_Pending(choice.enqueue!, year + choice.enqueueAfter));
@@ -217,6 +229,7 @@ class GameState extends ChangeNotifier {
     await tryUnlock('besinci_kagan', reign >= 5);
     await tryUnlock('denge', balanced);
     await tryUnlock('tum_olumler', _stats.deathsSeen.length >= 8);
+    await tryUnlock('diplomat', _sawWar && _sawAlliance);
 
     if (unlocked.isNotEmpty) {
       newAchievements.addAll(unlocked);

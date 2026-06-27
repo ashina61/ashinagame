@@ -10,6 +10,7 @@ class CardContext {
     required this.era,
     required this.reign,
     required this.year,
+    required this.relation,
   });
 
   final Map<Metric, int> metrics;
@@ -17,6 +18,9 @@ class CardContext {
   final Era era;
   final int reign;
   final int year;
+
+  /// Relationship with the neighbouring khanate (0..100).
+  final int relation;
 
   int m(Metric metric) => metrics[metric] ?? 0;
   bool has(String flag) => flags.contains(flag);
@@ -33,6 +37,7 @@ class Choice {
     this.setFlags = const [],
     this.enqueue,
     this.enqueueAfter = 2,
+    this.relation = 0,
   });
 
   /// Short label shown on the card while swiping toward this side.
@@ -40,6 +45,9 @@ class Choice {
 
   /// How the four pillars shift when this choice is taken.
   final Map<Metric, int> effects;
+
+  /// Shift to the neighbouring khanate relationship (0..100).
+  final int relation;
 
   /// Optional one-line consequence shown after the choice is made.
   final String? outcome;

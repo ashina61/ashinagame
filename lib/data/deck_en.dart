@@ -649,4 +649,67 @@ const deckEn = <String, CardTr>{
     l1: 'Show them the door',
     o1: 'The advisors were expelled; the steppe law stood tall again.',
   ),
+  'ticaret_anlasmasi': CardTr(
+    title: 'Trade Pact',
+    prompt:
+        'The neighbouring khanate proposes a mutual trade pact. Do we sign it, or keep our market to ourselves?',
+    l0: 'Sign the pact',
+    o0: 'Border markets opened; the bond with the neighbour grew.',
+    l1: 'Keep our market',
+    o1: 'The offer was refused; the neighbour cooled.',
+  ),
+  'armagan_komsu': CardTr(
+    title: 'A Gift to the Neighbour',
+    prompt:
+        'We could send a rich gift to win the neighbouring han over. Do we send it, or guard the treasury?',
+    l0: 'Send the gift',
+    o0: 'The gift pleased; the neighbouring han smiled upon us.',
+    l1: 'Guard the treasury',
+    o1: 'The purse was spared; the neighbour felt neglected.',
+  ),
+  'sinir_gerginligi': CardTr(
+    title: 'Border Tension',
+    prompt:
+        'A clash broke out at the border with the neighbouring khanate. Do we answer firmly and stand our ground, or send an envoy to smooth it over?',
+    l0: 'Stand firm',
+    o0: 'The border was defended; relations with the neighbour soured.',
+    l1: 'Smooth it over',
+    o1: 'An envoy was sent; the tension dispersed.',
+  ),
+  'ortak_av': CardTr(
+    title: 'A Joint Hunt',
+    prompt:
+        'The neighbouring han proposes a joint drive-hunt to bond the two khanates. Do we host it, or turn it down?',
+    l0: 'Host it',
+    o0: 'The beys hunted together; the two khanates drew closer.',
+    l1: 'Turn it down',
+    o1: 'The hunt was refused; the neighbour took it as coldness.',
+  ),
+  'komsu_evlilik': CardTr(
+    title: 'A Dynastic Marriage',
+    prompt:
+        'The neighbouring han wishes to bind the two dynasties by marriage. Do we accept and forge a blood tie, or stay independent?',
+    l0: 'Accept the marriage',
+    o0: 'The two dynasties became kin; the bond grew firm.',
+    l1: 'Stay independent',
+    o1: 'The offer was refused; the neighbour took offence.',
+  ),
+  'komsu_savas': CardTr(
+    title: 'War with the Neighbour',
+    prompt:
+        'Relations have collapsed; the neighbouring khanate crossed the border and war is at hand. Do we attack in full force, or buy peace at a heavy price?',
+    l0: 'Attack in force',
+    o0: 'The war was won at a heavy cost; the feud quieted for a while.',
+    l1: 'Buy peace',
+    o1: 'Peace was bought with heavy tribute; the border fell silent.',
+  ),
+  'komsu_ittifak': CardTr(
+    title: 'Time for Alliance',
+    prompt:
+        'Friendship with the neighbouring khanate is at its peak; they offer a formal alliance. Do we seal it, or keep our hands free?',
+    l0: 'Seal the alliance',
+    o0: 'The two khanates became one fist; your word carries on the steppe.',
+    l1: 'Keep hands free',
+    o1: 'The alliance was declined; independence was kept.',
+  ),
 };
