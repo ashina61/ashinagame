@@ -9,6 +9,7 @@ import '../l10n.dart';
 import '../models/era.dart';
 import '../models/kagan_card.dart';
 import '../models/metric.dart';
+import 'settings.dart';
 import 'stats_store.dart';
 
 const int kStartValue = 50;
@@ -22,12 +23,15 @@ class _Pending {
 /// Drives one dynasty run: pillars, era, card draw (with conditions, eras,
 /// and event chains), succession with heir traits, and achievement tracking.
 class GameState extends ChangeNotifier {
-  GameState(this._stats, {Random? rng}) : _rng = rng ?? Random() {
+  GameState(this._stats, {Random? rng})
+      : _rng = rng ?? Random(),
+        _mult = Settings.instance.difficulty.multiplier {
     _startReign();
   }
 
   final StatsStore _stats;
   final Random _rng;
+  final double _mult;
 
   final Map<Metric, int> metrics = {
     for (final m in Metric.values) m: kStartValue,
@@ -143,7 +147,8 @@ class GameState extends ChangeNotifier {
     final choice = right ? current!.right : current!.left;
 
     choice.effects.forEach((metric, delta) {
-      metrics[metric] = (metrics[metric]! + delta).clamp(0, 100);
+      final d = (delta * _mult).round();
+      metrics[metric] = (metrics[metric]! + d).clamp(0, 100);
     });
     flags.addAll(choice.setFlags);
     if (choice.enqueue != null) {

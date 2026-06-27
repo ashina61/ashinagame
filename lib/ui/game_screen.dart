@@ -1,7 +1,9 @@
+import 'dart:math' show Random;
 import 'dart:ui' show lerpDouble;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../data/achievements.dart';
 import '../l10n.dart';
@@ -20,9 +22,12 @@ import 'widgets/swipe_card.dart';
 const _cardConstraints = BoxConstraints(maxWidth: 420, maxHeight: 460);
 
 class GameScreen extends StatefulWidget {
-  const GameScreen({super.key, required this.stats});
+  const GameScreen({super.key, required this.stats, this.seed});
 
   final StatsStore stats;
+
+  /// When set, the run is deterministic (used by the Daily Khan mode).
+  final int? seed;
 
   @override
   State<GameScreen> createState() => _GameScreenState();
@@ -47,7 +52,9 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
   void initState() {
     super.initState();
     _showTutorial = !widget.stats.tutorialSeen;
-    _game = GameState(widget.stats)..addListener(_onGame);
+    _game = GameState(widget.stats,
+        rng: widget.seed != null ? Random(widget.seed) : null)
+      ..addListener(_onGame);
     _ctrl = AnimationController(
         vsync: this, duration: const Duration(milliseconds: 240))
       ..addListener(_tickAnim)
@@ -413,6 +420,15 @@ class _DeathOverlay extends StatelessWidget {
   final GameState game;
   final VoidCallback onEnd;
 
+  void _share() {
+    Share.share(tr2(
+      'Ashina — ${game.rulerName} Kağan ${game.reignYears} yıl hüküm sürdü; '
+          'hanedan ${game.dynastyYears} yaşında. Sen ne kadar dayanırsın?',
+      'Ashina — Khan ${game.rulerName} reigned ${game.reignYears} years; '
+          'the dynasty is ${game.dynastyYears} years old. How long can you last?',
+    ));
+  }
+
   @override
   Widget build(BuildContext context) {
     final metric = game.deathMetric;
@@ -464,11 +480,24 @@ class _DeathOverlay extends StatelessWidget {
                 game.succeed();
               },
             ),
-            const SizedBox(height: 12),
-            TextButton(
-              onPressed: onEnd,
-              child: Text(tr2('HANEDANI BİTİR', 'END THE DYNASTY'),
-                  style: AppTextStyles.buttonDark),
+            const SizedBox(height: 4),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                TextButton.icon(
+                  onPressed: _share,
+                  icon: const Icon(Icons.ios_share_rounded,
+                      color: AppColors.sand, size: 18),
+                  label: Text(tr2('PAYLAŞ', 'SHARE'),
+                      style: AppTextStyles.buttonDark),
+                ),
+                const SizedBox(width: 8),
+                TextButton(
+                  onPressed: onEnd,
+                  child: Text(tr2('HANEDANI BİTİR', 'END THE DYNASTY'),
+                      style: AppTextStyles.buttonDark),
+                ),
+              ],
             ),
           ],
         ),

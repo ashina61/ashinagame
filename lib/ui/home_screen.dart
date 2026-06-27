@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../l10n.dart';
 import '../state/audio_service.dart';
+import '../state/settings.dart';
 import '../state/stats_store.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
@@ -27,6 +28,17 @@ class _HomeScreenState extends State<HomeScreen> {
       MaterialPageRoute(builder: (_) => GameScreen(stats: widget.stats)),
     );
     if (mounted) setState(() {}); // refresh records after a run
+  }
+
+  Future<void> _playDaily() async {
+    AudioService.instance.tap();
+    final now = DateTime.now();
+    final seed = now.year * 10000 + now.month * 100 + now.day;
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+          builder: (_) => GameScreen(stats: widget.stats, seed: seed)),
+    );
+    if (mounted) setState(() {});
   }
 
   void _openStats() {
@@ -90,7 +102,15 @@ class _HomeScreenState extends State<HomeScreen> {
                     label: tr2('TAHTA ÇIK', 'TAKE THE THRONE'),
                     icon: Icons.play_arrow_rounded,
                     onTap: _play),
-                const SizedBox(height: 14),
+                const SizedBox(height: 10),
+                TextButton.icon(
+                  onPressed: _playDaily,
+                  icon: const Icon(Icons.today_rounded,
+                      color: AppColors.sand, size: 18),
+                  label: Text(tr2('GÜNÜN KAĞANI', 'DAILY KHAN'),
+                      style: AppTextStyles.buttonDark),
+                ),
+                const SizedBox(height: 4),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -115,6 +135,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 Text(
                     tr2('En uzun saltanat: ${widget.stats.bestReign} yıl',
                         'Longest reign: ${widget.stats.bestReign} years'),
+                    style: AppTextStyles.meta),
+                Text(
+                    '${tr2('Zorluk', 'Difficulty')}: '
+                    '${difficultyLabel(Settings.instance.difficulty)}',
                     style: AppTextStyles.meta),
                 const SizedBox(height: 16),
               ],

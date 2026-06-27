@@ -67,6 +67,8 @@ final deck = <KaganCard>[
       label: 'İttifakı kabul et',
       effects: {Metric.ordu: 10, Metric.hazine: 8, Metric.tore: -6},
       outcome: 'Düğün kuruldu; iki boyun atlısı bir oldu.',
+      enqueue: 'muttefik_imtihani',
+      enqueueAfter: 5,
     ),
     right: Choice(
       label: 'Reddet',
@@ -297,6 +299,8 @@ final deck = <KaganCard>[
       label: 'Ocağı fonla',
       effects: {Metric.ordu: 12, Metric.hazine: -10},
       outcome: 'Örsler döğüldü; ordu yeni çelikle donandı.',
+      enqueue: 'yeni_celik',
+      enqueueAfter: 3,
     ),
     right: Choice(
       label: 'Keseyi koru',
@@ -367,6 +371,8 @@ final deck = <KaganCard>[
       label: 'İçeri al',
       effects: {Metric.halk: 8, Metric.ordu: 8, Metric.hazine: -10},
       outcome: 'Yeni yiğitler saflara katıldı; ağızlar da çoğaldı.',
+      enqueue: 'kuzeyli_sadakat',
+      enqueueAfter: 4,
     ),
     right: Choice(
       label: 'Geri çevir',
@@ -819,6 +825,8 @@ final deck = <KaganCard>[
       label: 'Kabul et',
       effects: {Metric.hazine: 12, Metric.ordu: 6, Metric.tore: -10},
       outcome: 'Saray ihtişama büründü; bozkır Çin\'e yanaşıldı diye söylendi.',
+      enqueue: 'cin_nufuzu',
+      enqueueAfter: 4,
     ),
     right: Choice(
       label: 'Onuru koru',
@@ -1169,6 +1177,85 @@ final deck = <KaganCard>[
       label: 'Özerklik ver',
       effects: {Metric.tore: -8, Metric.hazine: 6, Metric.halk: 4},
       outcome: 'Eyaletler gevşek bağla kaldı; merkez zayıfladı.',
+    ),
+  ),
+
+  // --- İttifak / geri dönen karakter zincirleri ---
+  const KaganCard(
+    id: 'muttefik_imtihani',
+    speaker: 'Elçi Yamtar',
+    title: 'İttifak İmtihanı',
+    scheduledOnly: true,
+    prompt:
+        'Kanını birleştirdiğin müttefik boy savaşa girdi ve senden yardım ister. Sözünü tutup atlılarını gönderelim mi, yoksa kendi işimize mi bakalım?',
+    left: Choice(
+      label: 'Sözünü tut',
+      effects: {
+        Metric.tore: 8,
+        Metric.halk: 4,
+        Metric.ordu: -8,
+        Metric.hazine: -4
+      },
+      outcome: 'Atlılar yola çıktı; vefan iki boyda da anıldı.',
+    ),
+    right: Choice(
+      label: 'Kendine bak',
+      effects: {Metric.ordu: 6, Metric.tore: -10, Metric.halk: -4},
+      outcome: 'Yardım gitmedi; müttefik ihaneti unutmadı.',
+    ),
+  ),
+  const KaganCard(
+    id: 'kuzeyli_sadakat',
+    speaker: 'Yabancı Bey',
+    title: 'Sığınmacıların Borcu',
+    scheduledOnly: true,
+    prompt:
+        'İçeri aldığın kuzey boyları artık güçlendi. Yiğitlerini silahlandırıp orduya mı katalım, yoksa onları çoban olarak mı yerleştirelim?',
+    left: Choice(
+      label: 'Silahlandır',
+      effects: {Metric.ordu: 12, Metric.hazine: -8},
+      outcome: 'Kuzeyli yiğitler saflara katıldı; ordu kabardı.',
+    ),
+    right: Choice(
+      label: 'Çoban yap',
+      effects: {Metric.halk: 10, Metric.ordu: -4},
+      outcome: 'Sürülere baktılar; oba bollaştı, kılıç tutan azaldı.',
+    ),
+  ),
+  const KaganCard(
+    id: 'yeni_celik',
+    speaker: 'Demirci Başı',
+    title: 'Yeni Çelik',
+    scheduledOnly: true,
+    prompt:
+        'Fonladığın ocak ilk çeliğini verdi. En seçkin muhafızları mı kuşatalım, yoksa fazlasını satıp keseyi mi doldural?',
+    left: Choice(
+      label: 'Muhafızı kuşat',
+      effects: {Metric.ordu: 10, Metric.hazine: -4},
+      outcome: 'Seçkin muhafız yeni çelikle parladı.',
+    ),
+    right: Choice(
+      label: 'Fazlasını sat',
+      effects: {Metric.hazine: 12, Metric.ordu: -6},
+      outcome: 'Çelik pazarda kapışıldı; kese doldu, depo boşaldı.',
+    ),
+  ),
+  const KaganCard(
+    id: 'cin_nufuzu',
+    speaker: 'Çin Elçisi Pei',
+    title: 'Saraydaki Nüfuz',
+    scheduledOnly: true,
+    prompt:
+        'Prensesle gelen Çinli danışmanlar sarayda söz sahibi oldu. Onların düzen ve reformlarını benimseyelim mi, yoksa kapı dışarı mı edelim?',
+    left: Choice(
+      label: 'Reformu benimse',
+      effects: {Metric.hazine: 10, Metric.tore: -10, Metric.halk: -4},
+      outcome: 'Saray Çin usulüne döndü; hazine doldu, töre yıprandı.',
+    ),
+    right: Choice(
+      label: 'Kapı dışarı et',
+      effects: {Metric.tore: 12, Metric.hazine: -6, Metric.ordu: 4},
+      outcome: 'Danışmanlar kovuldu; bozkır töresi yeniden dikleşti.',
     ),
   ),
 ];
