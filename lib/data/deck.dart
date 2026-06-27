@@ -1,10 +1,12 @@
+import '../models/era.dart';
 import '../models/kagan_card.dart';
 import '../models/metric.dart';
 
 /// The dilemma deck. Each card trades a few pillars against each other so no
 /// answer is free. Effects are tuned to roughly cancel over a long reign.
-const deck = <KaganCard>[
-  KaganCard(
+/// Not `const` because some cards carry [condition] closures.
+final deck = <KaganCard>[
+  const KaganCard(
     id: 'kitlik',
     speaker: 'Aksakal Tonga',
     title: 'Boyun Aksakalı',
@@ -21,7 +23,7 @@ const deck = <KaganCard>[
       outcome: 'Kazan doldu ama otağda homurtu arttı.',
     ),
   ),
-  KaganCard(
+  const KaganCard(
     id: 'akin',
     speaker: 'Komutan Bayan',
     title: 'Sağ Kol Beyi',
@@ -38,7 +40,7 @@ const deck = <KaganCard>[
       outcome: 'Barış satın alındı; gençler bunu zayıflık saydı.',
     ),
   ),
-  KaganCard(
+  const KaganCard(
     id: 'kurultay',
     speaker: 'Beyler Heyeti',
     title: 'Kurultay',
@@ -55,7 +57,7 @@ const deck = <KaganCard>[
       outcome: 'Otorite korundu, beylerin yüzü asıldı.',
     ),
   ),
-  KaganCard(
+  const KaganCard(
     id: 'evlilik',
     speaker: 'Elçi Yamtar',
     title: 'Komşu Boyun Elçisi',
@@ -72,7 +74,7 @@ const deck = <KaganCard>[
       outcome: 'Bağımsızlık korundu, komşu gücendi.',
     ),
   ),
-  KaganCard(
+  const KaganCard(
     id: 'kuraklik',
     speaker: 'Kam Udun',
     title: 'Boyun Kamı',
@@ -89,7 +91,7 @@ const deck = <KaganCard>[
       outcome: 'Kam küstü, yaşlılar başını salladı.',
     ),
   ),
-  KaganCard(
+  const KaganCard(
     id: 'kervan',
     speaker: 'Tüccar Maniak',
     title: 'Soğd Kervanbaşı',
@@ -106,7 +108,7 @@ const deck = <KaganCard>[
       outcome: 'Pazar canlandı, mallar boldu.',
     ),
   ),
-  KaganCard(
+  const KaganCard(
     id: 'isyan',
     speaker: 'Genç Bey Böri',
     title: 'Asi Bey',
@@ -121,9 +123,11 @@ const deck = <KaganCard>[
       label: 'Gönlünü al',
       effects: {Metric.hazine: -8, Metric.halk: 8, Metric.ordu: -4},
       outcome: 'Bey armağanla yatıştı, ama başkaları da cesaret aldı.',
+      enqueue: 'bori_geri_doner',
+      enqueueAfter: 4,
     ),
   ),
-  KaganCard(
+  const KaganCard(
     id: 'veba',
     speaker: 'Hekim Otacı',
     title: 'Otacı (Hekim)',
@@ -140,7 +144,7 @@ const deck = <KaganCard>[
       outcome: 'Dualar okundu; hastalık birkaç çadırı daha yuttu.',
     ),
   ),
-  KaganCard(
+  const KaganCard(
     id: 'at_surusu',
     speaker: 'Yılkıcı Sübeg',
     title: 'Baş Yılkıcı',
@@ -157,7 +161,7 @@ const deck = <KaganCard>[
       outcome: 'Çobanların yüzü güldü; beyler buruk.',
     ),
   ),
-  KaganCard(
+  const KaganCard(
     id: 'cin_elcisi',
     speaker: 'Çin Elçisi Pei',
     title: 'Tang Sarayı Elçisi',
@@ -167,6 +171,8 @@ const deck = <KaganCard>[
       label: 'Armağanı al',
       effects: {Metric.hazine: 14, Metric.tore: -10, Metric.ordu: -6},
       outcome: 'Saray altına gömüldü; bozkır bunu utanç saydı.',
+      enqueue: 'cin_baski',
+      enqueueAfter: 3,
     ),
     right: Choice(
       label: 'Geri yolla',
@@ -174,7 +180,7 @@ const deck = <KaganCard>[
       outcome: 'Elçi eli boş döndü; onurun bozkırda anlatıldı.',
     ),
   ),
-  KaganCard(
+  const KaganCard(
     id: 'vergi',
     speaker: 'Defterdar Üge',
     title: 'Hazine Yazıcısı',
@@ -191,7 +197,7 @@ const deck = <KaganCard>[
       outcome: 'Halk rahatladı, defterler kızardı.',
     ),
   ),
-  KaganCard(
+  const KaganCard(
     id: 'genc_savascilar',
     speaker: 'Yüzbaşı Alp Er',
     title: 'Genç Süvari',
@@ -213,7 +219,7 @@ const deck = <KaganCard>[
       outcome: 'Yiğitler söylendi ama oba huzura kavuştu.',
     ),
   ),
-  KaganCard(
+  const KaganCard(
     id: 'kehanet',
     speaker: 'Kam Udun',
     title: 'Boyun Kamı',
@@ -230,7 +236,7 @@ const deck = <KaganCard>[
       outcome: 'Yerinde kaldık; kam uğursuzluktan dem vurdu.',
     ),
   ),
-  KaganCard(
+  const KaganCard(
     id: 'esir',
     speaker: 'Komutan Bayan',
     title: 'Sağ Kol Beyi',
@@ -247,7 +253,7 @@ const deck = <KaganCard>[
       outcome: 'Keseler doldu; tutsaklar yurduna döndü.',
     ),
   ),
-  KaganCard(
+  const KaganCard(
     id: 'dugun',
     speaker: 'Hatun',
     title: 'Baş Hatun',
@@ -264,7 +270,7 @@ const deck = <KaganCard>[
       outcome: 'Hazine korundu; dedikodu da eksik olmadı.',
     ),
   ),
-  KaganCard(
+  const KaganCard(
     id: 'su_kavgasi',
     speaker: 'İki Boy Beyi',
     title: 'Anlaşmazlık',
@@ -281,7 +287,7 @@ const deck = <KaganCard>[
       outcome: 'İki boy da pay aldı; adaletin konuşuldu.',
     ),
   ),
-  KaganCard(
+  const KaganCard(
     id: 'demirci',
     speaker: 'Demirci Başı',
     title: 'Ergene Ustası',
@@ -298,7 +304,7 @@ const deck = <KaganCard>[
       outcome: 'Usta küstü; eski kılıçlarla idare edildi.',
     ),
   ),
-  KaganCard(
+  const KaganCard(
     id: 'yagma_payi',
     speaker: 'Beyler Heyeti',
     title: 'Ganimet Paylaşımı',
@@ -315,7 +321,7 @@ const deck = <KaganCard>[
       outcome: 'Çadırlar şenlendi; beylerin kaşı çatıldı.',
     ),
   ),
-  KaganCard(
+  const KaganCard(
     id: 'casus',
     speaker: 'İç Oğuş Başı',
     title: 'Muhafız Beyi',
@@ -330,9 +336,11 @@ const deck = <KaganCard>[
       label: 'Kendine çalıştır',
       effects: {Metric.ordu: 8, Metric.hazine: -6, Metric.tore: -6},
       outcome: 'Casus döndü; düşmanın sırrı artık bizde.',
+      enqueue: 'casus_ifsa',
+      enqueueAfter: 3,
     ),
   ),
-  KaganCard(
+  const KaganCard(
     id: 'eski_tore',
     speaker: 'Aksakal Tonga',
     title: 'Boyun Aksakalı',
@@ -349,7 +357,7 @@ const deck = <KaganCard>[
       outcome: 'Kurallar yumuşadı; aksakallar dertlendi.',
     ),
   ),
-  KaganCard(
+  const KaganCard(
     id: 'kuzey_boylari',
     speaker: 'Yabancı Bey',
     title: 'Kuzeyli Sığınmacı',
@@ -366,7 +374,7 @@ const deck = <KaganCard>[
       outcome: 'Kapı kapandı; bozkır soğuğunda donanlar oldu.',
     ),
   ),
-  KaganCard(
+  const KaganCard(
     id: 'altin_madeni',
     speaker: 'Defterdar Üge',
     title: 'Hazine Yazıcısı',
@@ -383,7 +391,7 @@ const deck = <KaganCard>[
       outcome: 'Ağır ama huzurlu; kese yavaş doldu.',
     ),
   ),
-  KaganCard(
+  const KaganCard(
     id: 'yabanci_din',
     speaker: 'Yabancı Vaiz',
     title: 'Gezgin Rahip',
@@ -400,7 +408,7 @@ const deck = <KaganCard>[
       outcome: 'Eski töre korundu; bazı çadırlar küstü.',
     ),
   ),
-  KaganCard(
+  const KaganCard(
     id: 'ordugah',
     speaker: 'Komutan Bayan',
     title: 'Sağ Kol Beyi',
@@ -417,7 +425,7 @@ const deck = <KaganCard>[
       outcome: 'Hazine korundu; bazı bölükler hava kararınca dağıldı.',
     ),
   ),
-  KaganCard(
+  const KaganCard(
     id: 'kiz_isteme',
     speaker: 'Güçlü Han Elçisi',
     title: 'Yabancı Han Elçisi',
@@ -439,7 +447,7 @@ const deck = <KaganCard>[
       outcome: 'Han reddi hakaret saydı; sınırda davullar çalındı.',
     ),
   ),
-  KaganCard(
+  const KaganCard(
     id: 'yangin',
     speaker: 'Aksakal Tonga',
     title: 'Boyun Aksakalı',
@@ -456,7 +464,7 @@ const deck = <KaganCard>[
       outcome: 'Hazine korundu; küller arasında küskünlük kaldı.',
     ),
   ),
-  KaganCard(
+  const KaganCard(
     id: 'bilge',
     speaker: 'İhtiyar Bilge',
     title: 'Gezgin Ozan',
@@ -473,7 +481,7 @@ const deck = <KaganCard>[
       outcome: 'Ozan sustu; gururun pekişti.',
     ),
   ),
-  KaganCard(
+  const KaganCard(
     id: 'ticaret_yolu',
     speaker: 'Tüccar Maniak',
     title: 'Soğd Kervanbaşı',
@@ -490,7 +498,7 @@ const deck = <KaganCard>[
       outcome: 'Yollar şenlendi, mallar ucuzladı.',
     ),
   ),
-  KaganCard(
+  const KaganCard(
     id: 'kut',
     speaker: 'Kam Udun',
     title: 'Boyun Kamı',
@@ -512,7 +520,7 @@ const deck = <KaganCard>[
       outcome: 'Tören olmadı; bazıları bunu zayıflık sandı.',
     ),
   ),
-  KaganCard(
+  const KaganCard(
     id: 'salgin_hayvan',
     speaker: 'Yılkıcı Sübeg',
     title: 'Baş Yılkıcı',
@@ -529,7 +537,7 @@ const deck = <KaganCard>[
       outcome: 'Dualar okundu; hastalık komşu sürülere de atladı.',
     ),
   ),
-  KaganCard(
+  const KaganCard(
     id: 'genc_varis',
     speaker: 'Hatun',
     title: 'Baş Hatun',
@@ -546,7 +554,7 @@ const deck = <KaganCard>[
       outcome: 'Genç bir akına çıktı; şanı da çılgınlığı da arttı.',
     ),
   ),
-  KaganCard(
+  const KaganCard(
     id: 'yabanci_usta',
     speaker: 'Yabancı Usta',
     title: 'Gezgin Zanaatkâr',
@@ -563,7 +571,7 @@ const deck = <KaganCard>[
       outcome: 'Ustalar başka yurda gitti; töre korundu.',
     ),
   ),
-  KaganCard(
+  const KaganCard(
     id: 'kar_firtinasi',
     speaker: 'Komutan Bayan',
     title: 'Sağ Kol Beyi',
@@ -580,7 +588,7 @@ const deck = <KaganCard>[
       outcome: 'Ordu tetikte kaldı; soğukta birkaç çoban kayboldu.',
     ),
   ),
-  KaganCard(
+  const KaganCard(
     id: 'adalet',
     speaker: 'İç Oğuş Başı',
     title: 'Muhafız Beyi',
@@ -597,7 +605,7 @@ const deck = <KaganCard>[
       outcome: 'Bey kurtuldu; çobanın anası göğe beddua etti.',
     ),
   ),
-  KaganCard(
+  const KaganCard(
     id: 'buyuk_av',
     speaker: 'Beyler Heyeti',
     title: 'Sürek Avı',
@@ -614,7 +622,7 @@ const deck = <KaganCard>[
       outcome: 'Av iptal oldu; beyler arasındaki soğukluk sürdü.',
     ),
   ),
-  KaganCard(
+  const KaganCard(
     id: 'yas',
     speaker: 'Kam Udun',
     title: 'Boyun Kamı',
@@ -631,7 +639,7 @@ const deck = <KaganCard>[
       outcome: 'Çabuk toparlanıldı; yaşlılar bunu saygısızlık saydı.',
     ),
   ),
-  KaganCard(
+  const KaganCard(
     id: 'kan_davasi',
     speaker: 'Aksakal Tonga',
     title: 'Boyun Aksakalı',
@@ -648,7 +656,7 @@ const deck = <KaganCard>[
       outcome: 'Kan kanla ödendi; töre yerini buldu, oba sustu.',
     ),
   ),
-  KaganCard(
+  const KaganCard(
     id: 'kusatma',
     speaker: 'Komutan Bayan',
     title: 'Sağ Kol Beyi',
@@ -665,7 +673,7 @@ const deck = <KaganCard>[
       outcome: 'Kale aylar sonra teslim oldu; sabır pahalıya patladı.',
     ),
   ),
-  KaganCard(
+  const KaganCard(
     id: 'ay_tutulmasi',
     speaker: 'Kam Udun',
     title: 'Boyun Kamı',
@@ -682,7 +690,7 @@ const deck = <KaganCard>[
       outcome: 'Kağan göğe meydan okudu; kimi cesaret, kimi dehşet duydu.',
     ),
   ),
-  KaganCard(
+  const KaganCard(
     id: 'kole_pazari',
     speaker: 'Tüccar Maniak',
     title: 'Soğd Kervanbaşı',
@@ -699,7 +707,7 @@ const deck = <KaganCard>[
       outcome: 'Tutsaklar pazara çıkmadı; tüccar omuz silkti.',
     ),
   ),
-  KaganCard(
+  const KaganCard(
     id: 'sahte_para',
     speaker: 'Defterdar Üge',
     title: 'Hazine Yazıcısı',
@@ -716,7 +724,7 @@ const deck = <KaganCard>[
       outcome: 'Para itibarlı kaldı; tüccarlar obaya akın etti.',
     ),
   ),
-  KaganCard(
+  const KaganCard(
     id: 'ikinci_hatun',
     speaker: 'Hatun',
     title: 'Baş Hatun',
@@ -733,7 +741,7 @@ const deck = <KaganCard>[
       outcome: 'Vefan konuşuldu; bey teklifini geri çekti.',
     ),
   ),
-  KaganCard(
+  const KaganCard(
     id: 'sinir_komutasi',
     speaker: 'Genç Bey Böri',
     title: 'Hırslı Bey',
@@ -750,7 +758,7 @@ const deck = <KaganCard>[
       outcome: 'Böri otağda kaldı; sınır biraz daha zayıf.',
     ),
   ),
-  KaganCard(
+  const KaganCard(
     id: 'duello',
     speaker: 'Yüzbaşı Alp Er',
     title: 'Genç Süvari',
@@ -767,7 +775,7 @@ const deck = <KaganCard>[
       outcome: 'Meydan okuma geri çevrildi; düşman korkaklıkla suçladı.',
     ),
   ),
-  KaganCard(
+  const KaganCard(
     id: 'yaralilar',
     speaker: 'Hekim Otacı',
     title: 'Otacı (Hekim)',
@@ -784,7 +792,7 @@ const deck = <KaganCard>[
       outcome: 'Hazine korundu; çadırlardan iniltiler yükseldi.',
     ),
   ),
-  KaganCard(
+  const KaganCard(
     id: 'damizlik_at',
     speaker: 'Yılkıcı Sübeg',
     title: 'Baş Yılkıcı',
@@ -801,7 +809,7 @@ const deck = <KaganCard>[
       outcome: 'Soy bizde kaldı; süvarimiz bozkırın en hızlısı.',
     ),
   ),
-  KaganCard(
+  const KaganCard(
     id: 'tang_prensesi',
     speaker: 'Çin Elçisi Pei',
     title: 'Tang Sarayı Elçisi',
@@ -818,7 +826,7 @@ const deck = <KaganCard>[
       outcome: 'Teklif reddedildi; bağımsızlık türkülere kondu.',
     ),
   ),
-  KaganCard(
+  const KaganCard(
     id: 'kut_sorgusu',
     speaker: 'Beyler Heyeti',
     title: 'Kurultay',
@@ -835,7 +843,7 @@ const deck = <KaganCard>[
       outcome: 'Sesler kısıldı; korku itaati getirdi, sevgiyi değil.',
     ),
   ),
-  KaganCard(
+  const KaganCard(
     id: 'esir_takasi',
     speaker: 'Elçi Yamtar',
     title: 'Komşu Boyun Elçisi',
@@ -852,7 +860,7 @@ const deck = <KaganCard>[
       outcome: 'Kese doldu; tutsak beyin ailesi kırgın kaldı.',
     ),
   ),
-  KaganCard(
+  const KaganCard(
     id: 'suikast_plani',
     speaker: 'İç Oğuş Başı',
     title: 'Muhafız Beyi',
@@ -869,7 +877,7 @@ const deck = <KaganCard>[
       outcome: 'Tehlike sessizce yok edildi; dedikodu fısıltıyla yayıldı.',
     ),
   ),
-  KaganCard(
+  const KaganCard(
     id: 'zirh_mi_kilic_mi',
     speaker: 'Demirci Başı',
     title: 'Ergene Ustası',
@@ -886,7 +894,7 @@ const deck = <KaganCard>[
       outcome: 'Keskin kılıçlar kuşanıldı; saldırı gücü arttı.',
     ),
   ),
-  KaganCard(
+  const KaganCard(
     id: 'tapinak',
     speaker: 'Yabancı Vaiz',
     title: 'Gezgin Rahip',
@@ -903,7 +911,7 @@ const deck = <KaganCard>[
       outcome: 'Eski töre korundu; bir cemaat sessizce küstü.',
     ),
   ),
-  KaganCard(
+  const KaganCard(
     id: 'destan',
     speaker: 'İhtiyar Bilge',
     title: 'Gezgin Ozan',
@@ -920,7 +928,7 @@ const deck = <KaganCard>[
       outcome: 'Ozan başka kapı çaldı; namın dilden dile kalmadı.',
     ),
   ),
-  KaganCard(
+  const KaganCard(
     id: 'su_kanali',
     speaker: 'Yabancı Usta',
     title: 'Gezgin Zanaatkâr',
@@ -937,7 +945,7 @@ const deck = <KaganCard>[
       outcome: 'Oklar yine bozkıra sürüldü; töre korundu.',
     ),
   ),
-  KaganCard(
+  const KaganCard(
     id: 'firariler',
     speaker: 'Yüzbaşı Alp Er',
     title: 'Genç Süvari',
@@ -954,7 +962,7 @@ const deck = <KaganCard>[
       outcome: 'Merhametin konuşuldu; kimi bunu gevşeklik saydı.',
     ),
   ),
-  KaganCard(
+  const KaganCard(
     id: 'varis_hasta',
     speaker: 'Hatun',
     title: 'Baş Hatun',
@@ -971,4 +979,203 @@ const deck = <KaganCard>[
       outcome: 'Kam günlerce okudu; vâris termiş gibi atlattı, töre güçlendi.',
     ),
   ),
+
+  // --- Olay zinciri takip kartları (yalnızca tetiklenince çıkar) ---
+  const KaganCard(
+    id: 'bori_geri_doner',
+    speaker: 'Genç Bey Böri',
+    title: 'Eski Borç',
+    scheduledOnly: true,
+    prompt:
+        'Bir zamanlar gönlünü aldığın Böri, borcunu ödemeye geldi: emrine bir süvari bölüğü sunuyor. Kabul edip yanına mı alalım, yoksa onurla geri mi çevirelim?',
+    left: Choice(
+      label: 'Kabul et',
+      effects: {Metric.ordu: 12, Metric.halk: 4},
+      outcome: 'Böri sözünü tuttu; bölüğü sancağına katıldı.',
+    ),
+    right: Choice(
+      label: 'Geri çevir',
+      effects: {Metric.tore: 8, Metric.hazine: 4},
+      outcome: 'Borcu bağışladın; mertliğin dilden dile dolaştı.',
+    ),
+  ),
+  const KaganCard(
+    id: 'cin_baski',
+    speaker: 'Çin Elçisi Pei',
+    title: 'Artan İştah',
+    scheduledOnly: true,
+    prompt:
+        'İmparator, verdiği armağanları bahane edip artık vergi ve itaat istiyor. Boyun eğip ödeyelim mi, yoksa zinciri kırıp karşı mı çıkalım?',
+    left: Choice(
+      label: 'Boyun eğ',
+      effects: {Metric.hazine: -12, Metric.tore: -8, Metric.halk: -4},
+      outcome: 'Vergi yollandı; bozkır başını öne eğdi.',
+    ),
+    right: Choice(
+      label: 'Karşı çık',
+      effects: {Metric.tore: 12, Metric.ordu: 6, Metric.hazine: -6},
+      outcome: 'Zincir kırıldı; sınırda davullar yeniden çaldı.',
+    ),
+  ),
+  const KaganCard(
+    id: 'casus_ifsa',
+    speaker: 'İç Oğuş Başı',
+    title: 'İfşa',
+    scheduledOnly: true,
+    prompt:
+        'Kendine çalıştırdığın casus deşifre oldu; düşman ikili oyununu öğrendi. Onu feda mı edelim, yoksa kaçırıp koruyalım mı?',
+    left: Choice(
+      label: 'Feda et',
+      effects: {Metric.ordu: 6, Metric.tore: -6},
+      outcome: 'Casus gözden çıkarıldı; iz sürenler yanıldı.',
+    ),
+    right: Choice(
+      label: 'Kaçır ve koru',
+      effects: {Metric.hazine: -8, Metric.halk: 4},
+      outcome: 'Adamını korudun; sadakatin altın değerinde.',
+    ),
+  ),
+
+  // --- Koşullu uç kartları (bir denge tehlikeye girince çıkar) ---
+  KaganCard(
+    id: 'darbe_riski',
+    speaker: 'İç Oğuş Başı',
+    title: 'Kıpırdanma',
+    condition: _ordu(82),
+    weight: 2,
+    prompt:
+        'Ordu öyle güçlendi ki bazı komutanlar fısıldaşmaya başladı. Önde gelenleri rütbeyle mi yatıştıralım, yoksa orduyu küçültüp dağıtalım mı?',
+    left: const Choice(
+      label: 'Rütbeyle yatıştır',
+      effects: {Metric.hazine: -10, Metric.ordu: -6, Metric.halk: 4},
+      outcome: 'Mevki dağıtıldı; hırslar şimdilik dindi.',
+    ),
+    right: const Choice(
+      label: 'Orduyu küçült',
+      effects: {Metric.ordu: -14, Metric.halk: 6},
+      outcome: 'Bölükler dağıtıldı; tehlike azaldı, güç de.',
+    ),
+  ),
+  KaganCard(
+    id: 'kibir_tehlikesi',
+    speaker: 'Hatun',
+    title: 'Aşırı Sevgi',
+    condition: _halk(82),
+    weight: 2,
+    prompt:
+        'Halk seni o kadar sevdi ki beyler kıskanıyor, "kağan halka fazla yaslandı" diyorlar. Beylere de pay verip mi gönül alalım, yoksa halkın sevgisine mi güvenelim?',
+    left: const Choice(
+      label: 'Beylere pay ver',
+      effects: {Metric.halk: -8, Metric.ordu: 8, Metric.hazine: -4},
+      outcome: 'Beyler hediyelerle yatıştı; halk biraz darıldı.',
+    ),
+    right: const Choice(
+      label: 'Halka güven',
+      effects: {Metric.halk: 4, Metric.ordu: -8},
+      outcome: 'Halkın sevgisine sığındın; beylerin kaşı çatık.',
+    ),
+  ),
+  KaganCard(
+    id: 'iflas_riski',
+    speaker: 'Defterdar Üge',
+    title: 'Boş Kese',
+    condition: _hazine(18),
+    weight: 2,
+    prompt:
+        'Hazine dibe vurdu kağanım. Acil bir baskın vergisi mi koyalım, yoksa saray eşyalarını eritip mi idare edelim?',
+    left: const Choice(
+      label: 'Baskın vergisi',
+      effects: {Metric.hazine: 14, Metric.halk: -10},
+      outcome: 'Kese biraz doldu; halk dişini sıktı.',
+    ),
+    right: const Choice(
+      label: 'Sarayı erit',
+      effects: {Metric.hazine: 10, Metric.tore: -6},
+      outcome: 'Altın eşya eritildi; itibar pahasına nakit bulundu.',
+    ),
+  ),
+  KaganCard(
+    id: 'tore_catlagi',
+    speaker: 'Kam Udun',
+    title: 'Çatlayan Töre',
+    condition: _tore(18),
+    weight: 2,
+    prompt:
+        'Töre çiğnene çiğnene kamlar ve aksakallar isyan eşiğine geldi. Büyük bir tören ve af ile mi yatıştıralım, yoksa dik durup töreyi mi savunalım?',
+    left: const Choice(
+      label: 'Tören ve af',
+      effects: {Metric.tore: 14, Metric.hazine: -8},
+      outcome: 'Ateşler yakıldı; kamlar öfkesini yatıştırdı.',
+    ),
+    right: const Choice(
+      label: 'Dik dur',
+      effects: {Metric.tore: 10, Metric.halk: -8},
+      outcome: 'Sertçe bastırıldı; töre korundu ama korkuyla.',
+    ),
+  ),
+  KaganCard(
+    id: 'altin_kibri',
+    speaker: 'Defterdar Üge',
+    title: 'Altına Boğulmak',
+    condition: _hazineHigh(82),
+    weight: 2,
+    prompt:
+        'Hazine altınla taştı; saray sefahate kayıyor, halk homurdanıyor. Altını halka ve sefere mi açalım, yoksa kasada mı tutalım?',
+    left: const Choice(
+      label: 'Altını aç',
+      effects: {Metric.hazine: -14, Metric.halk: 8, Metric.ordu: 6},
+      outcome: 'Kese açıldı; çadırlar ve saflar şenlendi.',
+    ),
+    right: const Choice(
+      label: 'Kasada tut',
+      effects: {Metric.hazine: 4, Metric.halk: -10, Metric.tore: -4},
+      outcome: 'Altın istiflendi; sefahat ve dedikodu büyüdü.',
+    ),
+  ),
+
+  // --- Çağ kartları ---
+  const KaganCard(
+    id: 'ilk_oba_yeri',
+    speaker: 'Aksakal Tonga',
+    title: 'Kuruluş',
+    eras: {Era.kurulus},
+    prompt:
+        'Genç hanedanımıza kalıcı bir oba yeri seçmeliyiz. Verimli ama açık ovaya mı kuralım, yoksa korunaklı ama dar vadiye mi?',
+    left: Choice(
+      label: 'Açık ova',
+      effects: {Metric.halk: 10, Metric.hazine: 6, Metric.ordu: -6},
+      outcome: 'Sürüler bollaştı; ama oba saldırıya açık kaldı.',
+    ),
+    right: Choice(
+      label: 'Korunaklı vadi',
+      effects: {Metric.ordu: 10, Metric.halk: -6},
+      outcome: 'Vadi savunmaya elverişli; topraksa cimri.',
+    ),
+  ),
+  const KaganCard(
+    id: 'eyalet_isyani',
+    speaker: 'Komutan Bayan',
+    title: 'Çöküş',
+    eras: {Era.cokus},
+    weight: 2,
+    prompt:
+        'Hanedan yaşlandı; uzak eyaletler vergi vermeyi kesti, bağımsızlık ilan ediyorlar. Kanlı bir seferle mi geri alalım, yoksa özerklik verip bağı mı koruyalım?',
+    left: Choice(
+      label: 'Sefere çık',
+      effects: {Metric.ordu: 8, Metric.hazine: -12, Metric.halk: -6},
+      outcome: 'İsyan bastırıldı; ama hazine ve canlar eridi.',
+    ),
+    right: Choice(
+      label: 'Özerklik ver',
+      effects: {Metric.tore: -8, Metric.hazine: 6, Metric.halk: 4},
+      outcome: 'Eyaletler gevşek bağla kaldı; merkez zayıfladı.',
+    ),
+  ),
 ];
+
+// Condition helpers for the conditional cards above.
+CardCondition _ordu(int min) => (c) => c.m(Metric.ordu) >= min;
+CardCondition _halk(int min) => (c) => c.m(Metric.halk) >= min;
+CardCondition _hazine(int max) => (c) => c.m(Metric.hazine) <= max;
+CardCondition _hazineHigh(int min) => (c) => c.m(Metric.hazine) >= min;
+CardCondition _tore(int max) => (c) => c.m(Metric.tore) <= max;

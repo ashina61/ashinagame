@@ -15,6 +15,26 @@ void main() {
     }
   });
 
+  test('enqueue ids exist and scheduled cards are reachable', () {
+    final ids = {for (final c in deck) c.id};
+    final enqueued = <String>{};
+    for (final card in deck) {
+      for (final choice in [card.left, card.right]) {
+        if (choice.enqueue != null) {
+          expect(ids.contains(choice.enqueue), isTrue,
+              reason: 'enqueue target "${choice.enqueue}" missing');
+          enqueued.add(choice.enqueue!);
+        }
+      }
+    }
+    for (final card in deck) {
+      if (card.scheduledOnly) {
+        expect(enqueued.contains(card.id), isTrue,
+            reason: 'scheduled card "${card.id}" is never enqueued');
+      }
+    }
+  });
+
   test('every choice is well-formed', () {
     for (final card in deck) {
       for (final choice in [card.left, card.right]) {

@@ -1,6 +1,7 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// Persists records across runs.
+/// Persists records across runs: best reign/dynasty, totals, the death
+/// gallery, and unlocked achievements.
 class StatsStore {
   StatsStore(this._prefs);
 
@@ -15,18 +16,22 @@ class StatsStore {
   static const _kBestDynasty = 'ashina_best_dynasty';
   static const _kTotalYears = 'ashina_total_years';
   static const _kGames = 'ashina_games';
+  static const _kDeaths = 'ashina_deaths';
+  static const _kAchievements = 'ashina_achievements';
+  static const _kTutorial = 'ashina_tutorial_seen';
 
-  /// Longest single reign, in years.
   int get bestReign => _prefs.getInt(_kBestReign) ?? 0;
-
-  /// Longest dynasty (sum of all reign years in one run), in years.
   int get bestDynasty => _prefs.getInt(_kBestDynasty) ?? 0;
-
-  /// All-time years ruled across every run.
   int get totalYears => _prefs.getInt(_kTotalYears) ?? 0;
-
-  /// Number of dynasties played to their end.
   int get gamesPlayed => _prefs.getInt(_kGames) ?? 0;
+
+  /// Death-gallery keys seen, e.g. "halk_low", "ordu_high".
+  Set<String> get deathsSeen => _prefs.getStringList(_kDeaths)?.toSet() ?? {};
+
+  Set<String> get achievements =>
+      _prefs.getStringList(_kAchievements)?.toSet() ?? {};
+
+  bool get tutorialSeen => _prefs.getBool(_kTutorial) ?? false;
 
   Future<void> recordReign(int reignYears) async {
     if (reignYears > bestReign) {
@@ -40,5 +45,36 @@ class StatsStore {
     }
     await _prefs.setInt(_kTotalYears, totalYears + dynastyYears);
     await _prefs.setInt(_kGames, gamesPlayed + 1);
+  }
+
+  Future<void> recordDeath(String key) async {
+    final s = deathsSeen..add(key);
+    await _prefs.setStringList(_kDeaths, s.toList());
+  }
+
+  /// Adds [id] and returns true if it was newly unlocked.
+  Future<bool> unlockAchievement(String id) async {
+    final s = achievements;
+    if (s.contains(id)) return false;
+    s.add(id);
+    await _prefs.setStringList(_kAchievements, s.toList());
+    return true;
+  }
+
+  Future<void> markTutorialSeen() async {
+    await _prefs.setBool(_kTutorial, true);
+  }
+
+  Future<void> resetAll() async {
+    for (final k in [
+      _kBestReign,
+      _kBestDynasty,
+      _kTotalYears,
+      _kGames,
+      _kDeaths,
+      _kAchievements,
+    ]) {
+      await _prefs.remove(k);
+    }
   }
 }

@@ -14,11 +14,13 @@ Future<StatsStore> _mockStats() async {
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  test('starts balanced with a card in play', () async {
+  test('starts near balance with a trait and a card in play', () async {
     final game = GameState(await _mockStats(), rng: Random(1));
     for (final m in Metric.values) {
-      expect(game.metrics[m], kStartValue);
+      // Heir trait nudges the start, but it stays well inside the bounds.
+      expect(game.metrics[m]! >= 12 && game.metrics[m]! <= 88, isTrue);
     }
+    expect(game.trait, isNotNull);
     expect(game.current, isNotNull);
     expect(game.reign, 1);
     expect(game.dead, isFalse);
@@ -48,7 +50,8 @@ void main() {
     expect(game.reign, reignBefore + 1);
     expect(game.dead, isFalse);
     for (final m in Metric.values) {
-      expect(game.metrics[m], kStartValue);
+      // New heir starts fresh (near balance, within bounds).
+      expect(game.metrics[m]! >= 12 && game.metrics[m]! <= 88, isTrue);
     }
   });
 }
