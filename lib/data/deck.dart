@@ -1258,6 +1258,145 @@ final deck = <KaganCard>[
       outcome: 'Danışmanlar kovuldu; bozkır töresi yeniden dikleşti.',
     ),
   ),
+
+  // --- Diplomasi: komşu hanlıkla ilişki ---
+  const KaganCard(
+    id: 'ticaret_anlasmasi',
+    speaker: 'Tüccar Maniak',
+    title: 'Ticaret Anlaşması',
+    prompt:
+        'Komşu hanlık karşılıklı ticaret anlaşması öneriyor. Anlaşmayı kuralım mı, yoksa pazarımızı kendimize mi saklayalım?',
+    left: Choice(
+      label: 'Anlaşmayı kur',
+      effects: {Metric.hazine: 8, Metric.halk: 4},
+      relation: 14,
+      outcome: 'Sınırda pazarlar açıldı; komşuyla bağ güçlendi.',
+    ),
+    right: Choice(
+      label: 'Pazarı sakla',
+      effects: {Metric.tore: 4, Metric.hazine: -2},
+      relation: -10,
+      outcome: 'Teklif geri çevrildi; komşu soğudu.',
+    ),
+  ),
+  const KaganCard(
+    id: 'armagan_komsu',
+    speaker: 'Elçi Yamtar',
+    title: 'Komşuya Armağan',
+    prompt:
+        'Komşu hanın gönlünü almak için zengin bir armağan yollayabiliriz. Yollayalım mı, yoksa hazineyi mi koruyalım?',
+    left: Choice(
+      label: 'Armağan yolla',
+      effects: {Metric.hazine: -8},
+      relation: 16,
+      outcome: 'Armağan beğenildi; komşu hanın yüzü güldü.',
+    ),
+    right: Choice(
+      label: 'Hazineyi koru',
+      effects: {Metric.hazine: 4},
+      relation: -8,
+      outcome: 'Kese korundu; komşu ihmal edildiğini düşündü.',
+    ),
+  ),
+  const KaganCard(
+    id: 'sinir_gerginligi',
+    speaker: 'Komutan Bayan',
+    title: 'Sınır Gerginliği',
+    prompt:
+        'Sınırda komşu hanlıkla bir çatışma çıktı. Sert karşılık verip dik mi duralım, yoksa elçi yollayıp yatıştıralım mı?',
+    left: Choice(
+      label: 'Dik dur',
+      effects: {Metric.ordu: 8, Metric.halk: -4},
+      relation: -14,
+      outcome: 'Sınır savunuldu; komşuyla ilişki gerildi.',
+    ),
+    right: Choice(
+      label: 'Yatıştır',
+      effects: {Metric.hazine: -6, Metric.tore: -2},
+      relation: 12,
+      outcome: 'Elçi gönderildi; gerginlik dağıldı.',
+    ),
+  ),
+  const KaganCard(
+    id: 'ortak_av',
+    speaker: 'Güçlü Han Elçisi',
+    title: 'Ortak Sürek Avı',
+    prompt:
+        'Komşu han iki hanlığı kaynaştıracak ortak bir sürek avı öneriyor. Ev sahipliği yapalım mı, yoksa geri mi çevirelim?',
+    left: Choice(
+      label: 'Ev sahibi ol',
+      effects: {Metric.hazine: -8, Metric.halk: 6, Metric.ordu: 2},
+      relation: 14,
+      outcome: 'Beyler birlikte avlandı; iki hanlık yakınlaştı.',
+    ),
+    right: Choice(
+      label: 'Geri çevir',
+      effects: {Metric.hazine: 2},
+      relation: -10,
+      outcome: 'Av reddedildi; komşu bunu soğukluk saydı.',
+    ),
+  ),
+  const KaganCard(
+    id: 'komsu_evlilik',
+    speaker: 'Güçlü Han Elçisi',
+    title: 'Hanedan Evliliği',
+    prompt:
+        'Komşu han, iki hanedanı evlilikle bağlamak ister. Kabul edip kan bağı mı kuralım, yoksa bağımsız mı kalalım?',
+    left: Choice(
+      label: 'Evliliği kabul et',
+      effects: {Metric.ordu: 6, Metric.tore: -6},
+      relation: 20,
+      outcome: 'İki hanedan akraba oldu; bağ sağlamlaştı.',
+    ),
+    right: Choice(
+      label: 'Bağımsız kal',
+      effects: {Metric.tore: 6},
+      relation: -12,
+      outcome: 'Teklif reddedildi; komşu gücendi.',
+    ),
+  ),
+  KaganCard(
+    id: 'komsu_savas',
+    speaker: 'Komutan Bayan',
+    title: 'Komşu Hanlıkla Savaş',
+    condition: _relLow(18),
+    weight: 3,
+    prompt:
+        'İlişkiler koptu; komşu hanlık sınırı aştı, savaş kaçınılmaz. Topyekûn saldıralım mı, yoksa ağır bir bedelle barış mı satın alalım?',
+    left: const Choice(
+      label: 'Topyekûn saldır',
+      effects: {Metric.ordu: 6, Metric.halk: -12, Metric.hazine: -8},
+      relation: 25,
+      outcome: 'Savaş kazanıldı ama bedeli ağır oldu; husumet bir süre dindi.',
+    ),
+    right: const Choice(
+      label: 'Barış satın al',
+      effects: {Metric.hazine: -14, Metric.tore: -4},
+      relation: 30,
+      outcome: 'Ağır bir haraçla barış sağlandı; sınır sustu.',
+    ),
+  ),
+  KaganCard(
+    id: 'komsu_ittifak',
+    speaker: 'Güçlü Han Elçisi',
+    title: 'İttifak Vakti',
+    condition: _relHigh(85),
+    weight: 3,
+    prompt:
+        'Komşu hanlıkla dostluk zirvede; resmi bir ittifak öneriyorlar. İttifakı mühürleyelim mi, yoksa elimizi serbest mi tutalım?',
+    left: const Choice(
+      label: 'İttifakı mühürle',
+      effects: {Metric.ordu: 10, Metric.hazine: 8},
+      relation: -15,
+      outcome: 'İki hanlık tek yumruk oldu; bozkırda sözünüz geçer.',
+    ),
+    right: const Choice(
+      label: 'Elini serbest tut',
+      effects: {Metric.tore: 8},
+      relation: -10,
+      outcome: 'İttifaktan kaçınıldı; bağımsızlık korundu.',
+    ),
+  ),
 ];
 
 // Condition helpers for the conditional cards above.
@@ -1266,3 +1405,5 @@ CardCondition _halk(int min) => (c) => c.m(Metric.halk) >= min;
 CardCondition _hazine(int max) => (c) => c.m(Metric.hazine) <= max;
 CardCondition _hazineHigh(int min) => (c) => c.m(Metric.hazine) >= min;
 CardCondition _tore(int max) => (c) => c.m(Metric.tore) <= max;
+CardCondition _relLow(int max) => (c) => c.relation <= max;
+CardCondition _relHigh(int min) => (c) => c.relation >= min;

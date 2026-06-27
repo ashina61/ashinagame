@@ -113,10 +113,21 @@ const _achEn = <String, (String, String)>{
   ),
   'besinci_kagan': ('The Line Endures', 'Reach the 5th khan in one game.'),
   'tum_olumler': ('Eight Ends', 'Witness all eight kinds of death.'),
+  'diplomat': (
+    'Diplomat',
+    'See both war and alliance with the neighbour in one dynasty.'
+  ),
 };
 
 String achName(Achievement a) => _en ? (_achEn[a.id]?.$1 ?? a.name) : a.name;
 String achBlurb(Achievement a) => _en ? (_achEn[a.id]?.$2 ?? a.blurb) : a.blurb;
+
+/// Neighbour relationship state from the relation value (0..100).
+String relationStatus(int relation) {
+  if (relation < 30) return tr2('Düşman', 'Hostile');
+  if (relation > 70) return tr2('Dost', 'Friendly');
+  return tr2('Gergin', 'Tense');
+}
 
 String difficultyLabel(Difficulty d) {
   switch (d) {

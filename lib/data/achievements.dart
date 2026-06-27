@@ -69,4 +69,10 @@ const achievements = <Achievement>[
     blurb: 'Sekiz ölüm türünü de gör.',
     icon: Icons.menu_book_rounded,
   ),
+  Achievement(
+    id: 'diplomat',
+    name: 'Diplomat',
+    blurb: 'Bir hanedanda hem komşuyla savaş hem ittifak gör.',
+    icon: Icons.handshake_rounded,
+  ),
 ];

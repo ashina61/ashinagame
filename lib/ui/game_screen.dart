@@ -485,8 +485,44 @@ class _Footer extends StatelessWidget {
             ),
             style: AppTextStyles.meta,
           ),
+          const SizedBox(height: 4),
+          _RelationChip(relation: game.relation),
         ],
       ),
+    );
+  }
+}
+
+/// Compact neighbour-khanate relationship indicator in the footer.
+class _RelationChip extends StatelessWidget {
+  const _RelationChip({required this.relation});
+
+  final int relation;
+
+  @override
+  Widget build(BuildContext context) {
+    final hostile = relation < 30;
+    final friendly = relation > 70;
+    final color = hostile
+        ? AppColors.danger
+        : friendly
+            ? AppColors.success
+            : AppColors.sand;
+    final icon = hostile
+        ? Icons.warning_amber_rounded
+        : friendly
+            ? Icons.handshake_rounded
+            : Icons.balance_rounded;
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Icon(icon, size: 14, color: color),
+        const SizedBox(width: 6),
+        Text(
+          '${tr2('Komşu Hanlık', 'Neighbour')}: ${relationStatus(relation)}',
+          style: AppTextStyles.meta.copyWith(color: color),
+        ),
+      ],
     );
   }
 }
