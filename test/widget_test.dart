@@ -11,7 +11,9 @@ void main() {
     await tester.pumpWidget(AshinaApp(stats: stats));
     await tester.pumpAndSettle();
 
-    expect(find.text('ASHINA'), findsOneWidget);
+    // The title may render as the logo image or the Cinzel wordmark, so assert
+    // on the stable subtitle and the play button instead.
+    expect(find.text('BOZKIRDA KAĞANLIK'), findsOneWidget);
     expect(find.text('TAHTA ÇIK'), findsOneWidget);
   });
 }

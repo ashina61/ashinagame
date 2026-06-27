@@ -25,6 +25,9 @@ class AudioService {
     _muted = _prefs?.getBool(_kMuted) ?? false;
     await _sfx.setReleaseMode(ReleaseMode.stop);
     await _music.setReleaseMode(ReleaseMode.loop);
+    // Keep the ambient bed under the effects so it never overpowers.
+    await _safe(() => _sfx.setVolume(0.9));
+    await _safe(() => _music.setVolume(0.4));
   }
 
   Future<void> toggleMute() async {

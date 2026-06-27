@@ -9,6 +9,14 @@ sola kaydırarak** çözersin. Her karar dört dengeyi etkiler:
 Bir denge **0'a düşer ya da 100'e taşarsa** tahtını yitirirsin; vârisin tahta
 çıkar ve hanedan sürer. Amaç: en uzun saltanat ve en uzun hanedan.
 
+## İçerik
+
+- **56 ikilem kartı**, 21 konuşmacı (her birinin portresi var)
+- Swipe fiziği + haptik + giriş/ölüm geçiş animasyonları
+- Sentezlenmiş (CC0) ses: swipe / ölüm / varis / tık efektleri + döngülü bozkır
+  ambiyansı, ve bir sus (mute) düğmesi
+- Bozkır arka planı, Bozkurt launcher ikonu, "ASHINA" logosu
+
 ## Çalıştırma
 
 ```bash
@@ -33,6 +41,7 @@ lib/
   theme/    renk, tipografi, tema
 ```
 
-Görseller koddan üretilir (degrade/painter); yalnızca Cinzel & Alegreya
-fontları ve launcher ikonu asset olarak tutulur. Yeni kart eklemek için
+Görseller `assets/images/` altında (portreler, arka plan, logo), sesler
+`assets/audio/` altında tutulur; bir dosya eksikse uygulama çizili görsele /
+sessizliğe düşer (bkz. `docs/ART_PROMPTS.md`). Yeni kart eklemek için
 `lib/data/deck.dart` içine bir `KaganCard` eklemen yeterli.
