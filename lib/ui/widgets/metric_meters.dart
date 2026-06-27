@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
+import '../../l10n.dart';
 import '../../models/metric.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
@@ -130,7 +131,7 @@ class _MeterState extends State<_Meter> with SingleTickerProviderStateMixin {
         _Bar(value: widget.value, color: widget.metric.color),
         const SizedBox(height: 4),
         Text('${widget.value}', style: AppTextStyles.value),
-        Text(widget.metric.label, style: AppTextStyles.meta),
+        Text(metricLabel(widget.metric), style: AppTextStyles.meta),
       ],
     );
   }

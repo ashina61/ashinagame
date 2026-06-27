@@ -23,11 +23,16 @@ class AshinaApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Ashina',
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.theme,
-      home: HomeScreen(stats: stats),
+    // Rebuild the whole app when settings (e.g. language) change so text
+    // re-localizes live.
+    return ListenableBuilder(
+      listenable: Settings.instance,
+      builder: (context, _) => MaterialApp(
+        title: 'Ashina',
+        debugShowCheckedModeBanner: false,
+        theme: AppTheme.theme,
+        home: HomeScreen(stats: stats),
+      ),
     );
   }
 }

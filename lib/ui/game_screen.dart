@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../data/achievements.dart';
-import '../models/era.dart';
+import '../l10n.dart';
 import '../models/metric.dart';
 import '../state/audio_service.dart';
 import '../state/game_state.dart';
@@ -128,7 +128,8 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
       messenger.showSnackBar(
         SnackBar(
           duration: const Duration(seconds: 2),
-          content: Text('🏆 Başarım: ${a.first.name}'),
+          content:
+              Text('🏆 ${tr2('Başarım', 'Achievement')}: ${achName(a.first)}'),
         ),
       );
     }
@@ -318,10 +319,10 @@ class _TutorialHint extends StatelessWidget {
       child: Container(
         color: Colors.black.withValues(alpha: 0.55),
         alignment: Alignment.center,
-        child: const Column(
+        child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Row(
+            const Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(Icons.keyboard_double_arrow_left_rounded,
@@ -334,12 +335,16 @@ class _TutorialHint extends StatelessWidget {
                     color: AppColors.sand, size: 40),
               ],
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             Padding(
-              padding: EdgeInsets.symmetric(horizontal: 40),
+              padding: const EdgeInsets.symmetric(horizontal: 40),
               child: Text(
-                'Kartı sağa ya da sola kaydırarak karar ver.\n'
-                'Hangi yöne çektiğine göre dört denge değişir.',
+                tr2(
+                  'Kartı sağa ya da sola kaydırarak karar ver.\n'
+                      'Hangi yöne çektiğine göre dört denge değişir.',
+                  'Swipe the card left or right to decide.\n'
+                      'Which way you pull shifts the four pillars.',
+                ),
                 style: AppTextStyles.body,
                 textAlign: TextAlign.center,
               ),
@@ -355,6 +360,9 @@ class _Footer extends StatelessWidget {
   const _Footer({required this.game});
 
   final GameState game;
+
+  String get _traitStr =>
+      game.trait != null ? ' · ${traitName(game.trait!)}' : '';
 
   @override
   Widget build(BuildContext context) {
@@ -372,18 +380,25 @@ class _Footer extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   )
-                : const Text('Kararını vermek için kartı kaydır',
-                    style: AppTextStyles.meta, textAlign: TextAlign.center),
+                : Text(
+                    tr2('Kararını vermek için kartı kaydır',
+                        'Swipe the card to decide'),
+                    style: AppTextStyles.meta,
+                    textAlign: TextAlign.center),
           ),
           const SizedBox(height: 6),
           Text(
-            '${game.rulerName} Kağan'
-            '${game.trait != null ? ' · ${game.trait!.name}' : ''}',
+            tr2('${game.rulerName} Kağan$_traitStr',
+                'Khan ${game.rulerName}$_traitStr'),
             style: AppTextStyles.bodyStrong,
           ),
           Text(
-            '${game.reign}. hükümdar · ${game.era.label} çağı · '
-            '${game.reignYears}. yıl · hanedan ${game.dynastyYears} yaşında',
+            tr2(
+              '${game.reign}. hükümdar · ${eraLabel(game.era)} çağı · '
+                  '${game.reignYears}. yıl · hanedan ${game.dynastyYears} yaşında',
+              'Khan ${game.reign} · ${eraLabel(game.era)} era · '
+                  'year ${game.reignYears} · dynasty aged ${game.dynastyYears}',
+            ),
             style: AppTextStyles.meta,
           ),
         ],
@@ -424,20 +439,25 @@ class _DeathOverlay extends StatelessWidget {
               size: 56,
             ),
             const SizedBox(height: 16),
-            const Text('SALTANAT SONA ERDİ',
+            Text(tr2('SALTANAT SONA ERDİ', 'THE REIGN HAS ENDED'),
                 style: AppTextStyles.header, textAlign: TextAlign.center),
             const SizedBox(height: 8),
             Text(
-              '${game.rulerName} Kağan, ${game.reignYears} yıl hüküm sürdü.',
+              tr2('${game.rulerName} Kağan, ${game.reignYears} yıl hüküm sürdü.',
+                  'Khan ${game.rulerName} reigned ${game.reignYears} years.'),
               style: AppTextStyles.value,
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 16),
-            Text(game.deathCause,
-                style: AppTextStyles.body, textAlign: TextAlign.center),
+            Text(
+                game.deathMetric != null
+                    ? deathCause(game.deathMetric!, game.deathTooHigh)
+                    : game.deathCause,
+                style: AppTextStyles.body,
+                textAlign: TextAlign.center),
             const SizedBox(height: 28),
             GoldButton(
-              label: 'VÂRİS TAHTA ÇIKSIN',
+              label: tr2('VÂRİS TAHTA ÇIKSIN', 'THE HEIR TAKES THE THRONE'),
               icon: Icons.account_balance_rounded,
               onTap: () {
                 AudioService.instance.succeed();
@@ -447,8 +467,8 @@ class _DeathOverlay extends StatelessWidget {
             const SizedBox(height: 12),
             TextButton(
               onPressed: onEnd,
-              child:
-                  const Text('HANEDANI BİTİR', style: AppTextStyles.buttonDark),
+              child: Text(tr2('HANEDANI BİTİR', 'END THE DYNASTY'),
+                  style: AppTextStyles.buttonDark),
             ),
           ],
         ),

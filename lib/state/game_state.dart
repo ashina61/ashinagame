@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import '../data/deck.dart';
 import '../data/rulers.dart';
 import '../data/traits.dart';
+import '../l10n.dart';
 import '../models/era.dart';
 import '../models/kagan_card.dart';
 import '../models/metric.dart';
@@ -148,7 +149,7 @@ class GameState extends ChangeNotifier {
     if (choice.enqueue != null) {
       _queue.add(_Pending(choice.enqueue!, year + choice.enqueueAfter));
     }
-    lastOutcome = choice.outcome;
+    lastOutcome = outcomeFor(current!, right);
     year += 1;
 
     for (final m in Metric.values) {

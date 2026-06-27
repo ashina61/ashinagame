@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../l10n.dart';
 import '../state/audio_service.dart';
 import '../state/stats_store.dart';
 import '../theme/app_colors.dart';
@@ -65,22 +66,28 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
                 const SizedBox(height: 10),
-                const Text(
-                  'BOZKIRDA KAĞANLIK',
+                Text(
+                  tr2('BOZKIRDA KAĞANLIK', 'KHANATE ON THE STEPPE'),
                   style: AppTextStyles.section,
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 20),
-                const Text(
-                  'Halkı, orduyu, hazineyi ve töreyi dengede tut. '
-                  'Kartı sağa ya da sola kaydırarak karar ver; biri tükenir '
-                  'ya da taşarsa tahtını yitirirsin. Hanedanın ne kadar yaşar?',
+                Text(
+                  tr2(
+                    'Halkı, orduyu, hazineyi ve töreyi dengede tut. '
+                        'Kartı sağa ya da sola kaydırarak karar ver; biri tükenir '
+                        'ya da taşarsa tahtını yitirirsin. Hanedanın ne kadar yaşar?',
+                    'Keep the People, Army, Treasury and Tradition in balance. '
+                        'Swipe the card left or right to decide; if one runs out '
+                        'or overflows, you lose the throne. How long can your '
+                        'dynasty last?',
+                  ),
                   style: AppTextStyles.body,
                   textAlign: TextAlign.center,
                 ),
                 const Spacer(flex: 2),
                 GoldButton(
-                    label: 'TAHTA ÇIK',
+                    label: tr2('TAHTA ÇIK', 'TAKE THE THRONE'),
                     icon: Icons.play_arrow_rounded,
                     onTap: _play),
                 const SizedBox(height: 14),
@@ -91,21 +98,23 @@ class _HomeScreenState extends State<HomeScreen> {
                       onPressed: _openStats,
                       icon: const Icon(Icons.history_edu_rounded,
                           color: AppColors.sand, size: 18),
-                      label:
-                          const Text('GÜNCE', style: AppTextStyles.buttonDark),
+                      label: Text(tr2('GÜNCE', 'CHRONICLE'),
+                          style: AppTextStyles.buttonDark),
                     ),
                     const SizedBox(width: 8),
                     TextButton.icon(
                       onPressed: _openSettings,
                       icon: const Icon(Icons.settings_rounded,
                           color: AppColors.sand, size: 18),
-                      label: const Text('AYARLAR',
+                      label: Text(tr2('AYARLAR', 'SETTINGS'),
                           style: AppTextStyles.buttonDark),
                     ),
                   ],
                 ),
                 const Spacer(flex: 2),
-                Text('En uzun saltanat: ${widget.stats.bestReign} yıl',
+                Text(
+                    tr2('En uzun saltanat: ${widget.stats.bestReign} yıl',
+                        'Longest reign: ${widget.stats.bestReign} years'),
                     style: AppTextStyles.meta),
                 const SizedBox(height: 16),
               ],

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../l10n.dart';
 import '../state/audio_service.dart';
 import '../state/settings.dart';
 import '../state/stats_store.dart';
@@ -26,15 +27,27 @@ class _SettingsScreenState extends State<SettingsScreen> {
         child: SafeArea(
           child: Column(
             children: [
-              const _Header(title: 'AYARLAR'),
+              _Header(title: tr2('AYARLAR', 'SETTINGS')),
               Expanded(
                 child: ListenableBuilder(
                   listenable: _settings,
                   builder: (context, _) => ListView(
                     padding: const EdgeInsets.symmetric(horizontal: 24),
                     children: [
+                      _SettingTile(
+                        icon: Icons.language_rounded,
+                        label: tr2('Dil', 'Language'),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            _langButton('TR', Lang.tr),
+                            const SizedBox(width: 6),
+                            _langButton('EN', Lang.en),
+                          ],
+                        ),
+                      ),
                       _slider(
-                        'Müzik',
+                        tr2('Müzik', 'Music'),
                         Icons.music_note_rounded,
                         _settings.musicVolume,
                         (v) async {
@@ -43,7 +56,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         },
                       ),
                       _slider(
-                        'Efektler',
+                        tr2('Efektler', 'Effects'),
                         Icons.graphic_eq_rounded,
                         _settings.sfxVolume,
                         (v) async {
@@ -54,7 +67,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       const SizedBox(height: 8),
                       _SettingTile(
                         icon: Icons.vibration_rounded,
-                        label: 'Titreşim',
+                        label: tr2('Titreşim', 'Haptics'),
                         trailing: Switch(
                           value: _settings.haptics,
                           activeThumbColor: AppColors.gold,
@@ -64,10 +77,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       const SizedBox(height: 24),
                       _SettingTile(
                         icon: Icons.delete_outline_rounded,
-                        label: 'İstatistikleri sıfırla',
+                        label:
+                            tr2('İstatistikleri sıfırla', 'Reset statistics'),
                         trailing: TextButton(
                           onPressed: _confirmReset,
-                          child: Text('SIFIRLA',
+                          child: Text(tr2('SIFIRLA', 'RESET'),
                               style: AppTextStyles.buttonDark
                                   .copyWith(color: AppColors.danger)),
                         ),
@@ -100,24 +114,51 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
+  Widget _langButton(String label, Lang lang) {
+    final active = _settings.lang == lang;
+    return GestureDetector(
+      onTap: () => _settings.setLang(lang),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(8),
+          color: active ? AppColors.gold : Colors.transparent,
+          border: Border.all(color: active ? AppColors.gold : AppColors.bronze),
+        ),
+        child: Text(
+          label,
+          style: AppTextStyles.buttonDark.copyWith(
+            color: active ? const Color(0xFF2B1D08) : AppColors.sand,
+          ),
+        ),
+      ),
+    );
+  }
+
   Future<void> _confirmReset() async {
     final ok = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.leather,
-        title: const Text('Emin misin?', style: AppTextStyles.header),
-        content: const Text(
-          'En uzun saltanat, hanedan, başarımlar ve ölüm güncesi silinecek.',
+        title: Text(tr2('Emin misin?', 'Are you sure?'),
+            style: AppTextStyles.header),
+        content: Text(
+          tr2(
+            'En uzun saltanat, hanedan, başarımlar ve ölüm güncesi silinecek.',
+            'Longest reign, dynasty, achievements and the book of deaths will '
+                'be erased.',
+          ),
           style: AppTextStyles.body,
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('VAZGEÇ', style: AppTextStyles.buttonDark),
+            child:
+                Text(tr2('VAZGEÇ', 'CANCEL'), style: AppTextStyles.buttonDark),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: Text('SİL',
+            child: Text(tr2('SİL', 'DELETE'),
                 style:
                     AppTextStyles.buttonDark.copyWith(color: AppColors.danger)),
           ),
@@ -128,7 +169,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
       await widget.stats.resetAll();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('İstatistikler sıfırlandı.')),
+          SnackBar(
+              content:
+                  Text(tr2('İstatistikler sıfırlandı.', 'Statistics reset.'))),
         );
       }
     }

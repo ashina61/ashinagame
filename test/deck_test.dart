@@ -1,4 +1,5 @@
 import 'package:ashinagame/data/deck.dart';
+import 'package:ashinagame/data/deck_en.dart';
 import 'package:ashinagame/data/portraits.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -6,6 +7,13 @@ void main() {
   test('card ids are unique', () {
     final ids = deck.map((c) => c.id).toList();
     expect(ids.toSet().length, ids.length);
+  });
+
+  test('every card has an English translation', () {
+    for (final card in deck) {
+      expect(deckEn.containsKey(card.id), isTrue,
+          reason: 'no English translation for "${card.id}"');
+    }
   });
 
   test('every speaker has a portrait mapping', () {
