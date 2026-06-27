@@ -117,3 +117,14 @@ const _achEn = <String, (String, String)>{
 
 String achName(Achievement a) => _en ? (_achEn[a.id]?.$1 ?? a.name) : a.name;
 String achBlurb(Achievement a) => _en ? (_achEn[a.id]?.$2 ?? a.blurb) : a.blurb;
+
+String difficultyLabel(Difficulty d) {
+  switch (d) {
+    case Difficulty.merhametli:
+      return tr2('Merhametli', 'Lenient');
+    case Difficulty.normal:
+      return tr2('Normal', 'Normal');
+    case Difficulty.zorlu:
+      return tr2('Zorlu', 'Harsh');
+  }
+}

@@ -613,4 +613,40 @@ const deckEn = <String, CardTr>{
     l1: 'Grant autonomy',
     o1: 'The provinces held by a loose thread; the centre weakened.',
   ),
+  'muttefik_imtihani': CardTr(
+    title: 'The Allyʼs Test',
+    prompt:
+        'The allied tribe you joined blood with has gone to war and begs your help. Do we keep our word and send the riders, or look to our own?',
+    l0: 'Keep your word',
+    o0: 'The riders set out; your loyalty was sung in both tribes.',
+    l1: 'Look to our own',
+    o1: 'No help came; the ally did not forget the betrayal.',
+  ),
+  'kuzeyli_sadakat': CardTr(
+    title: 'The Refugeesʼ Debt',
+    prompt:
+        'The northern tribes you took in have grown strong. Do we arm their braves and add them to the army, or settle them as herders?',
+    l0: 'Arm them',
+    o0: 'The northern braves joined the ranks; the army swelled.',
+    l1: 'Make them herders',
+    o1: 'They tended the herds; the camp grew rich, the sword-hands fewer.',
+  ),
+  'yeni_celik': CardTr(
+    title: 'New Steel',
+    prompt:
+        'The forge you funded yielded its first steel. Do we equip the elite guard, or sell the surplus and fill the purse?',
+    l0: 'Equip the guard',
+    o0: 'The elite guard gleamed with new steel.',
+    l1: 'Sell the surplus',
+    o1: 'The steel was snapped up at market; the purse filled, the store emptied.',
+  ),
+  'cin_nufuzu': CardTr(
+    title: 'Sway at Court',
+    prompt:
+        'The Chinese advisors who came with the princess now hold sway at court. Do we embrace their order and reforms, or show them the door?',
+    l0: 'Embrace the reforms',
+    o0: 'The court turned to Chinese ways; the treasury filled, the law frayed.',
+    l1: 'Show them the door',
+    o1: 'The advisors were expelled; the steppe law stood tall again.',
+  ),
 };

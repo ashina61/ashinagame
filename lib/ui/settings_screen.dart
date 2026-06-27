@@ -46,6 +46,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           ],
                         ),
                       ),
+                      _difficultyTile(),
                       _slider(
                         tr2('Müzik', 'Music'),
                         Icons.music_note_rounded,
@@ -109,6 +110,64 @@ class _SettingsScreenState extends State<SettingsScreen> {
           activeColor: AppColors.gold,
           inactiveColor: AppColors.bronze,
           onChanged: onChanged,
+        ),
+      ),
+    );
+  }
+
+  Widget _difficultyTile() {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(14),
+        color: AppColors.card,
+        border: Border.all(color: AppColors.bronze),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.tune_rounded, color: AppColors.gold, size: 20),
+              const SizedBox(width: 12),
+              Text(tr2('Zorluk', 'Difficulty'),
+                  style: AppTextStyles.bodyStrong),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              for (final d in Difficulty.values) _diffButton(d),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _diffButton(Difficulty d) {
+    final active = _settings.difficulty == d;
+    return Expanded(
+      child: GestureDetector(
+        onTap: () => _settings.setDifficulty(d),
+        child: Container(
+          margin: const EdgeInsets.symmetric(horizontal: 3),
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(8),
+            color: active ? AppColors.gold : Colors.transparent,
+            border:
+                Border.all(color: active ? AppColors.gold : AppColors.bronze),
+          ),
+          child: Text(
+            difficultyLabel(d),
+            textAlign: TextAlign.center,
+            style: AppTextStyles.buttonDark.copyWith(
+              fontSize: 11,
+              color: active ? const Color(0xFF2B1D08) : AppColors.sand,
+            ),
+          ),
         ),
       ),
     );
